@@ -28,7 +28,7 @@ try {
   process.exit(1);
 }
 
-const scripts = process.argv.slice(2);
+const scripts = process.argv.slice(2).filter(a => a !== '--shot' && !a.endsWith('.png'));
 if (!scripts.length) {
   console.error('用法: node verify-run.mjs <verify-*.js> [更多脚本…]');
   process.exit(1);
@@ -69,6 +69,12 @@ try {
       failed++;
       console.error(`===== ${tag} ===== ERROR: ${e.message}`);
     }
+  }
+  /* --shot <path>:全部脚本跑完后截视口 png */
+  const shotIdx = process.argv.indexOf('--shot');
+  if (shotIdx !== -1 && process.argv[shotIdx + 1]) {
+    await page.screenshot({ path: process.argv[shotIdx + 1], fullPage: false });
+    console.log(`[shot] ${process.argv[shotIdx + 1]}`);
   }
 } finally {
   await browser.close();

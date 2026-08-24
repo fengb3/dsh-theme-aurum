@@ -99,7 +99,13 @@ window.__ModuleLoader__.load({
    4. 浅色 --font-* 四族补齐(CSS3 light 块此前漏定义,DISPLAY/serif 在浅色全部失效)。
    实测:crumb=Cormorant Garamond 18.5px(双主题)、tabs x=1292 r999 右置金 on、
    reasoning 卡 oklab surface .55 r12 mb14、QWLzlG_title=JetBrains Mono;
-   verify-gate/p8b/p8c/proto-diff 回归全绿,主题切换往返无损。 */
+   verify-gate/p8b/p8c/proto-diff 回归全绿,主题切换往返无损。
+
+   ── 背景去晕染(2026-08-24 用户决策,偏离原型 §1)────────────
+   主区「浑浊 vs 侧栏区清爽」的分界由 body 两片 radial 晕染造成(定位 50%/-12% 与
+   88%/112% 都压主区);撤晕染 + 撤 sh-head 渐隐纱 + 输入卡 solid→surface 半透明
+   (深 70%/浅 82%)。body 只留底色+点阵;background-size 收回单值 24px(两值配单层
+   会被浏览器截断成 auto,点阵栅距失效 —— 已实测修正)。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -332,7 +338,9 @@ const CSS1 = [
   "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');",
   "body[data-ds-dark-theme]{--aurum-gold:oklch(83% .115 88);--aurum-gold-strong:oklch(79% .13 84);--aurum-gold-dim:oklch(70% .10 85);--aurum-dot:oklch(83% .115 88 / .08);--aurum-sheen-top:oklch(83% .115 88 / .07);--aurum-sheen-rose:oklch(77% .095 350 / .05);--aurum-rail-1:oklch(19% .015 329);--aurum-rail-2:oklch(21.5% .016 329);--aurum-rail-shadow:0 16px 48px oklch(8% .02 330 / .55);--aurum-ring:oklch(79% .13 84 / .22);--aurum-ring-glow:oklch(79% .13 84 / .12);--aurum-focus:oklch(83% .115 88 / .55);--aurum-selection:oklch(79% .13 84 / .35);--aurum-sweep:oklch(83% .115 88 / .18)}",
   "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(94.5% .014 82);--aurum-rail-2:oklch(96.5% .012 82);--aurum-rail-shadow:0 16px 44px oklch(30% .05 330 / .18);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
-  "body{background-color:var(--dsw-alias-bg-base);background-image:radial-gradient(1100px 460px at 50% -12%,var(--aurum-sheen-top),transparent 62%),radial-gradient(720px 340px at 88% 112%,var(--aurum-sheen-rose),transparent 62%),radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:auto,auto,24px 24px}",
+  /* 背景画布(2026-08-24 用户决策:去晕染):只留底色 + 点阵,不再叠金辉/玫粉 radial ——
+     此前两片晕染横向压在主区(50%/-12% 与 88%/112%),侧栏区没有,造成左右分界、主区浑浊 */
+  "body{background-color:var(--dsw-alias-bg-base);background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px}",
   "body #root,body [data-slot=root]>div,body [data-slot=conversation]>div{background-color:transparent}",
   /* 栏几何: 内容根即卡片本体(原型 .sidebar), 列只负责四向留白 — 左12/右4 使卡片恰为 264px;
      卡片自带 overflow:hidden, 内部行/hover 永不溢出圆角边界 */
@@ -383,8 +391,8 @@ const CSS1 = [
   "@keyframes aurum-rise{from{opacity:0;transform:translateY(12px)}}",
   /* ── P9 残留 · sh-head 主区头部(官方 DOM 瞄准 wSkVaW_*,原型 §5 sh-head/tabs)──
      官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
-     渐隐底、DISPLAY 标题、mono 弱化 chips、tabs 胶囊右置金 on。 */
-  "body .wSkVaW_header{background:linear-gradient(180deg,color-mix(in oklab,var(--bg) 92%,transparent) 52%,transparent);border-bottom:none}",
+     mono 弱化 chips、tabs 胶囊右置金 on。(渐隐底纱 2026-08-24 撤:用户不要主区任何背景色) */
+  "body .wSkVaW_header{background:none;border-bottom:none}",
   "body .wSkVaW_header *{border-color:transparent!important}",
   "body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-family:var(--font-display);font-weight:500;font-size:18.5px;letter-spacing:.02em;color:var(--fg)}",
   "body .wSkVaW_crumbs{min-width:0;overflow:hidden}",
@@ -407,6 +415,10 @@ const CSS1 = [
   "body ::selection{background:var(--aurum-selection)}",
   "body :focus-visible{outline:2px solid var(--aurum-focus);outline-offset:2px}",
   "body [data-composer-card]{border-radius:22px;transition:box-shadow .25s ease}",
+  /* 输入卡半透明 surface(2026-08-24 用户决策:官方 solid input-major 在画布上读作色块;
+     换 surface 透明混合,点阵隐约透过,与原型 todo-bar 50% 透明面同路数) */
+  "body [data-composer-card]{background:color-mix(in oklab,var(--surface) 70%,transparent)}",
+  "body:not([data-ds-dark-theme]) [data-composer-card]{background:color-mix(in oklab,var(--surface) 82%,transparent)}",
   /* 无描边原则(原型 --border 全透明): 侧栏/输入卡/详情栏子树内一律去描边,
      元素仅以面色 tint 与背景区分 — 官方默认主题在 body 层定义 --dsw-alias-border-*,
      主题 token 无法覆盖, 故直写 transparent */

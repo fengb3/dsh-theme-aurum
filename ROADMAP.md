@@ -72,8 +72,12 @@
 
 ### §1–§3 令牌 / 基础 / 骨架
 
-- ✅ oklch 金粉双主题令牌、点阵画布(24px 栅距)、金辉 sheen(浅色无玫辉)、四族字体、
+- ✅ oklch 金粉双主题令牌、点阵画布(24px 栅距)、四族字体、
   `::selection` 金、`:focus-visible` 金 outline、`prefers-reduced-motion` 降级。
+- ✅ 背景去晕染(2026-08-24 用户决策,偏离原型):body 只留底色+点阵,撤金辉/玫粉
+  radial 两层 —— 此前两片晕染横向压在主区(50%/-12%、88%/112%),侧栏区没有,
+  造成左右分界、主区浑浊;sh-head 渐隐纱同步撤(background:none);输入卡由官方
+  solid input-major 换 surface 半透明(深 70%/浅 82%),点阵隐约透过。
 - ✅ 侧栏浮动卡(264px、radius 20、渐变面+阴影、`overflow:hidden`)、折叠细条卡片化。
 - ◐→✅ 滚动条(P9 已做):10px 宽 / thumb 26% 透明度 / hover 金,几何按原型微调。
 - ◐→✅ 栏头同轴机制(P9 近似):侧栏 logoRow 58px + sh-head 换皮;官方双行带(82px 实测)
