@@ -329,3 +329,6 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
 - **遗留(记档不阻塞)**:toast 形态无活实例(token 已对齐);tool-kids 无
   嵌套数据样本(渲染与官方同源);视图/添加工作区两钮自绘图标(自建功能,
   官方无对应原语)。
+- **发版后追补(同日)**:工具卡展开/收合曲线统一 ease-in-out(.45,0,.55,1,
+  两头慢中间快,去过冲);Markdown 表格分隔线修复(border token 全 transparent
+  误伤 md 表格网格,scoped 直写 fg 12% tint 分隔线 + 表头 surface-2 底)。

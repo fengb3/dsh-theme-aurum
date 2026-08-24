@@ -296,7 +296,19 @@ window.__ModuleLoader__.load({
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
     turn-tail tx 行高 1.34 校准(对齐原型 14px 行高,proto-diff failures 归零);
     package.json inject 补 primitives(图标官方依赖显式化)、version 1.1.0、
-    README 重写。历次用户修订全景见各「P15 前修订」段。 */
+    README 重写。历次用户修订全景见各「P15 前修订」段。
+
+    ── P15 微调(发版后追补,2026-08-24)─────────────────────
+    1. 工具卡展开/收合曲线改「两头慢中间快」(用户指定):两向统一
+       cubic-bezier(.45,0,.55,1)(ease-in-out);废弃收合快出曲线与展开
+       1.18 过冲回弹,内容层同步去回弹。实测两向 timing-function 一致。
+    2. Markdown 表格分隔线修复(用户报网格消失):根因 = 无描边原则把
+       --dsw-alias-border-* 全设 transparent,官方 md 表格 td/th 分隔线正消费
+       这些 token。scoped 到 assistant-step 逐元素直写恢复:fg 12% tint 分隔线
+       + 表头 surface-2 70% 底 + 1.5px 下边线。实测 tdBorder=1px 可见、
+       表头底色落地、5 行表格网格完整。
+    回归 gate/p11 全绿;proto-diff md li 行为内容噪声(样本行数不同,
+       宽度/字号/padding 全一致),非缺陷。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -793,11 +805,14 @@ const CSS2 = [
   ".au-pill.au-run::before{content:\"\";width:5px;height:5px;border-radius:50%;background:var(--aurum-gold-strong);animation:au-pulse 1.2s ease-in-out infinite}",
   ".au-pill.au-err{color:var(--dsw-alias-state-error-primary);background:color-mix(in oklab,var(--dsw-alias-state-error-primary) 12%,transparent)}",
   "@keyframes au-pulse{50%{opacity:.25}}",
-  ".au-x{display:grid;grid-template-rows:0fr;background:color-mix(in oklab,var(--dsw-alias-bg-base) 45%,transparent);transition:grid-template-rows .3s cubic-bezier(.62,.04,.82,.28)}",
-  ".au-tool.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .56s cubic-bezier(.3,1.18,.34,1)}",
+  /* P15 微调:展开/收合曲线改「两头慢中间快」(ease-in-out,用户指定)——
+     原收合 .62,.04,.82,.28(快出慢收)与展开 .3,1.18(过冲回弹)统一为
+     cubic-bezier(.45,0,.55,1);内容层同步(去回弹,保留延迟渐显) */
+  ".au-x{display:grid;grid-template-rows:0fr;background:color-mix(in oklab,var(--dsw-alias-bg-base) 45%,transparent);transition:grid-template-rows .34s cubic-bezier(.45,0,.55,1)}",
+  ".au-tool.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
   ".au-clip{overflow:hidden;min-height:0}",
-  ".au-in{padding:11px 15px;border-top:1px dashed transparent;opacity:0;transform:translateY(-6px);transition:opacity .18s ease,transform .2s cubic-bezier(.55,.05,.8,.3)}",
-  ".au-tool.au-open .au-in{opacity:1;transform:none;transition:opacity .42s .08s ease,transform .54s .06s cubic-bezier(.26,1.22,.36,1)}",
+  ".au-in{padding:11px 15px;border-top:1px dashed transparent;opacity:0;transform:translateY(-6px);transition:opacity .18s ease,transform .24s cubic-bezier(.45,0,.55,1)}",
+  ".au-tool.au-open .au-in{opacity:1;transform:none;transition:opacity .4s .06s ease,transform .5s .04s cubic-bezier(.45,0,.55,1)}",
   "body:not(#aurum-boost) .au-tool[data-state=running] .au-main::after{content:\"\";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 42%,color-mix(in oklab,var(--aurum-gold-strong) 15%,transparent) 50%,transparent 58%);animation:au-sweep 1.9s linear infinite}",
   "@keyframes au-sweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}",
   ".au-sec{font-family:var(--ds-font-family-code);font-size:10px;letter-spacing:.22em;color:var(--dsw-alias-label-tertiary);margin:4px 0 10px;text-transform:uppercase}",
@@ -993,6 +1008,12 @@ const CSS3 = [
   "[data-chat-flow-kind=assistant-step] li::before{content:\"◆\";position:absolute;left:0;top:0;font-size:8px;color:var(--gold-dim);line-height:2.6}",
   "[data-chat-flow-kind=assistant-step] li b{color:var(--fg);font-weight:500}",
   "body [data-chat-flow-kind=assistant-step] :not(pre)>code{font-family:var(--font-mono);font-size:12.5px!important;line-height:1.36;color:var(--gold);background:var(--surface-2);border-radius:6px;padding:1px 6px}",
+  /* P15 微调:表格分隔线修复 —— 无描边原则把 --dsw-alias-border-* 全设 transparent,
+     官方 md 表格 td/th 分隔线正消费这些 token → 网格消失。scoped 到 assistant-step
+     逐元素直写恢复:fg tint 分隔线(与 .menu-sep 同族)+ 表头 surface-2 底 + 行距 */
+  "body [data-chat-flow-kind=assistant-step] table{border-collapse:collapse;margin:8px 0 14px;font-size:13px;line-height:1.75}",
+  "body [data-chat-flow-kind=assistant-step] th,body [data-chat-flow-kind=assistant-step] td{border:1px solid color-mix(in oklab, var(--fg) 12%, transparent);padding:6px 12px;text-align:left}",
+  "body [data-chat-flow-kind=assistant-step] thead th,body [data-chat-flow-kind=assistant-step] tr:first-child td{background:color-mix(in oklab, var(--surface-2) 70%, transparent);color:var(--fg);font-weight:500;border-bottom-width:1.5px}",
   /* ── 滚动条几何(原型 §2)── */
   "body ::-webkit-scrollbar{width:10px;height:10px}",
   "body ::-webkit-scrollbar-thumb{background:color-mix(in oklab, var(--muted) 26%, transparent);border-radius:8px;border:3px solid transparent;background-clip:content-box}",
