@@ -155,7 +155,14 @@ window.__ModuleLoader__.load({
        pane 不可见);官方 details 注册原样保留(停插件即还原)。
     实测:「帮 GLM MCP」会话 48 callrow 全 au-tool 卡、官方行残留 0;未知工具
     glob×3 / ask_user_question×1 / mcp__glm-vision__analyze_image×1 全走兜底
-    (name/icon/pill/fstat 齐);回归 gate/p8b/p8c/proto-diff 全绿,双主题无损。 */
+    (name/icon/pill/fstat 齐);回归 gate/p8b/p8c/proto-diff 全绿,双主题无损。
+
+    ── P11 修订(2026-08-24,用户两条)──────────────────────────
+    1. 卡片间距收窄:官方会话流列 Md3f7G_column gap 16→8 + au-callrow margin
+       2→0 + au-tool margin 2→1 + reasoning 卡 mb 14→10 + 用户气泡 4→2 —— 相邻
+       卡间距约减半(实测 columnGap=8px,卡间视觉 8-10px 缝)。
+    2. 兜底工具图标 = 双四角星(用户指定):Ic("stars") 大星左下+小星右上,
+       金色填充;兜底分支与 kid 行统一用它(废弃 META 图标登记表)。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -460,7 +467,7 @@ const CSS1 = [
   "body:not([data-ds-dark-theme]) .wSkVaW_tabActive{background:oklch(55% 0.115 80 / .13)}",
   /* ── P9 残留 · reasoning 折叠段(官方 ReasoningRow QWLzlG_*,原型 .reasoning)──
      卡片化(surface tint r12)+ mono 头 + serif italic 思路体 + 虚线分隔;运行扫光换金 */
-  "body [data-chat-flow-kind=assistant-step] .QWLzlG_root{background:color-mix(in oklab,var(--surface) 55%,transparent);border-radius:12px;margin-bottom:14px;overflow:hidden}",
+  "body [data-chat-flow-kind=assistant-step] .QWLzlG_root{background:color-mix(in oklab,var(--surface) 55%,transparent);border-radius:12px;margin-bottom:10px;overflow:hidden}",
   "body .QWLzlG_row{padding:8px 13px}",
   "body .QWLzlG_title{font-family:var(--font-mono);font-weight:400;font-size:11.5px;color:var(--faint);letter-spacing:.04em}",
   "body .QWLzlG_summary{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);line-height:1.7}",
@@ -560,13 +567,13 @@ const CSS1 = [
 ];
 
 const CSS2 = [
-  ".au-user-row{display:flex;justify-content:flex-end;margin:4px 0}",
+  ".au-user-row{display:flex;justify-content:flex-end;margin:2px 0}",
   ".au-bubble{max-width:min(525px,82%);border-radius:22px;padding:13px 19px;background:linear-gradient(135deg,color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent),color-mix(in oklab,var(--aurum-gold-strong) 7%,transparent));font-family:var(--dsw-font-markdown-base-font-family);font-size:15px;line-height:1.85;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word}",
   ".au-img{max-width:100%;border-radius:14px;display:block;margin-top:8px}",
   ".au-ctx-row{font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--aurum-gold-dim);padding:2px 4px;letter-spacing:.03em;display:flex;align-items:center;gap:8px}",
-  ".au-callrow{margin:2px 0}",
+  ".au-callrow{margin:0}",
   ".au-fstat{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-right:auto}",
-  ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:2px 0}",
+  ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
   "body:not([data-ds-dark-theme]) .au-tool{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
   ".au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none}",
   ".au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
@@ -752,6 +759,10 @@ const CSS3 = [
   ".a-actions .ibtn{width:27px;height:27px}",
   ".a-actions .ibtn svg{width:13px;height:13px}",
   "[data-chat-anchor-key]:hover .a-actions{opacity:1}",
+  /* ── P11 修订:卡片间距收窄(用户要求)── 官方会话流列 gap16 是大头,
+     叠加各卡自身 margin 后相邻工具卡实际隔 ~24px;gap 降 8 + 卡 margin 收拢
+     → 相邻卡 ~10px。列 gap 同时管用户气泡/正文/尾节间距,整体一并收紧 */
+  "body .Md3f7G_column{gap:8px}",
   /* ── md 装饰(scoped 到 assistant-step 节点,不伤工具卡/上下文行)── */
   /* 列宽对齐原型 .flow 内容宽 712:官方在 viewArea→root→scroll 多层重定义 token,
      就近继承压不过 —— 挂 [data-conversation-scroll] 结构锚并对全部后代逐元素定义
@@ -926,6 +937,10 @@ function Ic(kind) {
   if (kind === "list") return h("svg", a, h("path", { d: "M9 6h11M9 12h11M9 18h11" }), h("path", { d: "M4.5 6h.01M4.5 12h.01M4.5 18h.01", "stroke-linecap": "round", "stroke-width": 2.4 }));
   if (kind === "image") return h("svg", a, h("rect", { x: 4, y: 5, width: 16, height: 14, rx: 2.5 }), h("circle", { cx: 9, cy: 10, r: 1.6 }), h("path", { d: "m6 17 4.2-4.2a1.5 1.5 0 0 1 2.1 0L20 20" }));
   if (kind === "spark") return h("svg", a, h("path", { d: "M13 2 4.5 13.5H11l-1.2 8.5L18.5 10.5H12L13 2Z" }));
+  /* P11 修订:兜底工具图标 = 双四角星(用户指定)—— 大星左下 + 小星右上 */
+  if (kind === "stars") return h("svg", Object.assign({}, a, { fill: "currentColor", stroke: "none" }),
+    h("path", { d: "M10 5C10.9 10.3 13.7 13.1 19 13 13.7 13.9 10.9 16.7 10 22 9.1 16.7 6.3 13.9 2 13 6.3 13.1 9.1 10.3 10 5Z" }),
+    h("path", { d: "M19 2C19.4 4.5 20 5.1 22.5 5.5 20 5.9 19.4 6.5 19 9 18.6 6.5 18 5.9 15.5 5.5 18 5.1 18.6 4.5 19 2Z" }));
   if (kind === "question") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7M12 17h.01" }));
   return null;
 }
@@ -1026,15 +1041,7 @@ function auTodoBody(args) {
   return h("div", { className: "au-todo" }, els);
 }
 
-/* P11 · 新工具类型图标/摘要登记表(兜底分支消费;em 统一走 auArgEm 推导) */
-const AU_TOOL_META = {
-  subagent: { icon: "branch" }, subagent_fork: { icon: "branch" }, send_message: { icon: "branch" },
-  workflow: { icon: "spark" }, ralph: { icon: "retry" }, skill: { icon: "spark" },
-  create_goal: { icon: "target" }, get_goal: { icon: "target" }, update_goal: { icon: "target" },
-  ask_user_question: { icon: "question" }, interrupt_agent: { icon: "stop" },
-  list_agents: { icon: "list" }, job_list: { icon: "list" }, job_output: { icon: "terminal" }, job_kill: { icon: "stop" },
-  read_image: { icon: "image" }, glob: { icon: "search" }, validate_dsh_ui: { icon: "view" }
-};
+/* P11 · 兜底参数摘要推导(未知工具的 em 统一走这里) */
 function auArgEm(a) {
   if (!a || typeof a !== "object") return "";
   const ks = ["description", "objective", "prompt", "query", "pattern", "command", "path", "file_path", "url", "name", "skill"];
@@ -1120,10 +1127,10 @@ function AuToolCard(props) {
   }
 
   /* P11 兜底:未特判的工具名(glob / ask_user_question / subagent / job 系列 / goal 系列
-     及一切未知插件工具)—— 图标查 META,em 与 summary 从 args、结果首行推导 */
+     及一切未知插件工具)—— 图标统一「双四角星」(用户指定),em 与 summary 从 args、
+     结果首行推导 */
   if (summary === "" && em === "") {
-    const meta = AU_TOOL_META[name];
-    if (meta) icon = meta.icon;
+    icon = "stars";
     em = auArgEm(args);
     if (running) summary = (callView && callView.title) || "执行中…";
     else {
@@ -1167,13 +1174,12 @@ function AuKid(props) {
   const b = props.block;
   const settled = b.kind === "tool-result";
   const name = settled ? ((b.call && b.call.name) || "") : (b.name || "");
-  const meta = AU_TOOL_META[name];
   const st = React.useState(false);
   const open = st[0];
   const sum = !settled ? "运行中…" : (b.isError ? "失败" : auDur(b.callTime != null ? b.time - b.callTime : null));
   return h("div", null,
     h("div", { className: "kid", onClick: function () { st[1](!open); } },
-      Ic(meta ? meta.icon : "chevdown"),
+      Ic("stars"),
       h("span", null, name),
       h("span", { className: "k-sum" }, sum)),
     open ? h(AuToolCard, props.owner) : null);

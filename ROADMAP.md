@@ -260,6 +260,9 @@ send=linear-gradient(135deg 金)r12、ctx 金弧 trigger 31px、c-stats=JetBrain
 残留 0;未知工具 glob/ask_user_question/mcp__glm-vision__analyze_image 全走兜底
 (name/icon/pill/fstat 齐);详情栏第三列 0px 不可见;回归 gate/p8b/p8c/proto-diff 全绿。
 - 用户决策(同日):输入坞底条(todo/goal/queue)实色化 —— var(--surface),同输入卡;
+- 修订(同日,用户两条):① 卡片间距收窄 —— 会话流列 gap 16→8、callrow 2→0、
+  tool 2→1、reasoning mb 14→10、用户气泡 4→2(实测 columnGap=8px);
+  ② 兜底工具图标 = 双四角星(Ic stars,大星+小星金色填充),兜底与 kid 行统一;
 - 兜底实现:遮蔽 conversation.chat.node key=tool-call(官方 fallback 硬编码不可替换,
   只能接管整棵树);AU_TOOL_META 18 名图标登记 + auArgEm 摘要推导;
 - tool-kids 与官方同源(subCalls 字段逐字一致);当前数据面无嵌套样本,记档不视为缺陷;
