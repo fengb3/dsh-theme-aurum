@@ -1152,7 +1152,16 @@ const CSS3 = [
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
   /* ── P14 · 响应式降档(原型 §10;抽屉不适用:官方 ≤900 自动 68px 折叠轨,
      无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */,
-  "@media (max-width:820px){body .wSkVaW_header{padding-left:14px;padding-right:14px}body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-size:16px}body .Md3f7G_scroll{padding:12px calc(var(--dsh-composer-side-clearance) + 8px);padding-top:78px}body .uV2eYG_root{padding-bottom:6px}body .pXSMma_headline{font-size:25px}body .pXSMma_stack{max-width:calc(100vw - 48px)}}",
+  /* P15 追补 VI:窄屏 header 上下两行 —— 上行标题,下行 tabs+按钮(修标题被挤) */
+  "@media (max-width:820px){",
+  "body .wSkVaW_header{flex-direction:column;align-items:stretch;gap:2px;height:auto;min-height:70px;padding:10px 14px 8px}",
+  "body .wSkVaW_titleRow{display:flex!important;flex-direction:row;align-items:center}",
+  "body .wSkVaW_titleCluster{flex:1;min-height:24px}",
+  "body .wSkVaW_tabs{order:1;margin-right:10px}",
+  "body .wSkVaW_headerUtilities{order:2}",
+  "body .wSkVaW_headerActions{order:2}",
+  "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
+  "body .Md3f7G_scroll{padding-top:130px}",
   "@media (max-width:640px){body .wSkVaW_tab{padding:4px 11px;font-size:12px}body .au-bubble{font-size:14.5px;max-width:90%}body .goal-track{width:64px}body .FJxK0a_sep{margin:0 6px}body .FJxK0a_root{font-size:9.5px}}",
   "@media (max-width:480px){body .todo-bar{min-width:100%}body .au-name em{display:none}body .turn-tail .tx{font-size:9.5px;letter-spacing:.02em}body .todo-it{font-size:10.5px}body .au-srow .au-s-title{font-size:11.5px}}",
   /* ── P11 · §7 子调用(整段拷贝;AuToolCallTree 消费)── */
