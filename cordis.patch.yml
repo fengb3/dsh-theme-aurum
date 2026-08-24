@@ -1,0 +1,6 @@
+# dsh-theme-aurum bundle:鎏金主题(浏览器半)。
+# 声明在 package.json 的 dsh.bundle.patch,由 `dsh plugin add` 自动登记为
+# profile 的 bundle 层。
+- insert:
+    - id: theme-aurum
+      name: dsh-theme-aurum

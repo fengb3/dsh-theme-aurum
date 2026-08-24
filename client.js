@@ -1,0 +1,1385 @@
+/**
+ * dsh-theme-aurum — 鎏金主题 browser half (loader-format bundle, zero build)。
+ * 由 dsh-agent-workspace.html 原型移植:oklch 金粉配色 + 点阵画布 + 浮动卡片侧栏 +
+ * 左侧历史会话栏整体重写(目录头/分组折叠/会话状态槽/行内操作/搜索/平铺) +
+ * 用户气泡/上下文节点/9 类工具卡片接管。主题经 theme 服务注册 aurum-dark/aurum-light。
+ */
+window.__ModuleLoader__.load({
+	id: "dsh-theme-aurum",
+	factory: (require) => {
+		var module = { exports: {} };
+		var exports = module.exports;
+		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+		const react = require("react");
+		const React = react;
+		/* ── htm@3.1.1(vendor/htm.js 官方 mini UMD;仅改尾部恒挂 self.htm,
+		      避开本 loader 文件的 module.exports 语义)· P9 恒等映射流水基础设施 ── */
+		!function(){var n=function(t,e,s,u){var r;e[0]=0;for(var h=1;h<e.length;h++){var p=e[h++],a=e[h]?(e[0]|=p?1:2,s[e[h++]]):e[++h];3===p?u[0]=a:4===p?u[1]=Object.assign(u[1]||{},a):5===p?(u[1]=u[1]||{})[e[++h]]=a:6===p?u[1][e[++h]]+=a+"":p?(r=t.apply(a,n(t,a,s,["",null])),u.push(r),a[0]?e[0]|=2:(e[h-2]=0,e[h]=r)):u.push(a)}return u},t=new Map,e=function(e){var s=t.get(this);return s||(s=new Map,t.set(this,s)),(s=n(this,s.get(e)||(s.set(e,s=function(n){for(var t,e,s=1,u="",r="",h=[0],p=function(n){1===s&&(n||(u=u.replace(/^\s*\n\s*|\s*\n\s*$/g,"")))?h.push(0,n,u):3===s&&(n||u)?(h.push(3,n,u),s=2):2===s&&"..."===u&&n?h.push(4,n,0):2===s&&u&&!n?h.push(5,0,!0,u):s>=5&&((u||!n&&5===s)&&(h.push(s,0,u,e),s=6),n&&(h.push(s,n,0,e),s=6)),u=""},a=0;a<n.length;a++){a&&(1===s&&p(),p(a));for(var o=0;o<n[a].length;o++)t=n[a][o],1===s?"<"===t?(p(),h=[h],s=3):u+=t:4===s?"--"===u&&">"===t?(s=1,u=""):u=t+u[0]:r?t===r?r="":u+=t:'"'===t||"'"===t?r=t:">"===t?(p(),s=1):s&&("="===t?(s=5,e=u,u=""):"/"===t&&(s<5||">"===n[a][o+1])?(p(),3===s&&(h=h[0]),s=h,(h=h[0]).push(2,0,s),s=0):" "===t||"\t"===t||"\n"===t||"\r"===t?(p(),s=2):u+=t),3===s&&"!--"===u&&(s=4,h=h[0])}return p(),h}(e)),s),arguments,[])).length>1?s:s[0]};self.htm=e}();
+		const html = self.htm.bind(React.createElement);
+/* ═══ Aurum 鎏金主题 — P7 = P5 + 左侧历史会话栏整体重写(原型级) ═══
+   按 dsh-agent-workspace.html 原型重写左侧会话栏:
+   1. 以 priority:-1 遮蔽注册 sidebar.workspaces(官方浏览器保留在册, 插件停止即还原),
+      用 ctx.sessions / ctx.workspaces + 全局 useSessions/useWorkspaces 钩子自建:
+      工作区目录头(标签 + 展开式搜索 + 视图切换 + 添加工作区)、分组折叠(chev⇄folder 图标
+      交叉淡切)、会话行(状态槽: working 旋转/waiting 金点/done 绿点, 悬停 ··· 展开操作条:
+      重命名(行内)/分支/归档)、平铺模式、本地标题搜索。
+   2. 壳层(hHd-Xa_*: 品牌行/新建按钮/底部)CSS 重塑为原型样式: 去 padding、58px 头行、
+      金色 tint 新建钮(+图标)、30px 圆角图标钮、底部 border-top 行;折叠态 40px rail 几何。
+   3. AurumFootToggle 支持 wide 属性(折叠态渲染为 40px 图标钮)。
+   槽位保留: sidebar.settings/sidebar.footer.action 原样由官方组件渲染(样式化)。
+
+   ── P8 · 侧栏几何修正(卡片即容器) ─────────────────────────────
+   旧实现以栏列 ::before(inset:12px, z-index:-1) 画卡,列横向 padding 为 0,
+   内容根带内联 width:280px 铺满整列 → 会话行/hover 态超出卡片圆角边界 12px。
+   P8 改为「内容根即卡片」,对齐原型 .sidebar 语义:
+   1. 栏列只留白(padding 12px 4px 12px 12px → 卡片恰为原型 264px;折叠态 12px 8px → 40px 细条);
+   2. [data-slot=sidebar]>div 卡片化: 渐变面+阴影+radius20(折叠17)+overflow:hidden,
+      width:auto!important 压过内联宽度,拖拽调宽时卡片自动跟随;
+   3. 折叠态 newSession / aurum-footRow 收为 40px 方钮,settingsArea 钮去负 margin。
+   实测: 展开 264×696@(12,12) 零溢出;折叠 40×696@(8,12) 零溢出;调宽 340→卡 324。
+
+   ── P8b · 验收修正(双加号 + 无描边) ─────────────────────────
+   1. 双加号根因: [class*=newSession] 子串同时命中按钮 hHd-Xa_newSession 与官方标签
+      hHd-Xa_newSessionLabel(两者都 position:relative),各自渲染一条 ::before "+";
+      收紧为 button[class*=newSession] 后仅按钮持有一个加号(标签 ::before 归 none)。
+   2. 无描边原则: 官方默认主题在 body 层定义 --dsw-alias-border-*(解析 rgba(255,255,255,.12)),
+      主题 token 压不过 → 侧栏/详情栏/输入卡子树 border-color:transparent!important 一揽子扫除,
+      会话流 au-* 类边框逐个改字面量 transparent, 双主题 border token 亦置 transparent(保险)。
+   ── P9 · 会话流尾部节点 + 恒等映射流水首批(htm + 原型类名) ──────
+   1. 基础设施: 内联 htm@3.1.1(self.htm) + htm.bind(React.createElement);CSS3 层注入
+      原型 §1 变量组(gold/surface/rail 族与四族字体, 深浅双主题)——新组件直接消费
+      原型类名(.turn-tail/.compress/.row-err/.row-retry/.pill/.ibtn/.a-actions),CSS 整段拷贝。
+   2. 节点接管(priority:-1 遮蔽, 官方同名 key 保留): turn-tail(a-actions 独立行+细线 tx)、
+      compaction(.compress 折叠段+in-tok)、model-retry(倒计时)、turn-error、turn-max-tokens。
+      turn-tail 永远普通注册: children 槽位声明存在加载顺序竞态,插件先注册会炸掉官方
+      conversation 包的同名声明(2026-08-24 实测复现并回退)。
+   3. md 装饰(scoped 到 [data-chat-flow-kind=assistant-step]): 金点列表、inline code 金
+      pill(12.5px!important 压官方 .875em)、:is(ul,ol) 去官方 18px 内边距;assistant 头像 =
+      flowItem padding-left:42px + ::before/::after(鲸鱼 mask data URI) 纯 CSS 实现。
+   4. 列宽 712 对齐原型 .flow 内容宽: 官方在 viewArea-root-scroll 多层重定义
+      --dsh-chat-content-width=748,以 [data-conversation-scroll] 结构锚 + 通配逐元素定义压继承。
+   5. 主题激活修正: apply 期 setTheme 会被启动后期主题初始化盖回官方,改为 0ms/1.2s 两次
+      延迟重断言(一次性, 不与用户后续选择打架)。
+   6. 逐节点入场: [data-chat-anchor-key] 阶梯 rise(官方列 gap16+行距12 约等于原型 28px 节奏)。
+   实测(2026-08-24, verify-proto-diff 双页门禁): failures=0 —— row-retry 712=712、
+   md li 666=666(dh 0.1)、inline code h19=19 字号同;turn-tail/compress/row-err 为数据驱动
+   (回合闭合才渲染, 本次窗口未含, 结构已由前轮实测);侧栏几何门禁回归无损(264x696)。 */
+
+const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
+const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
+const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
+const MONO = "'JetBrains Mono','SF Mono','Fira Code',Consolas,'Liberation Mono',Menlo,'PingFang SC','Microsoft YaHei'";
+
+const FONT_TOKENS = {
+  "--dsw-font-family": UI,
+  "--ds-font-family-code": MONO,
+  "--dsw-font-markdown-base": "15.5px/30px " + SERIF,
+  "--dsw-font-markdown-base-font-family": SERIF,
+  "--dsw-font-markdown-base-strong": "600 15.5px/30px " + SERIF,
+  "--dsw-font-markdown-base-strong-font-family": SERIF,
+  "--dsw-font-markdown-base-italic": "italic 15.5px/30px " + SERIF,
+  "--dsw-font-markdown-base-italic-font-family": SERIF,
+  "--dsw-font-markdown-base-strong-italic": "italic 600 15.5px/30px " + SERIF,
+  "--dsw-font-markdown-base-strong-italic-font-family": SERIF,
+  "--dsw-font-markdown-small": "14px/26px " + SERIF,
+  "--dsw-font-markdown-small-font-family": SERIF,
+  "--dsw-font-markdown-small-strong": "600 14px/26px " + SERIF,
+  "--dsw-font-markdown-small-strong-font-family": SERIF,
+  "--dsw-font-markdown-small-italic": "italic 14px/26px " + SERIF,
+  "--dsw-font-markdown-small-italic-font-family": SERIF,
+  "--dsw-font-markdown-small-strong-italic": "italic 600 14px/26px " + SERIF,
+  "--dsw-font-markdown-small-strong-italic-font-family": SERIF,
+  "--dsw-font-markdown-table": "14.5px/25px " + SERIF,
+  "--dsw-font-markdown-table-font-family": SERIF,
+  "--dsw-font-markdown-table-head": "600 14.5px/25px " + SERIF,
+  "--dsw-font-markdown-table-head-font-family": SERIF,
+  "--dsw-font-markdown-h1": "600 26px/36px " + DISPLAY,
+  "--dsw-font-markdown-h1-font-family": DISPLAY,
+  "--dsw-font-markdown-h2": "600 23px/33px " + DISPLAY,
+  "--dsw-font-markdown-h2-font-family": DISPLAY,
+  "--dsw-font-markdown-h3": "600 20px/30px " + DISPLAY,
+  "--dsw-font-markdown-h3-font-family": DISPLAY,
+  "--dsw-font-markdown-h4": "600 16px/28px " + DISPLAY,
+  "--dsw-font-markdown-h4-font-family": DISPLAY
+};
+
+const DARK_TOKENS = {
+  "--dsw-alias-bg-base": "oklch(16% 0.014 330)",
+  "--dsw-alias-bg-layer-1": "oklch(21% 0.016 328)",
+  "--dsw-alias-bg-layer-2": "oklch(25.5% 0.018 326)",
+  "--dsw-alias-bg-layer-3": "oklch(27.5% 0.02 326)",
+  "--dsw-alias-bg-overlay": "oklch(26.5% 0.019 327)",
+  "--dsw-alias-bg-module-platform": "oklch(22% 0.017 327)",
+  "--dsw-alias-bg-multi-select": "oklch(24% 0.018 327)",
+  "--dsw-alias-bg-mask-1": "oklch(8% 0.02 330 / 0.5)",
+  "--dsw-alias-bg-mask-2": "oklch(8% 0.02 330 / 0.2)",
+  "--dsw-alias-bg-mask-3": "oklch(8% 0.02 330 / 0.48)",
+  "--dsw-alias-bg-mask-photo": "oklch(8% 0.02 330 / 0.88)",
+  "--dsw-alias-bg-mask-drop": "oklch(20% 0.03 70 / 0.35)",
+  "--dsw-alias-bg-skeleton": "oklch(83% 0.115 88 / 0.06)",
+  "--dsw-alias-border-l1": "transparent",
+  "--dsw-alias-border-l2": "transparent",
+  "--dsw-alias-border-l2-darkmode-thin": "transparent",
+  "--dsw-alias-border-l3": "transparent",
+  "--dsw-alias-border-l4": "transparent",
+  "--dsw-alias-border-inverted": "transparent",
+  "--dsw-alias-border-inverted2": "transparent",
+  "--dsw-alias-brand-primary": "oklch(79% 0.13 84)",
+  "--dsw-alias-brand-primary-invert": "oklch(21% 0.03 60)",
+  "--dsw-alias-brand-primary-new-colorprimary-new-color": "oklch(83% 0.115 88)",
+  "--dsw-alias-brand-text": "oklch(70% 0.1 85)",
+  "--dsw-alias-label-primary-inverted": "oklch(21% 0.03 60)",
+  "--dsw-alias-label-primary-foreground": "oklch(21% 0.03 60)",
+  "--dsw-alias-button-primary-fill": "oklch(79% 0.13 84)",
+  "--dsw-alias-button-primary-hover": "oklch(74% 0.13 83)",
+  "--dsw-alias-button-primary-dimmed": "oklch(23% 0.018 327)",
+  "--dsw-alias-button-contrast-fill": "oklch(93% 0.015 85)",
+  "--dsw-alias-button-elevated-fill": "oklch(23.5% 0.018 328)",
+  "--dsw-alias-button-floating-fill": "oklch(21% 0.016 328)",
+  "--dsw-alias-button-floating-hover": "oklch(25.5% 0.018 326)",
+  "--dsw-alias-button-ghost-active-border": "transparent",
+  "--dsw-alias-button-ghost-active-fill": "oklch(24% 0.018 327)",
+  "--dsw-alias-button-ghost-active-hover": "oklch(27% 0.019 327)",
+  "--dsw-alias-button-info-fill": "oklch(79% 0.13 84)",
+  "--dsw-alias-button-info-hover": "oklch(74% 0.13 83)",
+  "--dsw-alias-button-tool-bar-fill-invisible": "rgba(31, 31, 31, 0.36)",
+  "--dsw-alias-button-tool-bar-fill": "rgba(84, 85, 87, 0.5)",
+  "--dsw-alias-button-tool-bar-hover": "rgba(84, 85, 87, 0.6)",
+  "--dsw-alias-interactive-bg-hover": "oklch(83% 0.115 88 / 0.08)",
+  "--dsw-alias-interactive-bg-hover-accent": "oklch(83% 0.115 88 / 0.16)",
+  "--dsw-alias-interactive-bg-hover-danger": "oklch(68% 0.16 15 / 0.14)",
+  "--dsw-alias-interactive-bg-hover-solid": "oklch(25.5% 0.018 326)",
+  "--dsw-alias-interactive-bg-active": "oklch(83% 0.115 88 / 0.14)",
+  "--dsw-alias-label-primary": "oklch(93% 0.015 85)",
+  "--dsw-alias-label-secondary": "oklch(74% 0.022 328)",
+  "--dsw-alias-label-tertiary": "oklch(56% 0.022 330)",
+  "--dsw-alias-label-caption": "oklch(52% 0.022 330)",
+  "--dsw-alias-label-quaternary": "oklch(48% 0.02 330)",
+  "--dsw-alias-label-dimmed": "oklch(40% 0.02 330)",
+  "--dsw-alias-label-primary-dimmed": "oklch(75% 0.02 85)",
+  "--dsw-alias-label-primary-bluish": "oklch(83% 0.115 88)",
+  "--dsw-alias-markdown-code-block": "oklch(13.5% 0.012 330)",
+  "--dsw-alias-markdown-code-block-banner": "oklch(15% 0.013 330)",
+  "--dsw-alias-markdown-inline-code": "oklch(25.5% 0.018 326)",
+  "--dsw-alias-markdown-code-segment-selected": "oklch(23.5% 0.018 328)",
+  "--dsw-alias-markdown-code-segment-unselected": "oklch(19% 0.015 329)",
+  "--dsw-alias-markdown-citation": "oklch(24% 0.018 327)",
+  "--dsw-alias-markdown-placeholder": "oklch(22% 0.017 327)",
+  "--dsw-alias-markdown-tag": "oklch(23.5% 0.018 328)",
+  "--dsw-alias-scrollbar-bg-l1": "oklch(74% 0.022 328 / 0.24)",
+  "--dsw-alias-scrollbar-bg-l2": "oklch(74% 0.022 328 / 0.24)",
+  "--dsw-alias-scrollbar-hover-l1": "oklch(83% 0.115 88 / 0.55)",
+  "--dsw-alias-scrollbar-hover-l2": "oklch(83% 0.115 88 / 0.55)",
+  "--dsw-alias-state-business-primary": "oklch(83% 0.115 88)",
+  "--dsw-alias-state-business-tertiary": "oklch(30% 0.05 70)",
+  "--dsw-alias-state-error-primary": "oklch(68% 0.16 15)",
+  "--dsw-alias-state-error-secondary": "oklch(70% 0.14 18)",
+  "--dsw-alias-state-success-primary": "oklch(78% 0.1 155)",
+  "--dsw-alias-state-success-secondary": "oklch(76% 0.1 150)",
+  "--dsw-alias-state-success-tertiary": "oklch(28% 0.05 150)",
+  "--dsw-alias-state-warn-label": "oklch(72% 0.11 70)",
+  "--dsw-alias-state-warn-primary": "oklch(80% 0.13 80)",
+  "--dsw-alias-state-warn-secondary": "oklch(78% 0.12 78)",
+  "--dsw-alias-state-warn-tertiary": "oklch(30% 0.05 70)",
+  "--dsw-alias-toast-bg": "oklch(26.5% 0.019 327)",
+  "--dsw-alias-tooltip-bg": "oklch(26.5% 0.019 327)",
+  "--dsw-specific-bubble": "oklch(30% 0.045 82)",
+  "--dsw-specific-bubble-highlight": "oklch(33% 0.05 82)",
+  "--dsw-specific-input-major": "oklch(19% 0.015 329)",
+  "--dsw-specific-login-input": "oklch(16.5% 0.014 330)",
+  "--dsw-specific-menu": "oklch(26.5% 0.019 327)",
+  "--dsw-specific-selector": "oklch(22% 0.017 327)",
+  "--dsw-specific-sidebar-fill": "oklch(21.5% 0.016 329)",
+  "--dsw-specific-sidebar-nav-item-active": "oklch(27% 0.03 84)",
+  "--dsw-specific-sidebar-nav-item-active-accent": "oklch(30% 0.04 84)",
+  "--dsw-specific-sidebar-nav-item-hover": "oklch(23.5% 0.018 328)",
+  "--dsw-specific-tip": "oklch(24% 0.018 327)"
+};
+
+const LIGHT_TOKENS = {
+  "--dsw-alias-bg-base": "oklch(96.5% 0.012 82)",
+  "--dsw-alias-bg-layer-1": "oklch(98.5% 0.008 82)",
+  "--dsw-alias-bg-layer-2": "oklch(92% 0.016 84)",
+  "--dsw-alias-bg-layer-3": "oklch(90.5% 0.018 84)",
+  "--dsw-alias-bg-overlay": "oklch(97% 0.01 83)",
+  "--dsw-alias-bg-module-platform": "oklch(95% 0.014 83)",
+  "--dsw-alias-bg-multi-select": "oklch(93.5% 0.015 83)",
+  "--dsw-alias-bg-mask-1": "oklch(30% 0.05 330 / 0.32)",
+  "--dsw-alias-bg-mask-2": "oklch(30% 0.05 330 / 0.12)",
+  "--dsw-alias-bg-mask-3": "oklch(30% 0.05 330 / 0.45)",
+  "--dsw-alias-bg-mask-photo": "oklch(20% 0.03 330 / 0.85)",
+  "--dsw-alias-bg-mask-drop": "oklch(96% 0.015 82 / 0.7)",
+  "--dsw-alias-bg-skeleton": "oklch(50% 0.115 80 / 0.08)",
+  "--dsw-alias-border-l1": "transparent",
+  "--dsw-alias-border-l2": "transparent",
+  "--dsw-alias-border-l2-darkmode-thin": "transparent",
+  "--dsw-alias-border-l3": "transparent",
+  "--dsw-alias-border-l4": "transparent",
+  "--dsw-alias-border-inverted": "transparent",
+  "--dsw-alias-border-inverted2": "transparent",
+  "--dsw-alias-brand-primary": "oklch(50% 0.12 78)",
+  "--dsw-alias-brand-primary-invert": "oklch(99% 0.005 85)",
+  "--dsw-alias-brand-primary-new-colorprimary-new-color": "oklch(55% 0.115 80)",
+  "--dsw-alias-brand-text": "oklch(50% 0.12 78)",
+  "--dsw-alias-label-primary-inverted": "oklch(99% 0.005 85)",
+  "--dsw-alias-label-primary-foreground": "oklch(24% 0.04 60)",
+  "--dsw-alias-button-primary-fill": "oklch(50% 0.12 78)",
+  "--dsw-alias-button-primary-hover": "oklch(45% 0.12 76)",
+  "--dsw-alias-button-primary-dimmed": "oklch(91% 0.016 84)",
+  "--dsw-alias-button-contrast-fill": "oklch(28% 0.05 330)",
+  "--dsw-alias-button-elevated-fill": "oklch(99% 0.006 82)",
+  "--dsw-alias-button-floating-fill": "oklch(98.5% 0.008 82)",
+  "--dsw-alias-button-floating-hover": "oklch(96% 0.013 83)",
+  "--dsw-alias-button-ghost-active-border": "transparent",
+  "--dsw-alias-button-ghost-active-fill": "oklch(93.5% 0.015 83)",
+  "--dsw-alias-button-ghost-active-hover": "oklch(91% 0.017 84)",
+  "--dsw-alias-button-info-fill": "oklch(55% 0.115 80)",
+  "--dsw-alias-button-info-hover": "oklch(50% 0.12 78)",
+  "--dsw-alias-button-tool-bar-fill-invisible": "rgba(31, 31, 31, 0.36)",
+  "--dsw-alias-button-tool-bar-fill": "rgba(84, 85, 87, 0.5)",
+  "--dsw-alias-button-tool-bar-hover": "rgba(84, 85, 87, 0.6)",
+  "--dsw-alias-interactive-bg-hover": "oklch(50% 0.115 80 / 0.08)",
+  "--dsw-alias-interactive-bg-hover-accent": "oklch(50% 0.115 80 / 0.14)",
+  "--dsw-alias-interactive-bg-hover-danger": "oklch(52% 0.16 18 / 0.07)",
+  "--dsw-alias-interactive-bg-hover-solid": "oklch(94% 0.014 83)",
+  "--dsw-alias-interactive-bg-active": "oklch(50% 0.115 80 / 0.12)",
+  "--dsw-alias-label-primary": "oklch(28% 0.05 330)",
+  "--dsw-alias-label-secondary": "oklch(46% 0.035 330)",
+  "--dsw-alias-label-tertiary": "oklch(62% 0.03 330)",
+  "--dsw-alias-label-caption": "oklch(60% 0.03 330)",
+  "--dsw-alias-label-quaternary": "oklch(70% 0.025 330)",
+  "--dsw-alias-label-dimmed": "oklch(78% 0.025 330)",
+  "--dsw-alias-label-primary-dimmed": "oklch(35% 0.045 330)",
+  "--dsw-alias-label-primary-bluish": "oklch(45% 0.115 78)",
+  "--dsw-alias-markdown-code-block": "oklch(94.5% 0.014 82)",
+  "--dsw-alias-markdown-code-block-banner": "oklch(95.5% 0.013 82)",
+  "--dsw-alias-markdown-inline-code": "oklch(92% 0.016 84)",
+  "--dsw-alias-markdown-code-segment-selected": "oklch(96% 0.013 83)",
+  "--dsw-alias-markdown-code-segment-unselected": "oklch(94% 0.014 82)",
+  "--dsw-alias-markdown-citation": "oklch(93% 0.015 83)",
+  "--dsw-alias-markdown-placeholder": "oklch(95% 0.014 83)",
+  "--dsw-alias-markdown-tag": "oklch(94.5% 0.014 82)",
+  "--dsw-alias-scrollbar-bg-l1": "oklch(46% 0.035 330 / 0.3)",
+  "--dsw-alias-scrollbar-bg-l2": "oklch(46% 0.035 330 / 0.3)",
+  "--dsw-alias-scrollbar-hover-l1": "oklch(55% 0.115 80 / 0.5)",
+  "--dsw-alias-scrollbar-hover-l2": "oklch(55% 0.115 80 / 0.5)",
+  "--dsw-alias-state-business-primary": "oklch(55% 0.115 80)",
+  "--dsw-alias-state-business-tertiary": "oklch(92% 0.04 80)",
+  "--dsw-alias-state-error-primary": "oklch(52% 0.16 18)",
+  "--dsw-alias-state-error-secondary": "oklch(58% 0.14 20)",
+  "--dsw-alias-state-success-primary": "oklch(52% 0.11 155)",
+  "--dsw-alias-state-success-secondary": "oklch(50% 0.11 150)",
+  "--dsw-alias-state-success-tertiary": "oklch(91% 0.05 150)",
+  "--dsw-alias-state-warn-label": "oklch(48% 0.11 55)",
+  "--dsw-alias-state-warn-primary": "oklch(52% 0.12 60)",
+  "--dsw-alias-state-warn-secondary": "oklch(55% 0.12 62)",
+  "--dsw-alias-state-warn-tertiary": "oklch(92% 0.05 75)",
+  "--dsw-alias-toast-bg": "oklch(28% 0.05 330)",
+  "--dsw-alias-tooltip-bg": "oklch(28% 0.05 330)",
+  "--dsw-specific-bubble": "oklch(93% 0.035 83)",
+  "--dsw-specific-bubble-highlight": "oklch(90% 0.045 83)",
+  "--dsw-specific-input-major": "oklch(97.5% 0.01 82)",
+  "--dsw-specific-login-input": "oklch(95.5% 0.012 82)",
+  "--dsw-specific-menu": "oklch(97% 0.01 83)",
+  "--dsw-specific-selector": "oklch(95% 0.014 83)",
+  "--dsw-specific-sidebar-fill": "oklch(96.5% 0.012 82)",
+  "--dsw-specific-sidebar-nav-item-active": "oklch(91% 0.03 82)",
+  "--dsw-specific-sidebar-nav-item-active-accent": "oklch(89% 0.04 82)",
+  "--dsw-specific-sidebar-nav-item-hover": "oklch(96% 0.013 83)",
+  "--dsw-specific-tip": "oklch(95% 0.014 83)"
+};
+
+const AURUM_DARK = { id: "aurum-dark", colorScheme: "dark", tokens: Object.assign({}, FONT_TOKENS, DARK_TOKENS) };
+const AURUM_LIGHT = { id: "aurum-light", colorScheme: "light", tokens: Object.assign({}, FONT_TOKENS, LIGHT_TOKENS) };
+
+const CSS1 = [
+  "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');",
+  "body[data-ds-dark-theme]{--aurum-gold:oklch(83% .115 88);--aurum-gold-strong:oklch(79% .13 84);--aurum-gold-dim:oklch(70% .10 85);--aurum-dot:oklch(83% .115 88 / .08);--aurum-sheen-top:oklch(83% .115 88 / .07);--aurum-sheen-rose:oklch(77% .095 350 / .05);--aurum-rail-1:oklch(19% .015 329);--aurum-rail-2:oklch(21.5% .016 329);--aurum-rail-shadow:0 16px 48px oklch(8% .02 330 / .55);--aurum-ring:oklch(79% .13 84 / .22);--aurum-ring-glow:oklch(79% .13 84 / .12);--aurum-focus:oklch(83% .115 88 / .55);--aurum-selection:oklch(79% .13 84 / .35);--aurum-sweep:oklch(83% .115 88 / .18)}",
+  "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(94.5% .014 82);--aurum-rail-2:oklch(96.5% .012 82);--aurum-rail-shadow:0 16px 44px oklch(30% .05 330 / .18);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
+  "body{background-color:var(--dsw-alias-bg-base);background-image:radial-gradient(1100px 460px at 50% -12%,var(--aurum-sheen-top),transparent 62%),radial-gradient(720px 340px at 88% 112%,var(--aurum-sheen-rose),transparent 62%),radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:auto,auto,24px 24px}",
+  "body #root,body [data-slot=root]>div,body [data-slot=conversation]>div{background-color:transparent}",
+  /* 栏几何: 内容根即卡片本体(原型 .sidebar), 列只负责四向留白 — 左12/右4 使卡片恰为 264px;
+     卡片自带 overflow:hidden, 内部行/hover 永不溢出圆角边界 */
+  "body [data-slot=root]>div>div:first-child{background:transparent;border-right:none;padding:12px 4px 12px 12px;box-sizing:border-box}",
+  "body [data-slot=root]>div[data-sidebar-collapsed]>div:first-child{padding:12px 8px}",
+  "body [data-slot=root]>div>div:nth-child(3){background:transparent;border-left:none;padding:12px;box-sizing:border-box}",
+  "body [data-slot=sidebar]>div:first-child{background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);border-radius:20px;overflow:hidden;width:auto!important;font-size:13px;--dsh-sidebar-inline-padding:0px;transition:border-radius .42s cubic-bezier(.22,.8,.26,1)}",
+  "body [data-slot=sidebar]>div:first-child[class*=collapsed]{padding:0;border-radius:17px}",
+  "body [data-slot=details]>div:first-child{background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);border-radius:20px;overflow:hidden;width:auto!important}",
+  "body [data-slot=sidebar] [class*=logoRow]{height:58px;margin:0;padding:0 12px 0 14px;gap:6px;flex:none}",
+  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]{flex:1;min-width:0;height:38px;border-radius:11px;padding:0 10px;transition:background .18s,color .18s,transform .1s}",
+  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]:hover{background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]:active{transform:scale(.985)}",
+  "body [data-slot=sidebar] [class*=logoRow] [class*=brand] svg{width:auto;height:22px}",
+  "body [data-slot=sidebar] [class*=iconButton]{width:30px;height:30px;border-radius:9px;color:var(--dsw-alias-label-tertiary);transition:.18s}",
+  "body [data-slot=sidebar] [class*=iconButton]:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--aurum-gold)}",
+  "body [data-slot=sidebar] [class*=iconButton]:active{transform:scale(.96)}",
+  "body [data-slot=sidebar] [class*=iconButton] svg{width:15px;height:15px}",
+  "body [data-slot=sidebar] button[class*=newSession]{position:relative;height:36px;margin:2px 12px 10px;border:none;border-radius:11px;background:color-mix(in oklab,var(--aurum-gold) 15%,var(--dsw-alias-bg-layer-1));color:var(--aurum-gold-strong);font-size:13px;font-weight:600;letter-spacing:.02em;justify-content:center;gap:0;padding:0 14px;transition:background .18s,transform .1s;flex:none}",
+  "body [data-slot=sidebar] button[class*=newSession]:hover{background:color-mix(in oklab,var(--aurum-gold) 22%,var(--dsw-alias-bg-layer-1))}",
+  "body [data-slot=sidebar] button[class*=newSession]:active{transform:scale(.985)}",
+  "body [data-slot=sidebar] button[class*=newSession] svg{display:none}",
+  "body [data-slot=sidebar] button[class*=newSession]::before{content:\"+\";position:absolute;left:14px;top:50%;transform:translateY(-50%);font:300 17px/1 var(--ds-font-family-code);color:var(--aurum-gold-strong)}",
+  "body [data-slot=sidebar] button[class*=newSession] span{margin:0;color:inherit}",
+  "body [data-slot=sidebar] [class*=regionArea]{flex:1;min-height:0;padding:0;margin:0;display:flex;flex-direction:column;overflow:hidden}",
+  "body [data-slot=sidebar] [class*=footArea]{flex:none;border-top:1px solid var(--dsw-alias-border-l2);padding:8px;margin:0;gap:0}",
+  "body [data-slot=sidebar] [class*=footerActions],body [data-slot=sidebar] [class*=settingsArea]{display:flex;flex-direction:column;gap:0}",
+  "body [data-slot=sidebar] [class*=settingsArea] button,body [data-slot=sidebar] [class*=settingsArea] [role=button]{display:flex;align-items:center;gap:10px;width:100%;height:38px;margin:0;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
+  "body [data-slot=sidebar] [class*=settingsArea] button:hover,body [data-slot=sidebar] [class*=settingsArea] [role=button]:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
+  "body [data-slot=sidebar] [class*=settingsArea] svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
+  "body [data-slot=sidebar] [class*=settingsArea] :hover>svg,body [data-slot=sidebar] [class*=settingsArea] button:hover svg{color:var(--aurum-gold)}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow]{height:auto;margin:9px 0 0;padding:0;justify-content:center}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow] [class*=brand]{display:none}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=iconButton]{width:40px;height:40px;border-radius:12px}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=iconButton] svg{width:17px;height:17px}",
+  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession]{margin:6px 0 0;width:40px;height:40px;border-radius:12px;min-width:0;padding:0}",
+  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession] span{display:none}",
+  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession]::before{left:50%;transform:translate(-50%,-50%);font-size:19px}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=footArea]{border-top:none;padding:6px 0}",
+  "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
+  "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow span{display:none}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=footerActions],body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea]{align-items:center}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] button,body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] [role=button]{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
+  "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] span{display:none}",
+  /* P9:逐节点入场(原型 .node rise)——挂在官方 flowItem 行上;列 gap16+行距12=原型 .node 28px 节奏 */
+  "body [data-chat-anchor-key]{margin-bottom:12px;animation:aurum-rise .6s cubic-bezier(.22,.8,.26,1) both}",
+  "@keyframes aurum-rise{from{opacity:0;transform:translateY(12px)}}",
+  "body ::selection{background:var(--aurum-selection)}",
+  "body :focus-visible{outline:2px solid var(--aurum-focus);outline-offset:2px}",
+  "body [data-composer-card]{border-radius:22px;transition:box-shadow .25s ease}",
+  /* 无描边原则(原型 --border 全透明): 侧栏/输入卡/详情栏子树内一律去描边,
+     元素仅以面色 tint 与背景区分 — 官方默认主题在 body 层定义 --dsw-alias-border-*,
+     主题 token 无法覆盖, 故直写 transparent */
+  "body [data-slot=sidebar] *,body [data-slot=details] *,body [data-composer-card],body [data-composer-card] *{border-color:transparent!important}",
+  "body [data-composer-card]:focus-within{box-shadow:0 0 0 2px var(--aurum-ring),0 0 28px var(--aurum-ring-glow),var(--aurum-rail-shadow)}",
+  "body:not(#aurum-boost) [data-state=running]::after,body:not(#aurum-boost) [data-state=running]>div::after{background:linear-gradient(90deg,transparent 0%,var(--aurum-sweep) 50%,transparent 100%)}",
+  ".aurum-footRow{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
+  ".aurum-footRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
+  ".aurum-footRow svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
+  ".aurum-footRow:hover svg{color:var(--aurum-gold)}",
+  ".aurum-row{border-bottom:1px solid transparent;display:flex;flex-direction:column;gap:8px;padding:16px 0}",
+  ".aurum-rowTitle{color:var(--dsw-alias-label-primary);font-size:14px;font-weight:400;line-height:22px}",
+  ".aurum-seg{display:flex;gap:2px;border:1px solid transparent;border-radius:999px;padding:3px;background:var(--dsw-alias-bg-layer-2);width:max-content;max-width:100%;flex-wrap:wrap}",
+  ".aurum-segBtn{padding:5px 14px;border:none;border-radius:999px;background:transparent;color:var(--dsw-alias-label-tertiary);font:400 12px/18px var(--dsw-font-family);cursor:pointer;transition:color .18s,background .18s;white-space:nowrap}",
+  ".aurum-segBtn:hover{color:var(--dsw-alias-label-primary)}",
+  ".aurum-segBtn[aria-pressed=true]{background:color-mix(in oklab,var(--aurum-gold) 16%,transparent);color:var(--aurum-gold-strong);font-weight:500}",
+  ".aurum-hint{color:var(--dsw-alias-label-tertiary);font:400 12px/19px var(--dsw-font-family);margin:0}",
+  "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}}"
+];
+
+const CSS2 = [
+  ".au-user-row{display:flex;justify-content:flex-end;margin:4px 0}",
+  ".au-bubble{max-width:min(525px,82%);border-radius:22px;padding:13px 19px;background:linear-gradient(135deg,color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent),color-mix(in oklab,var(--aurum-gold-strong) 7%,transparent));font-family:var(--dsw-font-markdown-base-font-family);font-size:15px;line-height:1.85;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word}",
+  ".au-img{max-width:100%;border-radius:14px;display:block;margin-top:8px}",
+  ".au-ctx-row{font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--aurum-gold-dim);padding:2px 4px;letter-spacing:.03em;display:flex;align-items:center;gap:8px}",
+  ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:2px 0}",
+  "body:not([data-ds-dark-theme]) .au-tool{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
+  ".au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none}",
+  ".au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
+  ".au-ico{width:27px;height:27px;border-radius:8px;flex:none;display:grid;place-items:center;background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);color:var(--aurum-gold-strong)}",
+  ".au-ico svg{width:14px;height:14px}",
+  ".au-txt{flex:1;min-width:0;text-align:left}",
+  ".au-name{font-family:var(--ds-font-family-code);font-size:12.5px;color:var(--dsw-alias-label-primary);display:flex;gap:8px;align-items:baseline}",
+  ".au-name em{font-style:normal;color:var(--dsw-alias-label-tertiary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}",
+  ".au-sum{display:block;font-size:12px;color:var(--dsw-alias-label-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}",
+  ".au-chev{width:13px;height:13px;color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .34s cubic-bezier(.3,1.35,.45,1)}",
+  ".au-chev svg{width:13px;height:13px}",
+  ".au-tool.au-open .au-chev{transform:rotate(90deg)}",
+  ".au-pill{font-family:var(--ds-font-family-code);font-size:10.5px;padding:2.5px 9px;border-radius:999px;border:1px solid transparent;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:none}",
+  ".au-pill.au-ok{color:var(--dsw-alias-state-success-primary);background:color-mix(in oklab,var(--dsw-alias-state-success-primary) 13%,transparent)}",
+  ".au-pill.au-run{color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);display:flex;align-items:center;gap:6px}",
+  ".au-pill.au-run::before{content:\"\";width:5px;height:5px;border-radius:50%;background:var(--aurum-gold-strong);animation:au-pulse 1.2s ease-in-out infinite}",
+  ".au-pill.au-err{color:var(--dsw-alias-state-error-primary);background:color-mix(in oklab,var(--dsw-alias-state-error-primary) 12%,transparent)}",
+  "@keyframes au-pulse{50%{opacity:.25}}",
+  ".au-x{display:grid;grid-template-rows:0fr;background:color-mix(in oklab,var(--dsw-alias-bg-base) 45%,transparent);transition:grid-template-rows .3s cubic-bezier(.62,.04,.82,.28)}",
+  ".au-tool.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .56s cubic-bezier(.3,1.18,.34,1)}",
+  ".au-clip{overflow:hidden;min-height:0}",
+  ".au-in{padding:11px 15px;border-top:1px dashed transparent;opacity:0;transform:translateY(-6px);transition:opacity .18s ease,transform .2s cubic-bezier(.55,.05,.8,.3)}",
+  ".au-tool.au-open .au-in{opacity:1;transform:none;transition:opacity .42s .08s ease,transform .54s .06s cubic-bezier(.26,1.22,.36,1)}",
+  "body:not(#aurum-boost) .au-tool[data-state=running] .au-main::after{content:\"\";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 42%,color-mix(in oklab,var(--aurum-gold-strong) 15%,transparent) 50%,transparent 58%);animation:au-sweep 1.9s linear infinite}",
+  "@keyframes au-sweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}",
+  ".au-sec{font-family:var(--ds-font-family-code);font-size:10px;letter-spacing:.22em;color:var(--dsw-alias-label-tertiary);margin:4px 0 10px;text-transform:uppercase}",
+  ".au-dim{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-top:6px}",
+  ".au-foot{margin-top:11px;padding-top:9px;border-top:1px dashed transparent;display:flex;gap:14px;flex-wrap:wrap}",
+  ".au-link{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--aurum-gold-strong);background:none;border:none;padding:0;cursor:pointer;letter-spacing:.04em}",
+  ".au-link:hover{color:var(--aurum-gold)}",
+  ".au-gfile{margin-bottom:12px}",
+  ".au-gfile b{display:flex;align-items:center;gap:8px;font-family:var(--ds-font-family-code);font-weight:500;font-size:12px;color:var(--dsw-alias-label-primary);margin-bottom:6px}",
+  ".au-gfile b i{font-style:normal;font-size:10px;color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);border:1px solid transparent;border-radius:99px;padding:1px 8px}",
+  ".au-gline{font-family:var(--ds-font-family-code);font-size:11.5px;line-height:1.9;color:var(--dsw-alias-label-secondary);background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent);border:1px solid transparent;border-radius:8px;padding:5px 11px;margin-bottom:4px;white-space:pre-wrap;word-break:break-all}",
+  ".au-gline .au-ln{color:var(--dsw-alias-label-tertiary);margin-right:10px}",
+  ".au-diff{border:1px solid transparent;border-radius:12px;overflow:hidden;font-family:var(--ds-font-family-code);font-size:11.5px}",
+  ".au-dl{display:grid;grid-template-columns:34px 1fr;align-items:baseline;padding:1.5px 0;white-space:pre-wrap;word-break:break-all}",
+  ".au-dl .au-no{color:var(--dsw-alias-label-tertiary);text-align:right;padding-right:9px;user-select:none;font-size:10px}",
+  ".au-dl .au-co{padding-right:12px}",
+  ".au-dl.au-add{background:color-mix(in oklab,var(--dsw-alias-state-success-primary) 9%,transparent);color:var(--dsw-alias-state-success-primary)}",
+  ".au-dl.au-del{background:color-mix(in oklab,var(--dsw-alias-state-error-primary) 9%,transparent);color:var(--dsw-alias-state-error-primary)}",
+  ".au-dl.au-hk{background:color-mix(in oklab,var(--aurum-gold-strong) 8%,transparent);color:var(--aurum-gold-strong);margin:3px 0}",
+  ".au-term{font-family:var(--ds-font-family-code);font-size:11.5px;line-height:2;color:var(--dsw-alias-label-secondary);background:var(--dsw-alias-bg-base);border:1px solid transparent;border-radius:12px;padding:13px 15px;white-space:pre-wrap;word-break:break-all;max-height:340px;overflow:auto;margin:0}",
+  ".au-read{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 40%,transparent);border-radius:10px;padding:8px 6px;max-height:340px;overflow:auto;font-family:var(--ds-font-family-code)}",
+  ".au-rl{display:grid;grid-template-columns:40px 1fr;font-size:11.5px;line-height:1.85}",
+  ".au-rl .au-ln{color:var(--dsw-alias-label-tertiary);text-align:right;padding-right:9px;user-select:none;font-size:10px}",
+  ".au-rc{color:var(--dsw-alias-label-secondary);white-space:pre-wrap;word-break:break-all;padding-right:8px}",
+  ".au-todo{display:flex;flex-direction:column;gap:8px}",
+  ".au-td{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--dsw-alias-label-secondary);border:1px solid transparent;border-radius:10px;padding:8px 12px;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 55%,transparent)}",
+  ".au-td .au-dot{width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-label-tertiary);flex:none}",
+  ".au-td.au-done{color:var(--dsw-alias-label-tertiary);text-decoration:line-through;text-decoration-color:color-mix(in oklab,var(--dsw-alias-label-tertiary) 50%,transparent)}",
+  ".au-td.au-done .au-dot{background:var(--dsw-alias-state-success-primary)}",
+  ".au-td.au-now{color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent)}",
+  ".au-td.au-now .au-dot{background:var(--aurum-gold-strong);animation:au-pulse 1.2s infinite}",
+  ".au-sres{display:flex;flex-direction:column;gap:10px}",
+  ".au-sr{display:flex;flex-direction:column;border:1px solid transparent;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent);border-radius:11px;padding:11px 13px}",
+  ".au-sr b{font-size:13px;font-weight:500;color:var(--dsw-alias-label-primary);font-family:var(--dsw-font-markdown-base-font-family)}",
+  ".au-sr .au-u{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--aurum-gold-dim);margin:3px 0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+  ".au-sr p{font-size:12px;color:var(--dsw-alias-label-secondary);line-height:1.7;margin:0}",
+  "@media (prefers-reduced-motion:reduce){.au-tool[data-state=running] .au-main::after{display:none}.au-x,.au-in,.au-chev{transition:none!important}.au-pill.au-run::before,.au-td.au-now .au-dot{animation:none!important}}",
+  ".au-ws{flex:1;min-height:0;display:flex;flex-direction:column;color:var(--dsw-alias-label-primary);font-size:13px;--dsh-scrollbar-thumb:var(--dsw-alias-scrollbar-bg-l2);--dsh-scrollbar-thumb-hover:var(--dsw-alias-scrollbar-hover-l2)}",
+  ".au-ws-head{display:flex;align-items:center;gap:4px;padding:11px 12px 6px 16px;flex:none}",
+  ".au-ws-label{flex:none;white-space:nowrap;overflow:hidden;max-width:72px;font-family:var(--ds-font-family-code);font-weight:500;font-size:10.5px;letter-spacing:.24em;color:var(--dsw-alias-label-tertiary);transition:max-width .3s cubic-bezier(.22,.8,.26,1),opacity .2s}",
+  ".au-ws-head.au-searching .au-ws-label{max-width:0;opacity:0}",
+  ".au-ws-search{display:flex;align-items:center;margin-left:auto;min-width:24px;height:26px;flex:0 1 auto;border-radius:9px;transition:flex-basis .32s cubic-bezier(.22,.8,.26,1),background .25s,padding .3s}",
+  ".au-ws-search.au-open{flex:1 1 auto;background:var(--dsw-alias-bg-layer-2);padding:0 7px 0 3px}",
+  ".au-ws-search.au-open:focus-within{box-shadow:0 0 0 2.5px color-mix(in oklab,var(--aurum-gold) 28%,transparent)}",
+  ".au-ws-sbtn{width:24px;height:24px;border:none;border-radius:7px;display:grid;place-items:center;flex:none;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
+  ".au-ws-sbtn:hover{color:var(--aurum-gold);background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  ".au-ws-search.au-hasq .au-ws-sbtn{color:var(--aurum-gold-strong)}",
+  ".au-ws-sbtn svg{width:13.5px;height:13.5px}",
+  ".au-ws-input{width:0;opacity:0;min-width:0;height:100%;border:none;background:none;outline:none;font-size:12px;color:var(--dsw-alias-label-primary);padding:0;transition:width .32s cubic-bezier(.22,.8,.26,1),opacity .2s}",
+  ".au-ws-search.au-open .au-ws-input{width:100%;opacity:1;padding:0 2px}",
+  ".au-ws-input::placeholder{color:var(--dsw-alias-label-tertiary)}",
+  ".au-ws-acts{display:flex;gap:1px;flex:none}",
+  ".au-ws-ibtn{width:27px;height:27px;border:none;border-radius:8px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
+  ".au-ws-ibtn:hover{color:var(--aurum-gold);background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  ".au-ws-ibtn.au-on{color:var(--aurum-gold-strong)}",
+  ".au-ws-ibtn svg{width:15px;height:15px}",
+  ".au-ws-addrow{display:flex;align-items:center;gap:8px;margin:3px 12px 8px 16px;height:30px;flex:none;border-radius:9px;background:color-mix(in oklab,var(--aurum-gold) 8%,var(--dsw-alias-bg-layer-1));padding:0 10px;animation:au-pop .18s cubic-bezier(.22,.8,.26,1) both}",
+  "@keyframes au-pop{from{opacity:0;transform:translateY(-4px)}}",
+  ".au-ws-addrow svg{width:13px;height:13px;color:var(--aurum-gold-dim);flex:none}",
+  ".au-ws-addrow input{flex:1;min-width:0;background:none;border:none;outline:none;font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--dsw-alias-label-primary);padding:0}",
+  ".au-ws-addrow input::placeholder{color:var(--dsw-alias-label-tertiary)}",
+  ".au-ws-addhint{font-family:var(--ds-font-family-code);font-size:9.5px;color:var(--dsw-alias-label-tertiary);white-space:nowrap;flex:none}",
+  ".au-ws-body{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:8px;min-height:0}",
+  ".au-wsg{margin-bottom:2px;position:relative}",
+  ".au-wsg-head{display:flex;align-items:center;gap:7px;padding:9px 15px 5px;cursor:pointer;user-select:none;font-size:12px;color:var(--dsw-alias-label-tertiary);border:none;background:transparent;width:100%;text-align:left;border-radius:8px;position:relative}",
+  ".au-wsg-head:hover{color:var(--dsw-alias-label-secondary)}",
+  ".au-ws-ic{position:relative;width:13px;height:13px;flex:none}",
+  ".au-ws-ic svg{position:absolute;inset:0;width:13px;height:13px;transition:opacity .16s,transform .25s}",
+  ".au-ws-ic .au-chev2{color:var(--dsw-alias-label-tertiary);opacity:0}",
+  ".au-ws-ic .au-fld{color:var(--aurum-gold-dim)}",
+  ".au-wsg-head:hover .au-chev2{opacity:1}",
+  ".au-wsg-head:hover .au-fld{opacity:0}",
+  ".au-wsg.au-closed .au-chev2{transform:rotate(-90deg)}",
+  ".au-wsg.au-closed .au-fld{opacity:1}",
+  ".au-wsg.au-closed .au-wsg-head:hover .au-fld{opacity:0}",
+  ".au-wsg-head b{font-weight:500;font-size:12.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ds-font-family-code);color:inherit}",
+  ".au-wsg-acts{display:flex;gap:1px;flex:none;opacity:0;transition:opacity .16s}",
+  ".au-wsg:hover .au-wsg-acts,.au-wsg-acts:focus-within{opacity:1}",
+  ".au-wsg-act{width:22px;height:22px;border:none;border-radius:7px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
+  ".au-wsg-act:hover{color:var(--aurum-gold-strong);background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  ".au-wsg-act svg{width:13px;height:13px}",
+  ".au-wsg-rename{flex:1;min-width:0;font-family:var(--ds-font-family-code);font-size:11px;color:var(--dsw-alias-label-primary);background:color-mix(in oklab,var(--aurum-gold) 14%,var(--dsw-alias-bg-layer-1));border:1px solid transparent;border-radius:6px;padding:2px 6px;outline:none}",
+  ".au-wsg.au-curgroup .au-wsg-head b{color:var(--dsw-alias-label-secondary)}",
+  ".au-slist{display:flex;flex-direction:column;padding:0 6px;min-height:12px}",
+  ".au-wsg.au-closed .au-slist{display:none}",
+  ".au-srowwrap{display:flex;flex-direction:column}",
+  ".au-srow{display:flex;align-items:center;gap:7px;height:34px;padding:0 9px;margin:1px 0;border-radius:9px;cursor:pointer;color:var(--dsw-alias-label-secondary);font-size:13px;position:relative;border:none;background:transparent;width:100%;text-align:left;transition:background .15s,color .15s}",
+  ".au-srow:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--dsw-alias-label-primary)}",
+  ".au-srow.au-cur{background:color-mix(in oklab,var(--aurum-gold-strong) 14%,transparent);color:var(--dsw-alias-label-primary)}",
+  ".au-s-ic{position:relative;width:13px;height:13px;flex:none}",
+  ".au-s-ic::after{content:none;position:absolute;inset:0;margin:auto}",
+  ".au-srow.au-waiting .au-s-ic::after{content:\"\";width:6px;height:6px;border-radius:50%;background:var(--aurum-gold);box-shadow:0 0 8px var(--aurum-gold)}",
+  ".au-srow.au-working .au-s-ic::after{content:\"\";width:11px;height:11px;border-radius:50%;border:1.5px solid color-mix(in oklab,var(--aurum-gold) 22%,transparent);border-top-color:var(--aurum-gold);animation:au-rot .8s linear infinite}",
+  ".au-srow.au-done .au-s-ic::after{content:\"\";width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-success-primary)}",
+  "@keyframes au-rot{to{transform:rotate(360deg)}}",
+  ".au-s-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+  ".au-s-meta{font-family:var(--ds-font-family-code);font-size:10px;color:var(--aurum-gold-dim);margin-right:6px;flex:none;max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}",
+  ".au-s-rename{flex:1;min-width:0;font-size:12px;color:var(--dsw-alias-label-primary);background:color-mix(in oklab,var(--aurum-gold) 14%,var(--dsw-alias-bg-layer-1));border:1px solid transparent;border-radius:6px;padding:3px 7px;outline:none;font-family:inherit}",
+  ".au-s-menu{opacity:0;width:24px;height:24px;border:none;border-radius:7px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);flex:none;background:transparent;cursor:pointer;padding:0;transition:opacity .15s,color .15s,background .15s}",
+  ".au-srow:hover .au-s-menu{opacity:1}",
+  ".au-s-menu:hover{color:var(--aurum-gold-strong);background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  ".au-s-menu svg{width:14px;height:14px}",
+  ".au-s-actions{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s cubic-bezier(.62,.04,.82,.28)}",
+  ".au-s-actions.au-open2{grid-template-rows:1fr}",
+  ".au-s-clip{overflow:hidden;min-height:0}",
+  ".au-s-actrow{display:flex;gap:4px;padding:2px 8px 8px 29px;flex-wrap:wrap}",
+  ".au-s-abtn{height:26px;padding:0 10px;border:none;border-radius:8px;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 60%,transparent);color:var(--dsw-alias-label-secondary);font:400 11.5px/1 var(--dsw-font-family);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:color .15s,background .15s}",
+  ".au-s-abtn:hover{color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold) 12%,transparent)}",
+  ".au-s-abtn.au-danger:hover{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-interactive-bg-hover-danger)}",
+  ".au-ws-empty{padding:18px 16px;font-size:12px;color:var(--dsw-alias-label-tertiary);text-align:center}",
+  ".au-ws-rail{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0 8px}",
+  ".au-ws-railbtn{width:40px;height:40px;border:none;border-radius:12px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.18s;padding:0}",
+  ".au-ws-railbtn:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--aurum-gold)}",
+  ".au-ws-railbtn:active{transform:scale(.96)}",
+  ".au-ws-railbtn svg{width:17px;height:17px}",
+  ".aurum-footRow.au-rail{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
+  ".aurum-footRow.au-rail span{display:none}",
+  "@media (prefers-reduced-motion:reduce){.au-s-actions,.au-ws-search,.au-ws-input,.au-ws-label{transition:none!important}.au-ws-addrow{animation:none}}"
+];
+
+/* ═══ CSS3 · P9 原型恒等映射层 ═══
+   §1 变量组(原型 :root / html[data-theme=light] → body 主题属性级) +
+   §5 尾部节点 CSS 整段拷贝(.compress/.row-err/.row-retry/.turn-tail/.pill/.ibtn/.a-actions) +
+   md 装饰(◆ 金点/inline code 金 pill,scoped 到 assistant-step flowItem)+ 滚动条几何。
+   自建组件从这里起直接消费原型类名与变量,不再翻译成 au-* 体系。 */
+const CSS3 = [
+  "body[data-ds-dark-theme]{--bg:oklch(16% .014 330);--bg-deep:oklch(13.5% .012 330);--surface:oklch(21% .016 328);--surface-2:oklch(25.5% .018 326);--rail-1:oklch(19% .015 329);--rail-2:oklch(21.5% .016 329);--rail-raised:oklch(23.5% .018 328);--fg:oklch(93% .015 85);--muted:oklch(74% .022 328);--faint:oklch(56% .022 330);--border:transparent;--border-soft:transparent;--gold:oklch(83% .115 88);--gold-strong:oklch(79% .13 84);--gold-dim:oklch(70% .10 85);--gold-ink:oklch(21% .03 60);--rose:oklch(77% .095 350);--rose-strong:oklch(73% .115 350);--success:oklch(78% .10 155);--danger:oklch(68% .16 15);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
+  "body:not([data-ds-dark-theme]){--bg:oklch(96.5% .012 82);--bg-deep:oklch(94.5% .014 82);--surface:oklch(98.5% .008 82);--surface-2:oklch(92% .016 84);--rail-1:oklch(94.5% .014 82);--rail-2:oklch(96.5% .012 82);--rail-raised:oklch(98.5% .008 82);--fg:oklch(28% .05 330);--muted:oklch(46% .035 330);--faint:oklch(62% .03 330);--border:transparent;--border-soft:transparent;--gold:oklch(55% .115 80);--gold-strong:oklch(50% .12 78);--gold-dim:oklch(66% .11 82);--gold-ink:oklch(99% .005 85);--rose:oklch(58% .14 350);--rose-strong:oklch(53% .15 350);--success:oklch(52% .11 155);--danger:oklch(52% .16 18)}",
+  /* ── §5 尾部节点(整段拷贝)── */
+  ".compress-head{display:flex;align-items:center;gap:8px;width:100%;padding:8px 4px;font-family:var(--font-mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em;text-align:left;background:none;border:none;cursor:pointer}",
+  ".compress-head:hover{color:var(--muted)}",
+  ".compress-head .chev{width:12px;height:12px;transition:transform .25s;flex:none}",
+  ".compress.open .compress-head .chev{transform:rotate(90deg)}",
+  ".compress-head .in-tok{color:var(--faint)}",
+  ".compress-body{display:none;margin-top:6px;padding:12px 16px;border-radius:12px;border:1px dashed var(--border-soft);background:var(--surface);font-family:var(--font-serif);font-size:13.5px;line-height:1.9;color:var(--muted);white-space:pre-wrap}",
+  ".compress.open .compress-body{display:block}",
+  ".row-err{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--danger);border:1px solid transparent;background:oklch(69% .15 15 / .12);border-radius:11px;padding:9px 13px;font-family:var(--font-mono)}",
+  ".row-err svg{width:14px;height:14px;flex:none}",
+  ".row-err .pill{margin-left:auto}",
+  ".row-retry{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);padding:2px 4px;font-family:var(--font-mono)}",
+  ".row-retry svg{width:13px;height:13px;color:var(--gold-dim);flex:none}",
+  ".row-retry b{color:var(--success);font-weight:500}",
+  ".turn-tail{display:flex;align-items:center;gap:14px;margin:20px 0 6px;font-family:var(--font-ui);font-size:14px;line-height:1}",
+  ".turn-tail .ln{flex:1;height:1px;background:color-mix(in oklab, var(--fg) 9%, transparent)}",
+  ".turn-tail .tx{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em;white-space:nowrap}",
+  ".pill{font-family:var(--font-mono);font-size:10.5px;padding:2.5px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap;flex:none}",
+  ".pill.err{color:var(--danger);background:oklch(69% .15 15 / .12)}",
+  ".pill.warn{color:var(--gold-strong);background:oklch(79% .13 84 / .13)}",
+  ".ibtn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;color:var(--faint);background:none;border:none;cursor:pointer;padding:0;transition:.18s}",
+  ".ibtn:hover{background:var(--surface-2);color:var(--gold)}",
+  ".ibtn svg{width:15px;height:15px}",
+  ".ibtn:disabled{opacity:.35;cursor:default}",
+  ".a-actions{display:flex;gap:2px;margin-top:12px;opacity:0;transition:.2s}",
+  ".a-actions .ibtn{width:27px;height:27px}",
+  ".a-actions .ibtn svg{width:13px;height:13px}",
+  "[data-chat-anchor-key]:hover .a-actions{opacity:1}",
+  /* ── md 装饰(scoped 到 assistant-step 节点,不伤工具卡/上下文行)── */
+  /* 列宽对齐原型 .flow 内容宽 712:官方在 viewArea→root→scroll 多层重定义 token,
+     就近继承压不过 —— 挂 [data-conversation-scroll] 结构锚并对全部后代逐元素定义
+     (自有定义恒胜继承,且不耦合混淆类名) */
+  "body [data-conversation-scroll],body [data-conversation-scroll] *{--dsh-chat-content-width:712px}",
+  "[data-chat-flow-kind=assistant-step]{position:relative;padding-left:42px}",
+  "[data-chat-flow-kind=assistant-step]::before{content:\"\";position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:color-mix(in oklab,var(--gold) 9%,transparent)}",
+  "[data-chat-flow-kind=assistant-step]::after{content:\"\";position:absolute;left:4.5px;top:6.5px;width:19px;height:19px;background-color:var(--gold);-webkit-mask:url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M23.0584%204.95203C22.8129%204.83203%2022.7074%205.06103%2022.5639%205.17704C22.5149%205.21454%2022.4734%205.26354%2022.4319%205.30854C22.0734%205.69155%2021.6543%205.94306%2021.1073%205.91306C20.3073%205.86806%2019.6243%206.11957%2019.0203%206.73158C18.8918%205.97706%2018.4652%205.52655%2017.8162%205.23754C17.4767%205.08753%2017.1332%204.93703%2016.8952%204.61052C16.7292%204.37801%2016.6837%204.11901%2016.6007%203.8635C16.5477%203.70949%2016.4952%203.55199%2016.3177%203.52549C16.1252%203.49549%2016.0497%203.65699%2015.9742%203.792C15.6722%204.34401%2015.5552%204.95203%2015.5667%205.56805C15.5932%206.95359%2016.1782%208.05712%2017.3407%208.84215C17.4727%208.93215%2017.5067%209.02215%2017.4652%209.15366C17.3857%209.42416%2017.2917%209.68667%2017.2087%209.95718C17.1557%2010.1297%2017.0767%2010.1677%2016.8917%2010.0922C16.2537%209.82568%2015.7027%209.43117%2015.2156%208.95465C14.3891%208.15513%2013.6416%207.2726%2012.7096%206.58158C12.4906%206.42007%2012.2716%206.27007%2012.045%206.12707C11.094%205.20354%2012.1696%204.44502%2012.4186%204.35501C12.6791%204.26101%2012.5091%203.938%2011.6675%203.942C10.826%203.9455%2010.056%204.22751%209.07446%204.60302C8.93096%204.65952%208.77995%204.70052%208.62545%204.73452C7.73492%204.56552%206.80989%204.52802%205.84386%204.63702C4.02481%204.83953%202.57177%205.69955%201.50373%207.1676C0.220694%208.93215%20-0.0813148%2010.9372%200.288196%2013.0283C0.676708%2015.2323%201.80174%2017.0569%203.53029%2018.4834C5.32285%2019.9625%207.38741%2020.6875%209.74298%2020.5485C11.1735%2020.466%2012.7661%2020.2745%2014.5626%2018.7539C15.0156%2018.9795%2015.4912%2019.0695%2016.2797%2019.137C16.8872%2019.1935%2017.4722%2019.107%2017.9252%2019.013C18.6347%2018.8629%2018.5857%2018.2059%2018.3292%2018.0854C16.2497%2017.1169%2016.7062%2017.5109%2016.2912%2017.1919C17.3477%2015.9419%2018.9618%2013.7198%2019.4598%2010.6942C19.5088%2010.3602%2019.5713%209.88968%2019.5638%209.61917C19.5598%209.45417%2019.5978%209.39016%2019.7863%209.37116C20.3073%209.31116%2020.8128%209.16866%2021.2773%208.91315C22.6249%208.17713%2023.1684%206.96809%2023.2964%205.51905C23.3154%205.29754%2023.2924%205.06853%2023.0584%204.95203ZM11.3165%2017.9954C9.30097%2016.4109%208.32344%2015.8894%207.91992%2015.9119C7.54241%2015.9344%207.61042%2016.3664%207.69342%2016.6479C7.78042%2016.9259%207.89342%2017.1174%208.05193%2017.3614C8.16143%2017.5229%208.23694%2017.7629%207.94243%2017.9434C7.29341%2018.3449%206.16487%2017.8084%206.11187%2017.7819C4.79833%2017.0084%203.7003%2015.9874%202.92628%2014.5908C2.17875%2013.2468%201.74474%2011.8047%201.67324%2010.2657C1.65424%209.89418%201.76374%209.76267%202.13375%209.69517C2.62077%209.60517%203.12278%209.58617%203.6093%209.65767C5.66636%209.95818%207.41741%2010.8777%208.88545%2012.3348C9.72348%2013.1643%2010.3575%2014.1558%2011.0105%2015.1243C11.705%2016.1529%2012.4521%2017.1329%2013.4036%2017.9364C13.7396%2018.2179%2014.0076%2018.4319%2014.2641%2018.5899C13.4906%2018.6764%2012.1996%2018.6949%2011.3165%2017.9964V17.9954ZM12.2826%2011.7817C12.2826%2011.6167%2012.4146%2011.4852%2012.5806%2011.4852C12.6181%2011.4852%2012.6521%2011.4927%2012.6826%2011.5037C12.7241%2011.5187%2012.7621%2011.5412%2012.7921%2011.5752C12.8451%2011.6277%2012.8751%2011.7027%2012.8751%2011.7817C12.8751%2011.9467%2012.7431%2012.0782%2012.5771%2012.0782C12.4111%2012.0782%2012.2826%2011.9467%2012.2826%2011.7817ZM15.2831%2013.3208C15.0906%2013.3998%2014.8981%2013.4673%2014.7131%2013.4748C14.4261%2013.4898%2014.1131%2013.3733%2013.9431%2013.2308C13.6791%2013.0093%2013.4901%2012.8853%2013.4111%2012.4988C13.3771%2012.3338%2013.3961%2012.0782%2013.4261%2011.9317C13.4941%2011.6162%2013.4186%2011.4137%2013.1961%2011.2297C13.0151%2011.0797%2012.7846%2011.0382%2012.5316%2011.0382C12.4371%2011.0382%2012.3506%2010.9967%2012.2861%2010.9632C12.1806%2010.9107%2012.0936%2010.7792%2012.1766%2010.6177C12.2031%2010.5652%2012.3316%2010.4377%2012.3616%2010.4152C12.7051%2010.2197%2013.1011%2010.2837%2013.4676%2010.4302C13.8071%2010.5692%2014.0641%2010.824%2014.4336%2011.1847C14.8111%2011.6202%2014.8791%2011.7402%2015.0941%2012.0672C15.2641%2012.3228%2015.4186%2012.5853%2015.5247%2012.8858C15.5887%2013.0733%2015.5057%2013.2268%2015.2831%2013.3208Z%22%2F%3E%3C%2Fsvg%3E\") center/contain no-repeat;mask:url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M23.0584%204.95203C22.8129%204.83203%2022.7074%205.06103%2022.5639%205.17704C22.5149%205.21454%2022.4734%205.26354%2022.4319%205.30854C22.0734%205.69155%2021.6543%205.94306%2021.1073%205.91306C20.3073%205.86806%2019.6243%206.11957%2019.0203%206.73158C18.8918%205.97706%2018.4652%205.52655%2017.8162%205.23754C17.4767%205.08753%2017.1332%204.93703%2016.8952%204.61052C16.7292%204.37801%2016.6837%204.11901%2016.6007%203.8635C16.5477%203.70949%2016.4952%203.55199%2016.3177%203.52549C16.1252%203.49549%2016.0497%203.65699%2015.9742%203.792C15.6722%204.34401%2015.5552%204.95203%2015.5667%205.56805C15.5932%206.95359%2016.1782%208.05712%2017.3407%208.84215C17.4727%208.93215%2017.5067%209.02215%2017.4652%209.15366C17.3857%209.42416%2017.2917%209.68667%2017.2087%209.95718C17.1557%2010.1297%2017.0767%2010.1677%2016.8917%2010.0922C16.2537%209.82568%2015.7027%209.43117%2015.2156%208.95465C14.3891%208.15513%2013.6416%207.2726%2012.7096%206.58158C12.4906%206.42007%2012.2716%206.27007%2012.045%206.12707C11.094%205.20354%2012.1696%204.44502%2012.4186%204.35501C12.6791%204.26101%2012.5091%203.938%2011.6675%203.942C10.826%203.9455%2010.056%204.22751%209.07446%204.60302C8.93096%204.65952%208.77995%204.70052%208.62545%204.73452C7.73492%204.56552%206.80989%204.52802%205.84386%204.63702C4.02481%204.83953%202.57177%205.69955%201.50373%207.1676C0.220694%208.93215%20-0.0813148%2010.9372%200.288196%2013.0283C0.676708%2015.2323%201.80174%2017.0569%203.53029%2018.4834C5.32285%2019.9625%207.38741%2020.6875%209.74298%2020.5485C11.1735%2020.466%2012.7661%2020.2745%2014.5626%2018.7539C15.0156%2018.9795%2015.4912%2019.0695%2016.2797%2019.137C16.8872%2019.1935%2017.4722%2019.107%2017.9252%2019.013C18.6347%2018.8629%2018.5857%2018.2059%2018.3292%2018.0854C16.2497%2017.1169%2016.7062%2017.5109%2016.2912%2017.1919C17.3477%2015.9419%2018.9618%2013.7198%2019.4598%2010.6942C19.5088%2010.3602%2019.5713%209.88968%2019.5638%209.61917C19.5598%209.45417%2019.5978%209.39016%2019.7863%209.37116C20.3073%209.31116%2020.8128%209.16866%2021.2773%208.91315C22.6249%208.17713%2023.1684%206.96809%2023.2964%205.51905C23.3154%205.29754%2023.2924%205.06853%2023.0584%204.95203ZM11.3165%2017.9954C9.30097%2016.4109%208.32344%2015.8894%207.91992%2015.9119C7.54241%2015.9344%207.61042%2016.3664%207.69342%2016.6479C7.78042%2016.9259%207.89342%2017.1174%208.05193%2017.3614C8.16143%2017.5229%208.23694%2017.7629%207.94243%2017.9434C7.29341%2018.3449%206.16487%2017.8084%206.11187%2017.7819C4.79833%2017.0084%203.7003%2015.9874%202.92628%2014.5908C2.17875%2013.2468%201.74474%2011.8047%201.67324%2010.2657C1.65424%209.89418%201.76374%209.76267%202.13375%209.69517C2.62077%209.60517%203.12278%209.58617%203.6093%209.65767C5.66636%209.95818%207.41741%2010.8777%208.88545%2012.3348C9.72348%2013.1643%2010.3575%2014.1558%2011.0105%2015.1243C11.705%2016.1529%2012.4521%2017.1329%2013.4036%2017.9364C13.7396%2018.2179%2014.0076%2018.4319%2014.2641%2018.5899C13.4906%2018.6764%2012.1996%2018.6949%2011.3165%2017.9964V17.9954ZM12.2826%2011.7817C12.2826%2011.6167%2012.4146%2011.4852%2012.5806%2011.4852C12.6181%2011.4852%2012.6521%2011.4927%2012.6826%2011.5037C12.7241%2011.5187%2012.7621%2011.5412%2012.7921%2011.5752C12.8451%2011.6277%2012.8751%2011.7027%2012.8751%2011.7817C12.8751%2011.9467%2012.7431%2012.0782%2012.5771%2012.0782C12.4111%2012.0782%2012.2826%2011.9467%2012.2826%2011.7817ZM15.2831%2013.3208C15.0906%2013.3998%2014.8981%2013.4673%2014.7131%2013.4748C14.4261%2013.4898%2014.1131%2013.3733%2013.9431%2013.2308C13.6791%2013.0093%2013.4901%2012.8853%2013.4111%2012.4988C13.3771%2012.3338%2013.3961%2012.0782%2013.4261%2011.9317C13.4941%2011.6162%2013.4186%2011.4137%2013.1961%2011.2297C13.0151%2011.0797%2012.7846%2011.0382%2012.5316%2011.0382C12.4371%2011.0382%2012.3506%2010.9967%2012.2861%2010.9632C12.1806%2010.9107%2012.0936%2010.7792%2012.1766%2010.6177C12.2031%2010.5652%2012.3316%2010.4377%2012.3616%2010.4152C12.7051%2010.2197%2013.1011%2010.2837%2013.4676%2010.4302C13.8071%2010.5692%2014.0641%2010.824%2014.4336%2011.1847C14.8111%2011.6202%2014.8791%2011.7402%2015.0941%2012.0672C15.2641%2012.3228%2015.4186%2012.5853%2015.5247%2012.8858C15.5887%2013.0733%2015.5057%2013.2268%2015.2831%2013.3208Z%22%2F%3E%3C%2Fsvg%3E\") center/contain no-repeat}",
+  "[data-chat-flow-kind=assistant-step] :is(ul,ol){margin:2px 0 12px 4px;list-style:none;padding:0}",
+  "[data-chat-flow-kind=assistant-step] li{position:relative;padding-left:18px;margin-bottom:7px;color:var(--muted);list-style:none;font:400 15px/1.95 var(--font-serif)}",
+  "[data-chat-flow-kind=assistant-step] li::before{content:\"◆\";position:absolute;left:0;top:0;font-size:8px;color:var(--gold-dim);line-height:2.6}",
+  "[data-chat-flow-kind=assistant-step] li b{color:var(--fg);font-weight:500}",
+  "body [data-chat-flow-kind=assistant-step] :not(pre)>code{font-family:var(--font-mono);font-size:12.5px!important;line-height:1.36;color:var(--gold);background:var(--surface-2);border-radius:6px;padding:1px 6px}",
+  /* ── 滚动条几何(原型 §2)── */
+  "body ::-webkit-scrollbar{width:10px;height:10px}",
+  "body ::-webkit-scrollbar-thumb{background:color-mix(in oklab, var(--muted) 26%, transparent);border-radius:8px;border:3px solid transparent;background-clip:content-box}",
+  "body ::-webkit-scrollbar-thumb:hover{background:var(--gold-dim);border:3px solid transparent;background-clip:content-box}",
+  "body ::-webkit-scrollbar-track{background:transparent}",
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}}"
+];
+
+const CSS = CSS1.concat(CSS2, CSS3).join("\n");
+
+const h = React.createElement;
+
+function MoonIcon() {
+  return h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, h("path", { d: "M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" }));
+}
+function SunIcon() {
+  return h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, h("circle", { cx: 12, cy: 12, r: 4 }), h("path", { d: "M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" }));
+}
+function useAurum(api) {
+  const st = React.useState(function () { return api.snapshot(); });
+  React.useEffect(function () { return api.subscribe(function () { st[1](api.snapshot()); }); }, []);
+  return st[0];
+}
+function AurumFootToggle(props) {
+  const snap = useAurum(props.api);
+  const isAurum = snap.id === "aurum-dark" || snap.id === "aurum-light";
+  const dark = snap.mode === "dark";
+  const wide = props.wide !== false;
+  const label = (isAurum ? "鎏金 · " : "进入鎏金 · ") + (dark ? "深色" : "浅色");
+  const title = isAurum ? (dark ? "切换到鎏金 · 浅色" : "切换到鎏金 · 深色") : "启用鎏金主题(保持当前深浅)";
+  return h("button", { type: "button", className: "aurum-footRow" + (wide ? "" : " au-rail"), title: title, "aria-label": title, onClick: function () { props.api.toggle(); } }, dark ? h(MoonIcon) : h(SunIcon), wide ? h("span", null, label) : null);
+}
+const SEGMENT = [
+  { id: "aurum-dark", label: "鎏金 · 深" },
+  { id: "aurum-light", label: "鎏金 · 浅" },
+  { id: "dark", label: "官方 · 深" },
+  { id: "light", label: "官方 · 浅" },
+  { id: "system", label: "跟随系统" }
+];
+function AurumSettingsRow(props) {
+  const snap = useAurum(props.api);
+  return h("div", { className: "aurum-row" },
+    h("div", { className: "aurum-rowTitle" }, "主题风格 · 鎏金"),
+    h("div", { className: "aurum-seg", role: "group", "aria-label": "主题风格" }, SEGMENT.map(function (seg) {
+      return h("button", { key: seg.id, type: "button", className: "aurum-segBtn", "aria-pressed": snap.id === seg.id, onClick: function () { props.api.select(seg.id); } }, seg.label);
+    })),
+    h("p", { className: "aurum-hint" }, "鎏金 = 金粉奢华皮肤(香槟金 · 点阵画布 · 衬线正文),由临时插件提供,插件停止自动回退;官方 = 内置调色板。"));
+}
+
+function auText(content) {
+  const out = [];
+  const c = content || [];
+  for (let i = 0; i < c.length; i++) {
+    if (c[i] && c[i].type === "text" && typeof c[i].text === "string") out.push(c[i].text);
+  }
+  return out.join("\n\n");
+}
+function auJson(raw) {
+  if (typeof raw !== "string" || raw.length === 0) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+function auRel(p, cwd) {
+  if (!p) return "";
+  if (cwd && typeof p === "string" && p.indexOf(cwd) === 0) {
+    const r = p.slice(cwd.length).replace(/^[\\/]+/, "");
+    return r || p;
+  }
+  return p;
+}
+function auDur(ms) {
+  if (ms == null || ms < 0) return "";
+  if (ms < 1000) return Math.round(ms) + "ms";
+  return (ms / 1000).toFixed(1) + "s";
+}
+function Ic(kind) {
+  const a = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
+  if (kind === "search") return h("svg", a, h("circle", { cx: 11, cy: 11, r: 7 }), h("path", { d: "m20 20-3.5-3.5" }));
+  if (kind === "read") return h("svg", a, h("path", { d: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" }), h("path", { d: "M14 3v5h5M9 13h6M9 17h4" }));
+  if (kind === "edit") return h("svg", a, h("path", { d: "M11 5h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6" }), h("path", { d: "M17 3l4 4L11 17l-5 1 1-5Z" }));
+  if (kind === "todo") return h("svg", a, h("path", { d: "M4 6h2m-2 6h2m-2 6h2m4-12h12M10 12h12M10 18h12" }));
+  if (kind === "globe") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18Z" }));
+  if (kind === "terminal") return h("svg", a, h("path", { d: "m5 8 4 4-4 4M11 17h8" }));
+  if (kind === "view") return h("svg", a, h("path", { d: "M4 6h7M17 6h3M4 12h3M12 12h8M4 18h11" }), h("circle", { cx: 14, cy: 6, r: 2.1 }), h("circle", { cx: 9, cy: 12, r: 2.1 }), h("circle", { cx: 17.5, cy: 18, r: 2.1 }));
+  if (kind === "folderplus") return h("svg", a, h("path", { d: "M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" }), h("path", { d: "M12 10.5v5M9.5 13h5" }));
+  if (kind === "folder") return h("svg", a, h("path", { d: "M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V17a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" }));
+  if (kind === "folderopen") return h("svg", a, h("path", { d: "m6 14 1.45-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.55 6a2 2 0 0 1-1.94 1.5H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.2a2 2 0 0 0 1.66.9H18a2 2 0 0 1 2 2v2" }));
+  if (kind === "dots") return h("svg", Object.assign({}, a, { fill: "currentColor", stroke: "none" }), h("circle", { cx: 5, cy: 12, r: 1.6 }), h("circle", { cx: 12, cy: 12, r: 1.6 }), h("circle", { cx: 19, cy: 12, r: 1.6 }));
+  if (kind === "plus") return h("svg", Object.assign({}, a, { strokeWidth: 2.2 }), h("path", { d: "M12 5v14M5 12h14" }));
+  if (kind === "chevdown") return h("svg", Object.assign({}, a, { fill: "currentColor", stroke: "none" }), h("path", { d: "M7 9.2h10L12 16z" }));
+  if (kind === "chevron") return h("svg", a, h("path", { d: "m9 6 6 6-6 6" }));
+  if (kind === "copy") return h("svg", a, h("rect", { x: 9, y: 9, width: 12, height: 12, rx: 2.5 }), h("path", { d: "M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" }));
+  if (kind === "branch") return h("svg", a, h("circle", { cx: 6, cy: 6, r: 2.5 }), h("circle", { cx: 6, cy: 18, r: 2.5 }), h("circle", { cx: 18, cy: 8, r: 2.5 }), h("path", { d: "M6 8.5v7M6 13c6 0 6-3 10.5-3.5" }));
+  if (kind === "retry") return h("svg", a, h("path", { d: "M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5" }));
+  if (kind === "error") return h("svg", Object.assign({}, a, { strokeWidth: 1.9 }), h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M12 8v4.5M12 16h.01" }));
+  return null;
+}
+function AuPill(props) {
+  let cls = "au-pill";
+  if (props.state === "ok") cls += " au-ok";
+  else if (props.state === "run") cls += " au-run";
+  else if (props.state === "err") cls += " au-err";
+  return h("span", { className: cls }, props.text);
+}
+function AuBody(props) {
+  return h("div", { className: "au-x" + (props.open ? " au-open" : "") }, h("div", { className: "au-clip" }, h("div", { className: "au-in" }, props.children)));
+}
+
+function auDiffRows(diffs) {
+  const rows = [];
+  for (let i = 0; i < diffs.length; i++) {
+    const d = diffs[i];
+    if (!d) continue;
+    rows.push(h("div", { className: "au-dl au-hk", key: "hk" + i }, h("span", { className: "au-no" }, "@@"), h("span", { className: "au-co" }, d.path || "")));
+    const oldLines = (d.oldText != null ? String(d.oldText) : "").split("\n");
+    for (let j = 0; j < oldLines.length && j < 60; j++) {
+      rows.push(h("div", { className: "au-dl au-del", key: "d" + i + "-" + j }, h("span", { className: "au-no" }, String(j + 1)), h("span", { className: "au-co" }, oldLines[j])));
+    }
+    const newLines = (d.newText != null ? String(d.newText) : "").split("\n");
+    for (let k = 0; k < newLines.length && k < 60; k++) {
+      rows.push(h("div", { className: "au-dl au-add", key: "a" + i + "-" + k }, h("span", { className: "au-no" }, String(k + 1)), h("span", { className: "au-co" }, newLines[k])));
+    }
+  }
+  return rows;
+}
+function auDiffStat(diffs) {
+  let add = 0, del = 0;
+  for (let i = 0; i < diffs.length; i++) {
+    const d = diffs[i];
+    if (d.oldText != null) del += String(d.oldText).split("\n").length;
+    if (d.newText != null) add += String(d.newText).split("\n").length;
+  }
+  return "+" + add + " −" + del;
+}
+function auGrepBody(view, cwd) {
+  if (view.shape === "paths") {
+    const rows = (view.paths || []).map(function (p, i) { return h("div", { className: "au-gline", key: i }, p); });
+    return h("div", null, h("div", { className: "au-sec" }, "路径列表 · " + view.total), rows);
+  }
+  const files = view.files || [];
+  const fEls = [];
+  for (let i = 0; i < files.length; i++) {
+    const f = files[i];
+    const ms = f.matches || [];
+    const lineEls = [];
+    for (let j = 0; j < ms.length && j < 6; j++) {
+      lineEls.push(h("div", { className: "au-gline", key: j }, h("span", { className: "au-ln" }, "L" + ms[j].lineNumber), " ", ms[j].line));
+    }
+    fEls.push(h("div", { className: "au-gfile", key: i }, h("b", null, h("span", null, auRel(f.path, cwd)), h("i", null, ms.length + " 处")), lineEls));
+  }
+  return h("div", null, h("div", { className: "au-sec" }, "命中 " + view.total + " 处" + (view.truncated ? " · 已截断" : "")), fEls);
+}
+function auReadBody(view, cwd) {
+  const lines = view.lines || [];
+  const max = 40;
+  const rows = [];
+  for (let i = 0; i < lines.length && i < max; i++) {
+    const ln = lines[i];
+    rows.push(h("div", { className: "au-rl", key: i }, h("span", { className: "au-ln" }, String(ln.number)), h("span", { className: "au-rc" }, ln.text || "")));
+  }
+  const shown = Math.min(lines.length, max);
+  return h("div", null,
+    h("div", { className: "au-sec" }, "读取 · " + auRel(view.path, cwd) + " · L" + view.offset + "–" + (view.offset + shown - 1) + " / " + view.totalLines + " 行"),
+    h("div", { className: "au-read" }, rows),
+    lines.length > max ? h("div", { className: "au-dim" }, "… 已省略 " + (lines.length - max) + " 行") : null);
+}
+function auWebBody(view) {
+  const srcs = view.sources || [];
+  const els = srcs.map(function (s, i) {
+    return h("div", { className: "au-sr", key: i }, h("b", null, s.title || s.url), h("div", { className: "au-u" }, s.url), s.snippet ? h("p", null, s.snippet) : null);
+  });
+  const answer = view.answer ? h("div", { className: "au-term", style: { marginBottom: 10 } }, view.answer) : null;
+  return h("div", null, h("div", { className: "au-sec" }, "检索结果 · " + srcs.length + (view.truncated ? " · 已截断" : "")), answer, h("div", { className: "au-sres" }, els));
+}
+function auTermBody(view) {
+  const out = view.output != null ? String(view.output) : "";
+  const exit = view.exitCode != null ? "退出码 " + view.exitCode : (view.signal ? "信号 " + view.signal : "");
+  return h("div", null, h("div", { className: "au-sec" }, "终端输出"), h("pre", { className: "au-term" }, out || "(无输出)"), exit ? h("div", { className: "au-dim" }, exit) : null);
+}
+function auTodoBody(args) {
+  const todos = args && args.todos;
+  if (!Array.isArray(todos) || todos.length === 0) return null;
+  const els = todos.map(function (t, i) {
+    const s = t && t.status ? String(t.status) : "pending";
+    let cls = "au-td";
+    if (s === "completed") cls += " au-done";
+    else if (s === "in_progress") cls += " au-now";
+    return h("div", { className: cls, key: i }, h("span", { className: "au-dot" }), (t && t.content) || "");
+  });
+  return h("div", { className: "au-todo" }, els);
+}
+
+function AuToolCard(props) {
+  const b = props.block || {};
+  const settled = b.kind === "tool-result";
+  const running = !settled;
+  const isErr = settled && !!b.isError;
+  const name = props.toolName || (settled && b.call ? b.call.name : (b.name || ""));
+  const argsRaw = settled ? (b.call ? b.call.argsRaw : "") : (b.argsRaw || "");
+  const args = auJson(argsRaw) || {};
+  const callView = b.callView || null;
+  const resultView = settled ? (b.resultView || null) : null;
+  const cwd = props.cwd;
+  const openFile = props.openFile;
+  const inspect = props.inspect;
+  const st = React.useState(false);
+  const open = st[0], setOpen = st[1];
+
+  let em = "", summary = "", filePath = null, icon = "search", body = null;
+
+  if (name === "grep") {
+    icon = "search";
+    em = typeof args.pattern === "string" ? args.pattern : (Array.isArray(args.pattern) ? args.pattern.join("|") : "");
+    if (resultView && resultView.card === "search") summary = resultView.shape === "paths" ? (resultView.total + " 个路径") : (resultView.total + " 处命中 · " + resultView.files.length + " 个文件");
+    else summary = running ? "搜索中…" : "搜索";
+    if (resultView && resultView.card === "search") body = auGrepBody(resultView, cwd);
+  } else if (name === "read") {
+    icon = "read";
+    em = auRel(args.file_path || args.path, cwd);
+    filePath = args.file_path || args.path;
+    if (resultView && resultView.card === "read") summary = resultView.lines.length + " 行 · 共 " + resultView.totalLines + " 行";
+    else summary = running ? "读取中…" : "读取";
+    if (resultView && resultView.card === "read") body = auReadBody(resultView, cwd);
+  } else if (name === "edit" || name === "write") {
+    icon = "edit";
+    const f1 = args.file_path || args.path || (resultView && resultView.diffs && resultView.diffs[0] && resultView.diffs[0].path);
+    em = auRel(f1, cwd);
+    filePath = f1;
+    if (resultView && resultView.card === "diff") summary = auDiffStat(resultView.diffs);
+    else summary = running ? "写入中…" : "已修改";
+    if (resultView && resultView.card === "diff") body = h("div", { className: "au-diff" }, auDiffRows(resultView.diffs));
+  } else if (name === "todo_write") {
+    icon = "todo";
+    const todos = args.todos;
+    if (Array.isArray(todos)) {
+      em = "清单 · " + todos.length + " 项";
+      let done = 0, now = 0;
+      todos.forEach(function (t) { if (t.status === "completed") done++; else if (t.status === "in_progress") now++; });
+      summary = done + " 完成" + (now ? " · " + now + " 进行中" : "");
+      body = auTodoBody(args);
+    } else {
+      em = "清单";
+      summary = "";
+    }
+  } else if (name === "web_search" || name === "web_fetch") {
+    icon = "globe";
+    em = args.query || args.url || "";
+    if (resultView && resultView.card === "web") summary = resultView.kind === "fetch" ? ("HTTP " + resultView.statusCode) : (resultView.sources.length + " 条结果");
+    else summary = running ? "检索中…" : "检索";
+    if (resultView && resultView.card === "web") body = auWebBody(resultView);
+  } else if (name === "pwsh" || name === "bash") {
+    icon = "terminal";
+    em = args.command || (callView && callView.title) || "";
+    if (resultView && resultView.card === "terminal") summary = resultView.exitCode != null ? ("退出码 " + resultView.exitCode) : (resultView.signal || "完成");
+    else summary = running ? "执行中…" : "执行";
+    if (resultView && resultView.card === "terminal") body = auTermBody(resultView);
+  }
+
+  if (body == null) {
+    const txt = settled ? auText(b.content) : ((callView && callView.title) || argsRaw);
+    if (txt) body = h("pre", { className: "au-term" }, txt);
+  }
+
+  const pill = running ? h(AuPill, { state: "run", text: "运行中" }) : isErr ? h(AuPill, { state: "err", text: "失败" }) : h(AuPill, { state: "ok", text: "完成 · " + auDur(settled && b.callTime != null ? b.time - b.callTime : null) });
+
+  const foot = (filePath && typeof openFile === "function") || (typeof inspect === "function") ? h("div", { className: "au-foot" },
+    filePath && typeof openFile === "function" ? h("button", { className: "au-link", onClick: function (e) { e.stopPropagation(); openFile(filePath); } }, "打开文件") : null,
+    typeof inspect === "function" ? h("button", { className: "au-link", onClick: function (e) { e.stopPropagation(); inspect(); } }, "在轨迹中查看") : null) : null;
+
+  return h("div", { className: "au-tool" + (open ? " au-open" : ""), "data-state": running ? "running" : (isErr ? "error" : "ok"), "data-tool": name },
+    h("div", { className: "au-main", onClick: function () { setOpen(!open); } },
+      h("span", { className: "au-ico" }, Ic(icon)),
+      h("span", { className: "au-txt" },
+        h("span", { className: "au-name" }, name, em ? h("em", null, em) : null),
+        summary ? h("span", { className: "au-sum" }, summary) : null),
+      pill,
+      h("span", { className: "au-chev" }, Ic("chevron"))),
+    h(AuBody, { open: open }, body, foot));
+}
+
+function auWsLabel(w) {
+  if (!w) return "未分组";
+  if (w.title && typeof w.title === "string" && w.title !== "") return w.title;
+  const cwd = typeof w.path === "string" ? w.path : "";
+  if (cwd === "") return "未分组";
+  const base = cwd.replace(/[/\\]+$/, "").split(/[/\\]/).pop();
+  return base && base !== "" ? base : cwd;
+}
+function auTitle(s) {
+  return s.blank ? "新会话" : (s.displayTitle || "未命名会话");
+}
+function auAgo(ts) {
+  if (ts == null) return "";
+  const diff = Math.max(0, Date.now() - ts);
+  if (diff < 60000) return "刚刚";
+  if (diff < 3600000) return Math.floor(diff / 60000) + " 分钟前";
+  if (diff < 86400000) return Math.floor(diff / 3600000) + " 小时前";
+  if (diff < 2592000000) return Math.floor(diff / 86400000) + " 天前";
+  return Math.floor(diff / 2592000000) + " 个月前";
+}
+function auVisible(s, current, archived) {
+  return s.origin !== "subagent" && !archived.has(s.id) && (!s.blank || s.id === current);
+}
+function auByRecency(a, b) {
+  if ((b.updatedAt || 0) !== (a.updatedAt || 0)) return (b.updatedAt || 0) - (a.updatedAt || 0);
+  return a.id < b.id ? -1 : 1;
+}
+
+function AuSessionRow(props) {
+  const s = props.s;
+  const au = props.au;
+  const cur = props.current === s.id;
+  const open = props.menuOpen === true;
+  const renaming = props.renaming === true;
+  const rv = props.renameValue != null ? props.renameValue : auTitle(s);
+  let stateCls = "";
+  let tip = auTitle(s);
+  if (s.running === true) { stateCls = "au-working"; tip += " · 运行中"; }
+  else if (s.pendingInteraction !== undefined) { stateCls = "au-waiting"; tip += " · 等待交互"; }
+  else if (s.completed === true && !cur) { stateCls = "au-done"; tip += " · 已完成"; }
+  const ago = auAgo(s.updatedAt);
+  if (ago) tip += " · " + ago;
+  return h("div", { className: "au-srowwrap" },
+    h("button", { type: "button", className: "au-srow" + (cur ? " au-cur" : "") + (stateCls ? " " + stateCls : ""), title: tip, onClick: function () { au.open(s.id); } },
+      h("span", { className: "au-s-ic" }),
+      props.wsLabel ? h("span", { className: "au-s-meta" }, props.wsLabel) : null,
+      renaming
+        ? h("input", { className: "au-s-rename", value: rv, autoFocus: true, spellCheck: false, onChange: function (e) { props.onRenameValue(e.target.value); }, onClick: function (e) { e.stopPropagation(); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); props.onRenameCommit(); } if (e.key === "Escape") { e.preventDefault(); props.onRenameCancel(); } }, onBlur: function () { props.onRenameCommit(); } })
+        : h("span", { className: "au-s-title" }, auTitle(s)),
+      renaming ? null : h("button", { type: "button", className: "au-s-menu", title: "会话操作", "aria-label": "会话操作", onClick: function (e) { e.stopPropagation(); props.onMenuToggle(); } }, Ic("dots"))),
+    open ? h("div", { className: "au-s-actions au-open2" },
+      h("div", { className: "au-s-clip" },
+        h("div", { className: "au-s-actrow" },
+          h("button", { type: "button", className: "au-s-abtn", onClick: function () { props.onRenameStart(); } }, "重命名"),
+          h("button", { type: "button", className: "au-s-abtn", onClick: function () { au.fork(s.id); props.onMenuClose(); } }, "分支"),
+          h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { au.archive(s.id); props.onMenuClose(); } }, "归档")))) : null);
+}
+
+function AuGroup(props) {
+  const g = props.g;
+  const au = props.au;
+  const closed = props.closed === true;
+  const menuOpen = props.menuOpen === true;
+  const renaming = props.renaming === true;
+  const rv = props.renameValue != null ? props.renameValue : g.label;
+  const delConfirm = props.delConfirm === true;
+  return h("div", { className: "au-wsg" + (closed ? " au-closed" : "") + (props.containsCurrent ? " au-curgroup" : "") },
+    h("button", { type: "button", className: "au-wsg-head", title: g.ws ? (g.ws.path || g.label) : "", onClick: props.onToggle },
+      h("span", { className: "au-ws-ic" }, Ic("chevdown"), Ic(closed ? "folder" : "folderopen")),
+      renaming
+        ? h("input", { className: "au-wsg-rename", value: rv, autoFocus: true, spellCheck: false, onChange: function (e) { props.onRenameValue(e.target.value); }, onClick: function (e) { e.stopPropagation(); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); props.onRenameCommit(); } if (e.key === "Escape") { e.preventDefault(); props.onRenameCancel(); } }, onBlur: function () { props.onRenameCommit(); } })
+        : h("b", null, g.label),
+      renaming ? null : h("span", { className: "au-wsg-acts" },
+        g.menuSlot,
+        g.ws ? h("button", { type: "button", className: "au-wsg-act", title: "在此目录新建会话", "aria-label": "在此目录新建会话", onClick: function (e) { e.stopPropagation(); au.startSession(g.ws.workspaceId); } }, Ic("plus")) : null)),
+    menuOpen ? h("div", { className: "au-s-actions au-open2" },
+      h("div", { className: "au-s-clip" },
+        h("div", { className: "au-s-actrow" },
+          h("button", { type: "button", className: "au-s-abtn", onClick: function () { props.onRenameStart(); } }, "重命名目录"),
+          g.ws ? (delConfirm
+            ? h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { au.deleteWorkspace(g.ws.workspaceId); props.onMenuClose(); } }, "确认删除?")
+            : h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { props.onDelArm(); } }, "删除工作区")) : null))) : null,
+    h("div", { className: "au-slist" }, closed ? null : props.children));
+}
+
+function AuBrowserWide(props) {
+  const au = props.au;
+  const list = props.useSessions(function (s) { return s; });
+  const wsState = props.useWorkspaces(function (s) { return s; });
+  const searchOpenSt = React.useState(false);
+  const querySt = React.useState("");
+  const flatSt = React.useState(false);
+  const addOpenSt = React.useState(false);
+  const addPathSt = React.useState("");
+  const closedSt = React.useState({});
+  const menuSt = React.useState(null);
+  const renSt = React.useState(null);
+  const renValSt = React.useState("");
+  const delSt = React.useState(null);
+  const inputRef = React.useRef(null);
+  const searchOpen = searchOpenSt[0], setSearchOpen = searchOpenSt[1];
+  const query = querySt[0], setQuery = querySt[1];
+  const flat = flatSt[0], setFlat = flatSt[1];
+  const addOpen = addOpenSt[0], setAddOpen = addOpenSt[1];
+  const addPath = addPathSt[0], setAddPath = addPathSt[1];
+  const closed = closedSt[0], setClosed = closedSt[1];
+  const menu = menuSt[0], setMenu = menuSt[1];
+  const ren = renSt[0], setRen = renSt[1];
+  const renVal = renValSt[0], setRenVal = renValSt[1];
+  const del = delSt[0], setDel = delSt[1];
+
+  React.useEffect(function () {
+    if (searchOpen && inputRef.current && inputRef.current.focus) inputRef.current.focus();
+  }, [searchOpen]);
+
+  const archived = new Set((wsState && wsState.archivedSessionIds) || []);
+  const workspaces = (wsState && wsState.items) || [];
+  const current = list.current;
+
+  const groups = [];
+  const accounted = new Set();
+  for (let i = 0; i < workspaces.length; i++) {
+    const w = workspaces[i];
+    const members = [];
+    const ids = w.sessionIds || [];
+    for (let j = 0; j < ids.length; j++) {
+      const s = list.byId[ids[j]];
+      if (s === undefined) continue;
+      accounted.add(ids[j]);
+      if (!auVisible(s, current, archived)) continue;
+      members.push(s);
+    }
+    groups.push({ key: w.workspaceId, ws: w, label: auWsLabel(w), sessions: members, containsCurrent: ids.indexOf(current) !== -1 });
+  }
+  const stray = (list.ids || []).filter(function (id) { const s = list.byId[id]; return s !== undefined && !accounted.has(id) && auVisible(s, current, archived); }).map(function (id) { return list.byId[id]; }).sort(auByRecency);
+  if (stray.length > 0) groups.push({ key: "__ungrouped__", ws: null, label: "未分组", sessions: stray, containsCurrent: stray.some(function (s) { return s.id === current; }) });
+
+  const q = query.trim().toLowerCase();
+  let results = null;
+  if (q !== "") {
+    results = [];
+    for (let gi = 0; gi < groups.length; gi++) {
+      const g = groups[gi];
+      const gMatch = g.label.toLowerCase().indexOf(q) !== -1;
+      for (let si = 0; si < g.sessions.length; si++) {
+        const s = g.sessions[si];
+        if (gMatch || auTitle(s).toLowerCase().indexOf(q) !== -1) results.push({ s: s, wsLabel: g.ws ? g.label : "" });
+      }
+    }
+  }
+
+  const flatAll = [];
+  if (flat && results === null) {
+    for (let gi = 0; gi < groups.length; gi++) for (let si = 0; si < groups[gi].sessions.length; si++) flatAll.push({ s: groups[gi].sessions[si], wsLabel: groups[gi].ws ? groups[gi].label : "" });
+    flatAll.sort(function (a, b) { return auByRecency(a.s, b.s); });
+  }
+
+  const closeMenu = function () { setMenu(null); setDel(null); };
+  const startRename = function (kind, id, initial) { setRen({ kind: kind, id: id }); setRenVal(initial); closeMenu(); };
+  const commitRename = function () {
+    if (ren === null) return;
+    const v = renVal.trim();
+    if (v !== "") {
+      if (ren.kind === "ws") au.renameWorkspace(ren.id, v);
+      else au.renameSession(ren.id, v);
+    }
+    setRen(null);
+  };
+  const commitAdd = function () {
+    const p = addPath.trim();
+    if (p === "") return;
+    setAddOpen(false);
+    setAddPath("");
+    Promise.resolve(au.createWorkspace(p)).catch(function (e) { console.error("aurum: createWorkspace failed", e); });
+  };
+
+  const renderRow = function (entry, gForMenu) {
+    const s = entry.s;
+    const rowMenu = menu !== null && menu.kind === "s" && menu.id === s.id;
+    return h(AuSessionRow, {
+      key: s.id, s: s, au: au, current: current, wsLabel: entry.wsLabel || null,
+      menuOpen: rowMenu, onMenuToggle: function () { if (rowMenu) closeMenu(); else { setMenu({ kind: "s", id: s.id }); setDel(null); } },
+      onMenuClose: closeMenu,
+      renaming: ren !== null && ren.kind === "s" && ren.id === s.id, renameValue: renVal,
+      onRenameStart: function () { startRename("s", s.id, auTitle(s)); },
+      onRenameValue: setRenVal, onRenameCommit: commitRename, onRenameCancel: function () { setRen(null); }
+    });
+  };
+
+  const body = results !== null
+    ? (results.length > 0
+      ? results.map(renderRow)
+      : [h("div", { key: "empty", className: "au-ws-empty" }, "无匹配会话")])
+    : (flat
+      ? (flatAll.length > 0 ? flatAll.map(renderRow) : [h("div", { key: "empty", className: "au-ws-empty" }, "暂无会话")])
+      : groups.map(function (g) {
+        const gMenu = menu !== null && menu.kind === "ws" && menu.id === g.key;
+        return h(AuGroup, {
+          key: g.key, g: g, au: au, closed: closed[g.key] === true, containsCurrent: g.containsCurrent,
+          menuOpen: gMenu, delConfirm: del !== null && del === g.key,
+          menuSlot: h("button", { type: "button", className: "au-wsg-act", title: "目录操作", "aria-label": "目录操作", onClick: function (e) { e.stopPropagation(); if (gMenu) closeMenu(); else { setMenu({ kind: "ws", id: g.key }); setDel(null); } } }, Ic("dots")),
+          onToggle: function () { setClosed(function (c) { const n = Object.assign({}, c); if (n[g.key]) delete n[g.key]; else n[g.key] = true; return n; }); },
+          onDelArm: function () { setDel(g.key); },
+          onMenuClose: closeMenu,
+          renaming: ren !== null && ren.kind === "ws" && ren.id === g.key, renameValue: renVal,
+          onRenameStart: function () { startRename("ws", g.key, g.label); },
+          onRenameValue: setRenVal, onRenameCommit: commitRename, onRenameCancel: function () { setRen(null); }
+        }, g.sessions.map(function (s) { return renderRow({ s: s, wsLabel: null }, g); }));
+      }));
+
+  return h("div", { className: "au-ws" },
+    h("div", { className: "au-ws-head" + (searchOpen ? " au-searching" : "") },
+      h("span", { className: "au-ws-label" }, "工作区"),
+      h("div", { className: "au-ws-search" + (searchOpen ? " au-open" : "") + (q !== "" ? " au-hasq" : "") },
+        h("button", { type: "button", className: "au-ws-sbtn", title: "搜索会话", "aria-label": "搜索会话", onClick: function () { if (searchOpen && q === "") setSearchOpen(false); else setSearchOpen(true); } }, Ic("search")),
+        h("input", { ref: inputRef, className: "au-ws-input", value: query, placeholder: "搜索会话…", type: "text", autoComplete: "off", onChange: function (e) { setQuery(e.target.value); }, onKeyDown: function (e) { if (e.key === "Escape") { setQuery(""); setSearchOpen(false); } if (e.key === "Enter" && results !== null && results.length > 0) au.open(results[0].s.id); } })),
+      h("div", { className: "au-ws-acts" },
+        h("button", { type: "button", className: "au-ws-ibtn" + (flat ? " au-on" : ""), title: flat ? "分组视图" : "平铺视图", "aria-label": "切换视图", onClick: function () { setFlat(!flat); } }, Ic("view")),
+        h("button", { type: "button", className: "au-ws-ibtn", title: "添加工作区", "aria-label": "添加工作区", onClick: function () { setAddOpen(!addOpen); } }, Ic("folderplus")))),
+    addOpen ? h("div", { className: "au-ws-addrow" }, Ic("folder"),
+      h("input", { value: addPath, placeholder: "输入路径，如 ~/repos/项目名", type: "text", spellCheck: false, autoComplete: "off", autoFocus: true, onChange: function (e) { setAddPath(e.target.value); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); commitAdd(); } if (e.key === "Escape") { setAddOpen(false); setAddPath(""); } } }),
+      h("span", { className: "au-ws-addhint" }, "↵ 添加 · Esc 取消")) : null,
+    h("div", { className: "au-ws-body" }, body));
+}
+
+function AuBrowser(props) {
+  const wide = props.wide !== false;
+  const au = props.au;
+  const expand = typeof props.expandSidebar === "function" ? props.expandSidebar : function () {};
+  if (!wide) {
+    return h("div", { className: "au-ws-rail" },
+      h("button", { type: "button", className: "au-ws-railbtn", title: "搜索会话", "aria-label": "搜索会话", onClick: function () { expand(); } }, Ic("search")));
+  }
+  if (typeof props.useSessions !== "function" || typeof props.useWorkspaces !== "function") {
+    return h("div", { className: "au-ws-empty" }, "…");
+  }
+  return h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: au });
+}
+
+function AuImg(props) {
+  const att = props.attachment;
+  const load = props.loadImage;
+  const st = React.useState(null);
+  React.useEffect(function () {
+    let live = true;
+    if (typeof load === "function" && att) {
+      Promise.resolve(load(att)).then(function (u) { if (live && u) st[1](u); }).catch(function () {});
+    }
+    return function () { live = false; };
+  }, [att, load]);
+  return st[0] ? h("img", { className: "au-img", src: st[0], alt: "" }) : null;
+}
+function AuUserBubble(props) {
+  const node = props.node || {};
+  const data = node.data || node;
+  const content = data.content || [];
+  const texts = [], imgs = [];
+  for (let i = 0; i < content.length; i++) {
+    const c = content[i];
+    if (c && c.type === "text" && typeof c.text === "string") texts.push(c.text);
+    else if (c && c.type === "image" && c.attachment) imgs.push(c.attachment);
+  }
+  if (texts.length === 0 && imgs.length === 0) return null;
+  return h("div", { className: "au-user-row" }, h("div", { className: "au-bubble" },
+    texts.length ? h("div", null, texts.join("\n\n")) : null,
+    imgs.map(function (a, i) { return h(AuImg, { key: i, attachment: a, loadImage: props.loadImage }); })));
+}
+function AuContext(props) {
+  const node = props.node || {};
+  const data = node.data || node;
+  const txt = auText(data.content);
+  if (!txt) return null;
+  return h("div", { className: "au-ctx-row" }, "◈ " + txt);
+}
+
+/* ═══ P9 · 会话流尾部节点(htm + 原型类名,恒等映射)═══
+   数据契约(逆向自官方 register-node-renderers):
+   - turn-tail:      node.data = { turn, seq, closing:{finalNode:{seq,messageId},blocks,time}|null,
+                                 ttftMs, tokensPerSecond, branchUnavailable }
+                     node.location.turn = { status, start:{time}, end:{time} }
+   - compaction:     node.data = { summary:string|null, shadowedItemCount, shadowedTokenCount }
+   - model-retry:    node.data = { current:{ retryState, delayMs, retry, maxRetries, mode,
+                                 failure:{message}, seq } }
+   - turn-error:     node.data = { message, code? }
+   - turn-max-tokens: 无 data(固定提示文案) */
+
+function auBlocksText(blocks) {
+  let out = "";
+  if (Array.isArray(blocks)) {
+    for (let i = 0; i < blocks.length; i++) {
+      const b = blocks[i];
+      if (b && b.kind === "text" && typeof b.text === "string") out += b.text;
+    }
+  }
+  return out;
+}
+
+function AuTurnTail(props) {
+  const node = props.node || {};
+  const data = node.data || {};
+  const turn = node.location && (node.location.kind === "turn" || node.location.kind === "step") ? node.location.turn : null;
+  if (!turn) return null;
+  const closing = data.closing;
+  const chain = typeof props.renderSlotChain === "function"
+    ? props.renderSlotChain("conversation.chat.turnTail", { turn: turn, seq: closing && closing.finalNode ? closing.finalNode.seq : data.seq, openFile: props.openFile })
+    : null;
+  if (!closing) return chain || null;
+  const runMs = turn.start !== undefined && turn.end !== undefined ? Math.max(0, turn.end.time - turn.start.time) : null;
+  const parts = [];
+  if (runMs != null) parts.push((runMs / 1000).toFixed(1) + "s");
+  if (data.ttftMs != null) parts.push("首 token " + (data.ttftMs / 1000).toFixed(1) + "s");
+  if (data.tokensPerSecond != null) parts.push(Math.round(data.tokensPerSecond) + " tok/s");
+  const copy = function (e) {
+    e.stopPropagation();
+    const txt = auBlocksText(closing.blocks);
+    if (navigator.clipboard && txt) { navigator.clipboard.writeText(txt).catch(function () {}); }
+  };
+  const branch = function (e) {
+    e.stopPropagation();
+    if (typeof props.forkAt === "function") props.forkAt(closing.finalNode.seq);
+  };
+  const extra = closing.finalNode && closing.finalNode.messageId !== undefined && typeof props.renderSlot === "function"
+    ? props.renderSlot("conversation.chat.assistant-actions", { messageId: closing.finalNode.messageId })
+    : null;
+  return html`<${React.Fragment}>
+    ${chain}
+    <div className="a-actions">
+      <button type="button" className="ibtn" title="复制全文" onClick=${copy}>${Ic("copy")}</button>
+      <button type="button" className="ibtn" title="从此处分支" disabled=${data.branchUnavailable ? true : undefined} onClick=${branch}>${Ic("branch")}</button>
+      ${extra}
+    </div>
+    <div className="turn-tail">
+      <span className="ln"></span>
+      <span className="tx">${parts.join(" · ")}</span>
+      <span className="ln"></span>
+    </div>
+  <//>`;
+}
+
+function AuCompress(props) {
+  const node = (props.node && props.node.data) || {};
+  const st = React.useState(false);
+  const open = st[0], setOpen = st[1];
+  const n = node.shadowedItemCount;
+  const tk = node.shadowedTokenCount;
+  const items = n != null ? " · 更早的 " + n + " 条消息已归档" : "";
+  const tok = tk != null ? (tk >= 1000 ? " −" + (tk / 1000).toFixed(1) + "k tokens" : " −" + tk + " tokens") : "";
+  const expandable = typeof node.summary === "string" && node.summary !== "";
+  return html`<div className=${"compress" + (open ? " open" : "")}>
+    <button type="button" className="compress-head" onClick=${function () { setOpen(!open); }}>
+      <span className="chev">${Ic("chevron")}</span>
+      <span>◈ 上下文已压缩${items}${tok ? html`<span className="in-tok">${tok}</span>` : null}</span>
+    </button>
+    ${open && expandable ? html`<div className="compress-body">${node.summary}</div>` : null}
+  </div>`;
+}
+
+function AuRetry(props) {
+  const data = (props.node && props.node.data) || {};
+  const c = data.current || {};
+  const active = c.retryState === "scheduled";
+  const st = React.useState(function () { return Math.max(1, Math.round((c.delayMs || 0) / 1000)); });
+  const secs = st[0], setSecs = st[1];
+  React.useEffect(function () {
+    if (!active) return;
+    const iv = window.setInterval(function () { setSecs(function (s) { return s > 1 ? s - 1 : 1; }); }, 1000);
+    return function () { window.clearInterval(iv); };
+  }, [active]);
+  let text;
+  if (active) text = html`<span>自动重试 · 第 ${c.retry} 次 · ${secs}s 后</span>`;
+  else if (c.retryState === "started") text = html`<span>重试中 · 第 ${c.retry} 次</span>`;
+  else if (c.retryState === "cancelled") text = html`<span>自动重试 · 已取消</span>`;
+  else text = html`<span>自动重试 · 第 ${c.retry} 次 <b>完成</b></span>`;
+  const tip = c.failure && c.failure.message ? "延迟 " + Math.round(c.delayMs || 0) + "ms · " + c.failure.message : "";
+  return html`<div className="row-retry" title=${tip}>${Ic("retry")}${text}</div>`;
+}
+
+function AuTurnError(props) {
+  const d = (props.node && props.node.data) || {};
+  const msg = (d.message || "") + (d.code !== undefined ? " (" + d.code + ")" : "");
+  return html`<div className="row-err" role="status">
+    ${Ic("error")}
+    <span>${msg}</span>
+    <span className="pill err">失败</span>
+  </div>`;
+}
+
+function AuTurnMaxTokens() {
+  return html`<div className="row-err" role="status">
+    ${Ic("error")}
+    <span>输出已达 token 上限 · 本回合在上限处截断</span>
+    <span className="pill warn">上限</span>
+  </div>`;
+}
+
+return {
+  inject: ["theme", "slots", "sessions", "workspaces"],
+  apply: function (ctx) {
+    const theme = ctx.theme;
+    const slots = ctx.slots;
+
+    const disposeDark = theme.register(AURUM_DARK);
+    const disposeLight = theme.register(AURUM_LIGHT);
+    let disposeCss = null;
+    if (typeof document !== "undefined") {
+      const tagId = "dsh-theme-aurum/aurum.css";
+      let tag = document.querySelector("style[data-plugin-css=" + JSON.stringify(tagId) + "]");
+      if (tag === null) {
+        tag = document.createElement("style");
+        tag.dataset.plugin = "dsh-theme-aurum";
+        tag.dataset.pluginCss = tagId;
+        tag.textContent = CSS;
+        document.head.appendChild(tag);
+      }
+      const tagRef = tag;
+      disposeCss = function () { if (tagRef && tagRef.parentNode) tagRef.parentNode.removeChild(tagRef); };
+    }
+
+    const listeners = new Set();
+    let activeId = "", mode = "dark";
+    function readSnapshot() {
+      const snap = theme.getTheme();
+      activeId = String(snap.active.id);
+      mode = snap.active.colorScheme === "light" ? "light" : "dark";
+    }
+    readSnapshot();
+    const stopListen = ctx.on("theme/change", function (snapshot) {
+      const nextId = String(snapshot.active.id);
+      const nextMode = snapshot.active.colorScheme === "light" ? "light" : "dark";
+      if (nextId !== activeId || nextMode !== mode) {
+        activeId = nextId; mode = nextMode;
+        for (const fn of listeners) fn();
+      }
+    });
+
+    const api = {
+      snapshot: function () { return { id: activeId, mode: mode }; },
+      subscribe: function (fn) { listeners.add(fn); return function () { listeners.delete(fn); }; },
+      select: function (id) { try { theme.setTheme(id); } catch (err) { console.error("aurum: setTheme failed", id, err); } },
+      toggle: function () {
+        const isAurum = activeId === "aurum-dark" || activeId === "aurum-light";
+        if (isAurum) api.select(mode === "dark" ? "aurum-light" : "aurum-dark");
+        else api.select(mode === "dark" ? "aurum-dark" : "aurum-light");
+      }
+    };
+
+    if (activeId !== "aurum-dark" && activeId !== "aurum-light") {
+      /* 实测:apply 期 setTheme 会被启动后期的主题初始化盖回官方 —— 0ms/1.2s 两次
+         延迟重断言(一次性;用户此后手动切官方不再争夺) */
+      const assertAurum = function () {
+        try {
+          const cur = theme.getTheme();
+          const cid = String(cur.active.id);
+          if (cid !== "aurum-dark" && cid !== "aurum-light") theme.setTheme(cur.active.colorScheme === "light" ? "aurum-light" : "aurum-dark");
+        } catch (err) { console.error("aurum: activate failed", err); }
+      };
+      assertAurum();
+      setTimeout(assertAurum, 0);
+      setTimeout(assertAurum, 1200);
+    }
+
+    slots.inject("sidebar.footer.action", function () {
+      return slots.register({ name: "sidebar.footer.action", id: "theme-aurum", order: 40, label: "鎏金主题" }, function () { return h(AurumFootToggle, { api: api }); });
+    });
+    slots.inject("settings.general.item", function () {
+      return slots.register({ name: "settings.general.item", id: "theme-aurum", order: 15, label: "主题风格 · 鎏金" }, function () { return h(AurumSettingsRow, { api: api }); });
+    });
+
+    const sessionsSvc = ctx.sessions;
+    const workspacesSvc = ctx.workspaces;
+    const auActions = {
+      open: function (sessionId) { try { sessionsSvc.open(sessionId); } catch (e) { console.error("aurum: open failed", e); } },
+      startSession: function (workspaceId) { try { workspacesSvc.startSession(workspaceId); } catch (e) { console.error("aurum: startSession failed", e); } },
+      renameSession: function (sessionId, title) {
+        try {
+          const b = sessionsSvc.binding(sessionId);
+          if (b && b.session && typeof b.session.rename === "function") {
+            Promise.resolve(b.session.rename(title)).then(function (r) { if (r && r.ok === false) console.error("aurum: rename rejected"); }).catch(function (e) { console.error("aurum: rename failed", e); });
+          }
+        } catch (e) { console.error("aurum: renameSession failed", e); }
+      },
+      fork: function (sessionId) {
+        try {
+          sessionsSvc.fork({ sessionId: sessionId, increaseTitle: true }).then(function (childId) { sessionsSvc.open(childId); }).catch(function (e) { console.error("aurum: fork failed", e); });
+        } catch (e) { console.error("aurum: fork failed", e); }
+      },
+      archive: function (sessionId) { Promise.resolve(workspacesSvc.archiveSession(sessionId)).catch(function (e) { console.error("aurum: archive failed", e); }); },
+      createWorkspace: function (path) { return workspacesSvc.create({ path: path }); },
+      renameWorkspace: function (workspaceId, title) { return workspacesSvc.rename(workspaceId, title); },
+      deleteWorkspace: function (workspaceId) { return workspacesSvc.delete(workspaceId); }
+    };
+
+    slots.inject("sidebar.workspaces", function () {
+      return slots.register({ name: "sidebar.workspaces", priority: -1, registrant: "aurum" }, function (props) {
+        const p = Object.assign({}, props);
+        p.au = auActions;
+        return h(AuBrowser, p);
+      });
+    });
+
+    slots.inject("conversation.chat.node", function () {
+      const disps = [];
+      const reg = function (key, comp) {
+        disps.push(slots.register({ name: "conversation.chat.node", key: key, priority: -1, registrant: "aurum" }, function (props) { return h(comp, props); }));
+      };
+      reg("user", AuUserBubble);
+      reg("steering", AuUserBubble);
+      reg("context", AuContext);
+      reg("compaction", AuCompress);
+      reg("model-retry", AuRetry);
+      reg("turn-error", AuTurnError);
+      reg("turn-max-tokens", AuTurnMaxTokens);
+      /* turn-tail 永远普通注册:children 槽位声明存在加载顺序竞态 —— 若本插件先注册,
+         官方 conversation 包的同名声明会 throw 并炸掉官方 turn-tail(及后续 unknown)注册
+         (2026-08-24 实测复现)。官方声明保留权威;本组件按 props 有无防御性调用 chain/actions */
+      reg("turn-tail", AuTurnTail);
+      return function () { for (let i = 0; i < disps.length; i++) disps[i](); };
+    });
+
+    const TOOL_KEYS = ["grep", "read", "edit", "write", "todo_write", "web_search", "web_fetch", "pwsh", "bash"];
+    slots.inject("tool.call.toolview", function () {
+      const disps = TOOL_KEYS.map(function (key) {
+        return slots.register({ name: "tool.call.toolview", key: key, priority: -1, registrant: "aurum" }, function (props) { return h(AuToolCard, props); });
+      });
+      return function () { for (let i = 0; i < disps.length; i++) disps[i](); };
+    });
+
+    ctx.effect(function () {
+      return function () {
+        try { if (typeof stopListen === "function") stopListen(); } catch (e) {}
+        try { if (typeof disposeCss === "function") disposeCss(); } catch (e) {}
+        try { if (typeof disposeDark === "function") disposeDark(); } catch (e) {}
+        try { if (typeof disposeLight === "function") disposeLight(); } catch (e) {}
+      };
+    }, "aurum disposers");
+  }
+};
+	}
+});

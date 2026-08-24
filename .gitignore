@@ -1,0 +1,6 @@
+# playwright-cli 会话残留
+.playwright-cli/
+
+# 系统杂项
+Thumbs.db
+Desktop.ini
