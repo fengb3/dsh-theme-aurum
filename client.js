@@ -110,7 +110,30 @@ window.__ModuleLoader__.load({
    选择器 0-3-0 特异性,画「36px 透明→bg 渐变 + 下方实底」,色=body 底色 → 点阵在底栏
    分界被半透明渐变吞掉)。body 前缀同形选择器(0-3-1)反超撤除;点阵现直通视口底部,
    输入卡(半透明)与目标条(nLMEza_* 实底)各自浮于画布。实测:深浅两主题 seat
-   bg-image 均解析 none、涂层普查仅剩内容层;verify-gate/p8b 回归全绿。 */
+   bg-image 均解析 none、涂层普查仅剩内容层;verify-gate/p8b 回归全绿。
+
+    ── P10 · 输入坞(2026-08-24)─────────────────────────────
+    官方结构盘点(uV2eYG_card 输入卡 / composerStack=[input.dock 条目,卡,卡内 footer]):
+    input.dock 恰在卡上方(=原型 .dock 位),footer=StatsLine(=原型 .c-stats 位),
+    ContextMeter 已是「圆环+构成面板」与原型 ctx-ring/ctxPanel 同构 —— 全部 CSS 换皮可达,
+    唯 todo 需组件:官方 TodoDock 仅文本进度,原型要 goal-track 进度条+胶囊。
+    1. AuTodoBar(htm 恒等)遮蔽 conversation.input.dock id=todo(same-id 替换+order0
+       保位):清单 n/m + goal-track 金→玫渐变(宽=done/total%)+ todo-it 胶囊
+       (done 删除线/now 金 tint 脉冲点,复用 au-pulse);空清单渲染 null 同官方;
+       data-testid=todo-panel 沿用。CSS3 §6 整段拷贝,唯一适配:flex:1→flex:none
+       +lXshSW 同形几何(官方 dock 区是 column-flex,flex:1 会纵向拔高)。
+    2. CSS1 换皮:textarea/mirror/backdrop 三件套 14.5/1.7(防 caret 错位);
+       mention 芯片/斜杠高亮金 tint;add 命令钮 r10 金 hover;primary(send)金渐变
+       34×34 r12+disabled .35+浅色反白 ink;mode(Sh0Q9G)/model(_7KE1Ra)钮 mono 11
+       +金 hover,model 菜单 surface-2 r13+金 option;ContextMeter 金弧 2.6/面板
+       DISPLAY 23px 大数字/三段条 sys=fg40%/tools=玫/msgs=金/圆 swatch;
+       StatsLine mono 10.5+`|` 分隔弱化;goal 条(nLMEza)/queue 条(_7yHdaG)/
+       TodoPanel 残影(lXshSW,详情栏内)同 todo-bar 半透明面+无描边。
+    3. 「≥80% ctx 变玫 .hot」记不适用:CSS 无法读 dasharray 占用率。
+    实测(本会话 6 todo/1 now):todo-panel×1(无双重)、dockAboveCard=true、
+    卡/bar 零溢出、ta=mirror=14.5px/1.7、send=linear-gradient(135deg 金)r12、
+    ctx fill=金 trigger 31px、stats=JetBrains Mono 10.5;深浅双主题面色/ink 互换正确;
+    回归 gate(264/56 三态零溢出)/p8b(无描边)/p8c/proto-diff(failures=0)全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -445,7 +468,76 @@ const CSS1 = [
   ".aurum-segBtn:hover{color:var(--dsw-alias-label-primary)}",
   ".aurum-segBtn[aria-pressed=true]{background:color-mix(in oklab,var(--aurum-gold) 16%,transparent);color:var(--aurum-gold-strong);font-weight:500}",
   ".aurum-hint{color:var(--dsw-alias-label-tertiary);font:400 12px/19px var(--dsw-font-family);margin:0}",
-  "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}}"
+  "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}}",
+  /* ── P10 · 输入坞 composer 卡内部(uV2eYG_*,原型 §6 .composer/.c-tools)──
+     排版 14.5/1.7 对齐原型 textarea;input/mirror/backdrop 三件套必须同步改,
+     否则 caret 测量(mirror)与背景层错位 */
+  "body .uV2eYG_input,body .uV2eYG_mirror,body .uV2eYG_backdrop{font-size:14.5px;line-height:1.7}",
+  "body .uV2eYG_input::placeholder{color:var(--faint)}",
+  /* mention 芯片/斜杠命令高亮 → 原型 .chip 金 tint(只换色不 repad,防行高错位) */
+  "body .uV2eYG_chip{background:oklch(79% 0.13 84 / .12);color:var(--gold-strong)}",
+  "body .uV2eYG_hlToken{color:var(--gold-strong);background:oklch(79% 0.13 84 / .07)}",
+  "body .uV2eYG_chipInvalid{color:var(--danger)}",
+  /* 命令方钮 → 原型 .c-btn.sq 色(几何 28px 官方不动,不与行高斗) */
+  "body .uV2eYG_add{color:var(--muted);border-radius:10px;transition:color .15s,background .15s}",
+  "body .uV2eYG_add:hover:not(:disabled){color:var(--fg);background:color-mix(in oklab,var(--gold) 12%,var(--surface))}",
+  /* send 钮 → 原型 .send 金渐变方钮(官方本就 34×34) */
+  "body .uV2eYG_primary{background:linear-gradient(135deg,var(--gold),var(--gold-strong));color:var(--gold-ink);border-radius:12px;box-shadow:0 4px 14px oklch(79% 0.13 84 / .25);transition:.2s}",
+  "body .uV2eYG_primary:hover:not(:disabled){filter:brightness(1.08)}",
+  "body .uV2eYG_primary:disabled{opacity:.35;box-shadow:none;filter:none}",
+  "body:not([data-ds-dark-theme]) .uV2eYG_primary{color:oklch(99% 0.005 85)}",
+  /* ── P10 · mode 钮(Sh0Q9G_* → 原型 .mode-btn/.m-name mono)── */
+  "body .Sh0Q9G_triggerLabel{font-family:var(--font-mono);font-size:11px}",
+  "body .Sh0Q9G_trigger:hover:not(:disabled){background:color-mix(in oklab,var(--gold) 12%,var(--surface))}",
+  "body .Sh0Q9G_trigger:focus-visible{box-shadow:0 0 0 2px var(--aurum-focus)}",
+  /* ── P10 · model 钮与菜单(_7KE1Ra_* → 原型 .model-btn;菜单吃 .mi 金 hover 风)── */
+  "body ._7KE1Ra_triggerLabel{font-family:var(--font-mono);font-size:11px}",
+  "body ._7KE1Ra_trigger:hover:not(:disabled){background:color-mix(in oklab,var(--gold) 12%,var(--surface))}",
+  "body ._7KE1Ra_menu{border-color:transparent;border-radius:13px;background:var(--surface-2);box-shadow:var(--shadow-panel,0 16px 48px oklch(8% .02 330 / .55))}",
+  "body ._7KE1Ra_option:hover:not(:disabled),body ._7KE1Ra_option:focus-visible{background:oklch(79% 0.13 84 / .1)}",
+  "body ._7KE1Ra_check{color:var(--gold-strong)}",
+  /* ── P10 · ctx-ring/ctxPanel(官方 ContextMeter JObwrW_* 与原型同构:圆环+构成面板)──
+     金弧 / tools=玫 / msgs=金 / 大数字 pct;「≥80% 变玫 .hot」不可达 —— CSS 无法读
+     dasharray 占用率,记不适用(ROADMAP §6) */
+  "body .JObwrW_trigger{width:31px;height:31px;border-radius:50%;background:color-mix(in oklab,var(--surface),var(--bg) 55%);transition:.15s}",
+  "body .JObwrW_trigger:hover{background:color-mix(in oklab,var(--gold) 12%,var(--surface))}",
+  "body .JObwrW_trigger svg{width:19px;height:19px}",
+  "body .JObwrW_track{stroke:color-mix(in oklab, var(--fg) 13%, transparent);stroke-width:2.6}",
+  "body .JObwrW_fill{stroke:var(--gold);stroke-width:2.6}",
+  "body .JObwrW_panel{border-color:transparent;background:var(--surface-2);border-radius:13px;min-width:238px;padding:12px 13px 9px;box-shadow:var(--shadow-panel,0 16px 48px oklch(8% .02 330 / .55))}",
+  "body .JObwrW_header{align-items:baseline;gap:8px;padding:1px 2px 0}",
+  "body .JObwrW_headline{font-size:11.5px;color:var(--muted)}",
+  "body .JObwrW_percent{font-family:var(--font-display);font-weight:600;font-size:23px;line-height:1;color:var(--gold-strong)}",
+  "body .JObwrW_figures{font-family:var(--font-mono);font-size:10.5px;color:var(--faint)}",
+  "body .JObwrW_bar{height:6px;border-radius:99px;gap:0;margin:10px 2px 12px;background:color-mix(in oklab, var(--fg) 9%, transparent)}",
+  "body .JObwrW_segment{border-radius:99px;min-width:3px}",
+  "body .JObwrW_colorSystem{--meter-tint:color-mix(in oklab, var(--fg) 40%, var(--bg))}",
+  "body .JObwrW_colorTools{--meter-tint:var(--rose)}",
+  "body .JObwrW_colorMessages{--meter-tint:var(--gold)}",
+  "body .JObwrW_swatch{border-radius:50%;width:8px;height:8px;margin-right:9px}",
+  "body .JObwrW_row dt{font-size:12px;color:var(--muted)}",
+  "body .JObwrW_row dd{font-family:var(--font-mono);font-size:11px;color:var(--fg)}",
+  "body .JObwrW_row:last-child dd{color:var(--gold-strong)}",
+  /* ── P10 · c-stats(官方 StatsLine FJxK0a_* → 原型 .c-stats mono 10.5)── */
+  "body .FJxK0a_root{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--faint);padding:4px 6px 0}",
+  "body .FJxK0a_sep{color:color-mix(in oklab, var(--faint) 45%, transparent);margin:0 9px}",
+  /* ── P10 · goal 条(nLMEza_* → 原型 todo-bar 半透明面;无描边)── */
+  "body .nLMEza_bar{background:oklch(20% 0.016 328 / .5);border-radius:13px;border-color:transparent}",
+  "body:not([data-ds-dark-theme]) .nLMEza_bar{background:oklch(98.5% 0.008 82 / .8)}",
+  "body .nLMEza_bar,body .nLMEza_bar *{border-color:transparent!important}",
+  "body .nLMEza_goalGlyph{color:var(--gold-dim)}",
+  "body .nLMEza_label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint)}",
+  "body .nLMEza_iconBtn:hover:not(:disabled){background:color-mix(in oklab,var(--gold) 12%,var(--surface-2));color:var(--gold-strong)}",
+  /* ── P10 · queue 条(_7yHdaG_*)与 TodoPanel 残影(lXshSW_*,详情栏内)同面 ── */
+  "body ._7yHdaG_panel{background:oklch(20% 0.016 328 / .5)}",
+  "body:not([data-ds-dark-theme]) ._7yHdaG_panel{background:oklch(98.5% 0.008 82 / .8)}",
+  "body ._7yHdaG_panel:after{border-color:transparent}",
+  "body ._7yHdaG_panel,body ._7yHdaG_panel *{border-color:transparent!important}",
+  "body .lXshSW_root{background:oklch(20% 0.016 328 / .5);border-color:transparent}",
+  "body:not([data-ds-dark-theme]) .lXshSW_root{background:oklch(98.5% 0.008 82 / .8)}",
+  "body .lXshSW_root,body .lXshSW_root *{border-color:transparent!important}",
+  "body ._7yHdaG_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}",
+  "body .lXshSW_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}"
 ];
 
 const CSS2 = [
@@ -690,7 +782,27 @@ const CSS3 = [
   ".mi .mk{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--faint)}",
   ".mi .mk.on{color:var(--gold-strong)}",
   ".menu-sep{height:1px;background:color-mix(in oklab, var(--fg) 8%, transparent);margin:5px 8px}",
-  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}}"
+  /* ── P10 · §6 todo-bar(整段拷贝;AuTodoBar 消费)──
+     唯一机械替换外的适配:.todo-it.now .td 的 keyframes pulse → au-pulse
+     (P8b 已有同名同体 50%{opacity:.25},避免全局 keyframe 名与官方冲突) */
+  ".todo-bar{flex:1;min-width:230px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;border:1px solid var(--border-soft);border-radius:13px;background:oklch(20% 0.016 328 / .5);padding:7px 13px;min-height:38px}",
+  "body:not([data-ds-dark-theme]) .todo-bar{background:oklch(98.5% 0.008 82 / .8)}",
+  ".todo-label{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.14em;flex:none}",
+  ".todo-items{display:flex;gap:6px;flex-wrap:wrap}",
+  ".todo-it{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);border:1px solid transparent;background:color-mix(in oklab, var(--surface-2) 60%, transparent);border-radius:8px;padding:3px 9px;transition:.15s}",
+  ".todo-it:hover{color:var(--fg);background:color-mix(in oklab, var(--gold) 13%, var(--surface-2))}",
+  ".todo-it .td{width:5px;height:5px;border-radius:50%;background:var(--faint);flex:none}",
+  ".todo-it.done{color:var(--faint);text-decoration:line-through;text-decoration-color:oklch(56% 0.022 330 / .5)}",
+  ".todo-it.done .td{background:var(--success)}",
+  ".todo-it.now{color:var(--gold-strong);background:color-mix(in oklab, var(--gold) 18%, var(--surface-2))}",
+  ".todo-it.now .td{background:var(--gold-strong);animation:au-pulse 1.2s infinite}",
+  ".goal-track{width:130px;height:4px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex:none}",
+  ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
+  /* 独立挂载适配(ROADMAP §6 记录):原型 .todo-bar 设计于 .dock 横排(flex:1 拉宽),
+     官方 input.dock 是卡上方的 column-flex 区 —— flex:1 会变纵向拔高;
+     改按官方 TodoDock(lXshSW_root)同形几何:与输入卡对齐、居中、不拔高 */
+  ".todo-bar{flex:none;box-sizing:border-box;width:calc(100% - var(--dsh-composer-side-clearance)*2 - var(--dsh-composer-dock-inset)*4);max-width:calc(var(--dsh-composer-card-max-width) - var(--dsh-composer-dock-inset)*4);margin:0 auto}",
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}}"
 ];
 
 const CSS = CSS1.concat(CSS2, CSS3).join("\n");
@@ -1520,6 +1632,32 @@ function AuTurnMaxTokens() {
   </div>`;
 }
 
+/* ═══ P10 · AuTodoBar(原型 §6 .dock .todo-bar 恒等映射)═══
+   遮蔽官方 TodoDock(conversation.input.dock, id=todo):官方仅文本进度
+   「n 完成 · n 进行」+折叠列表;原型是「清单 n/m + goal-track 金→玫进度条 +
+   todo-items 胶囊(done 删除线 / now 金 tint 脉冲点)」。数据同源 useProjection
+   ("todos");空清单渲染 null(与官方一致)。data-testid 沿用官方 todo-panel,
+   保下游测试语义。 */
+function AuTodoBar(props) {
+  const useProjection = props.useProjection;
+  const todos = (useProjection ? useProjection("todos") : null) || [];
+  if (todos.length === 0) return null;
+  var done = 0;
+  for (var i = 0; i < todos.length; i++) if (todos[i].status === "completed") done++;
+  var pct = Math.round((done / todos.length) * 100);
+  return html`<div className="todo-bar" data-testid="todo-panel">
+    <span className="todo-label">清单</span>
+    <span className="todo-label">${done} / ${todos.length}</span>
+    <div className="goal-track"><div className="goal-fill" style=${{ width: pct + "%" }}></div></div>
+    <div className="todo-items">
+      ${todos.map(function (it, i) {
+        var cls = "todo-it" + (it.status === "completed" ? " done" : it.status === "in_progress" ? " now" : "");
+        return html`<span key=${i} className=${cls}><span className="td"></span>${it.content}</span>`;
+      })}
+    </div>
+  </div>`;
+}
+
 return {
   inject: ["theme", "slots", "sessions", "workspaces"],
   apply: function (ctx) {
@@ -1653,6 +1791,12 @@ return {
         return slots.register({ name: "tool.call.toolview", key: key, priority: -1, registrant: "aurum" }, function (props) { return h(AuToolCard, props); });
       });
       return function () { for (let i = 0; i < disps.length; i++) disps[i](); };
+    });
+
+    /* P10:遮蔽官方 TodoDock(id=todo)—— 同 id 注册替换,order 0 保位
+       (input.dock 在输入卡上方,goal/queue 条之前);inject 等 children 声明就绪 */
+    slots.inject("conversation.input.dock", function () {
+      return slots.register({ name: "conversation.input.dock", id: "todo", order: 0, priority: -1, registrant: "aurum" }, function (props) { return h(AuTodoBar, props); });
     });
 
     ctx.effect(function () {

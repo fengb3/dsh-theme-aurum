@@ -56,7 +56,7 @@
 | P8 | §4 | 侧栏几何修正:卡片即容器,零溢出 | CSS(列留白+根卡片化) | ✅ |
 | **P8c** | **§4 残差** | **侧栏残留差异:折叠 56 细条、rail-logo 淡切、拖拽排序、行/视图菜单形态** | **CSS + AuBrowser 补齐** | **✅** |
 | P9 | §5 | 会话流尾部节点:turn-tail/compress/retry/err/max-tokens + md 装饰 + 头像 + 列宽712 + sh-head/tabs + reasoning 皮肤 | htm 恒等映射 + CSS 瞄准 | ✅ |
-| P10 | §6 | 输入坞全面接管:todo 进度条、chips、命令/模式/模型菜单、ctx-ring 圆环+面板、金色 send、c-stats | CSS + composer 槽位 | ⬜ |
+| P10 | §6 | 输入坞全面接管:todo 进度条、chips、命令/模式/模型菜单、ctx-ring 圆环+面板、金色 send、c-stats | CSS + composer 槽位 | ✅ |
 | P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ⬜ |
 | P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⬜ |
 | P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ⬜ |
@@ -126,25 +126,32 @@
   (官方无独立 typing 行,运行态由 ReasoningRow/工具卡扫光承载)。
 - ✅ 入场节奏(P9):逐节点阶梯 rise。
 
-### §6 输入坞(→ P10,当前仅 composer 金圈 focus)
+### §6 输入坞(P10 已对齐,2026-08-24)
 
 - ✅ 底栏画布清洁(2026-08-24,续「背景去晕染」):撤 composerSeat 官方滚出渐隐纱
   (active 相位 36px 渐变+实底,特异性反超),点阵直通视口底部;输入卡最终 **solid
   surface 实色**(用户明确不要半透明;实测 alpha=1,bgscan.mjs 像素级验证画布顶/底
   漂移=0,双主题)。
-- ◐ dock·goal 条:官方 nLMEza_*(「进行中的目标」+暂停/编辑/完成钮,实底淡金)落在
-  dock 区,P10 按原型 todo-bar 半透明面(深 oklch(20% .016 328 / .5)/浅 .8)换皮。
-- ⬜ input-zone/iz-inner:812px 居中列 + 8/28/14 padding。
-- ⬜ dock·todo-bar:「清单」label + n/m 计数 + `goal-track` 130px 进度条(金→玫渐变填充、
-  .8s 过渡)+ todo-items 胶囊(done 删除线 / now 金 tint 脉冲点)。
-- ⬜ chips 附加上下文胶囊(金 tint、✕ hover 变红)。
-- ⬜ c-tools 行:cmd 命令方钮 + cmdMenu(斜杠命令列表,mono 名+说明);mode 工作模式钮 +
-  菜单(read only / workspace write / full access,图标+meta+✓);model 模型钮 + 菜单;
-  `ctx-ring` 31px 上下文圆环(进度弧金色、≥80% 变玫 `.hot`,title 带 token 数)+ 点开的
-  **ctxPanel 构成面板**(23px DISPLAY 大数字 + 三段构成条 sys/tools/msgs + 图例行);
-  send 34×34 金渐变方钮(gold-ink 图标、禁用 opacity .35)。
-- ⬜ c-stats 统计行(轮/步 · LLM/工具时长 · 首 token/tok/s · 缓存命中 · 输入输出 token,
-  mono 10.5px、`|` 分隔)。
+- ✅ 结构盘点:官方 composerStack=[conversation.input.dock 条目, 输入卡, 卡内 footer];
+  input.dock 恰在卡上方(=原型 .dock 位),footer=StatsLine(=原型 .c-stats 位)。
+- ✅ dock·todo-bar(AuTodoBar htm 恒等映射,遮蔽官方 TodoDock id=todo):「清单」+
+  n/m 计数 + goal-track 130px 金→玫渐变进度条(宽=done/total%)+ todo-items 胶囊
+  (done 删除线 / now 金 tint 脉冲点)。CSS3 §6 整段拷贝;唯一适配:flex:1→flex:none
+  +官方 lXshSW 同形几何(官方 dock 区是 column-flex,flex:1 会纵向拔高)。
+- ✅ dock·goal 条(nLMEza_*)/queue 条(_7yHdaG_*)CSS 换皮:todo-bar 半透明面
+  (深 oklch(20% .016 328 / .5)/浅 .8)+ mono label + 金 hover + 无描边。
+- ✅ 输入卡内部(uV2eYG_*):textarea/mirror/backdrop 三件套 14.5/1.7(防 caret 错位);
+  mention 芯片(uV2eYG_chip)金 tint = 原型 .chips 对应物;add 命令钮 r10 金 hover
+  (原型 .c-btn.sq,几何 28px 官方不动);mode 钮(Sh0Q9G_*)/model 钮(_7KE1Ra_*)
+  mono 11 + 金 hover;model 菜单 surface-2 r13 + 金 option hover/check。
+- ✅ ctx-ring/ctxPanel(官方 ContextMeter JObwrW_* 与原型同构:圆环+点击展开构成面板):
+  金弧 2.6 / 面板 DISPLAY 23px 大数字 pct / 三段条 sys=fg40%·tools=玫·msgs=金 /
+  圆 swatch / 图例行。⚠️「≥80% 变玫 .hot」记不适用 —— CSS 无法读 dasharray 占用率。
+- ✅ send(uV2eYG_primary 官方本就 34×34)→ 原型 .send 金渐变 r12 + disabled .35 +
+  浅色反白 ink;运行态(stop 方块图标)同皮。
+- ✅ c-stats(官方 StatsLine FJxK0a_*)→ mono 10.5 / 字距 .04em / `|` 分隔弱化。
+- ⬜ cmdMenu 斜杠命令列表形态(官方命令菜单由通用 Popmenu 渲染):与 §9 通用菜单
+  金色化同源,并入 P13 一并处理(点 add 钮展开的菜单即其形态)。
 
 ### §7 工具卡(9 类已接管,残差 → P11)
 
@@ -227,11 +234,16 @@ context 节点无 token 数据);浅色 --font-* 四族补齐。verify-head.js / 
 - 全部走 `conversation.chat.node` 的 key 遮蔽,与 P5 的 user/context 同文件组件化;
 - 门禁:节点 max-width 不超 `.flow` 内容宽(768px),pill/run 动画不产生横向滚动。
 
-### P10 · 输入坞(原型 §6,工作量最大)
-- 现状只有 `[data-composer-card]` 金圈 focus;原型还有:todo-bar(进度 goal-track 金→玫渐变)、
-  chips、命令/模式/模型菜单、ctx-ring 上下文圆环(点开构成面板)、send 金渐变方钮、c-stats 行;
-- 先做纯 CSS(send/seg/chips 圆角金 tint),再评估 ctx-ring/命令菜单是否接 composer 槽位注册;
-- 门禁:输入坞在 480/640/820/1280 四档宽度下均不横向溢出,send 钮禁用态 opacity .35。
+### P10 · 输入坞(原型 §6)✅ 2026-08-24
+**实测**(本会话 6 todo/1 now,双主题):todo-panel×1(遮蔽无双重)、todo-bar 748×125
+居中于卡上方(dockAboveCard=true)、卡/bar 零溢出、textarea=mirror=14.5px/1.7、
+send=linear-gradient(135deg 金)r12、ctx 金弧 trigger 31px、c-stats=JetBrains Mono 10.5;
+回归 gate(264/56 三态)/p8b(无描边)/p8c/proto-diff(failures=0)全绿。
+- 结构先行:官方 input.dock 恰在卡上方、composer.dock(footer)在卡下 —— 与原型
+  .dock/.c-stats 位置天然同构,ContextMeter 已是「圆环+构成面板」,CSS 换皮即可;
+- 唯组件:AuTodoBar(htm 恒等)遮蔽官方 TodoDock(id=todo same-id 替换);
+- 记「不适用」:ctx-ring ≥80% 变玫(CSS 读不到占用率);cmdMenu 形态并入 P13;
+- 决策记录:todo-bar 拷贝段唯一适配 flex:1→flex:none(column-flex 拔高),pulse→au-pulse。
 
 ### P11 · 工具卡补全(原型 §7)
 - 已覆盖 9 类;剩余按 DSH 实际 tool 名补 key(subagent、workflow、goal、ask_user_question、
