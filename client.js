@@ -232,7 +232,24 @@ window.__ModuleLoader__.load({
     实测(shadowscan.mjs 像素扫描 y=420):列界跳变 278→282 仅 2(light)/
     1(dark)/255,渐变形态 = 卡面色 → 阴影谷 → 缓升回画布;残留粗粞点全部
     落在 24px 等距位 = 点阵圆点,非阴影缺陷;vision 复核无分割线、点阵连续;
-    回归 gate(三态零溢出)/p8b/p8c/proto-diff 全绿。 */
+    回归 gate(三态零溢出)/p8b/p8c/proto-diff 全绿。
+
+    ── P15 前修订 IV · 目录分组交互动画(2026-08-24,用户报三处)────────
+    1. 图标重叠根因:交叉淡切规则(au-chev2/au-fld)从未生效 —— Ic() 不挂类,
+       两个 svg 同时常显叠在同一 13×13 格。修:Ic(kind, cls) 支持类名。
+    2. 交互形态(用户指定):非悬浮=文件夹(closed folder/open folderopen),
+       悬浮=折叠三角(closed 指右 -90°/open 指下);opacity+scale 双轴交叉淡切
+       (.18s/.26s back-out)。
+    3. 收合非线性动画:.au-slist 改 grid-template-rows 0fr⇄1fr 插值
+       (.42s cubic-bezier(.22,.9,.26,1)),内容层 .au-slist-in 渐隐渐显 +
+       visibility 延迟摘除可达;children 不再随 closed 卸载(保挂载供过渡)。
+    4. 行级 stagger:.au-srow animation-name 随 .au-closed 切换(closed=none →
+       展开=au-row-in),纯 CSS 实现每次展开逐行重播(30ms 级递增 delay,
+       前 6 行 20ms 步进、n+7 封顶 200ms),fade+左移入场。
+    实测(verify-group.js):idle fld=1/chev=0、hover fld=0(.72 缩)+chev=1 交叉;
+    收合插值中 12.5px → 终态 0px+渐隐+visibility hidden;重展开行
+    animName=au-row-in delay=.02s 重播、终态 180px;行点击可用;
+    回归 gate/p8b/p8c/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -792,15 +809,16 @@ const CSS2 = [
   ".au-wsg{margin-bottom:2px;position:relative}",
   ".au-wsg-head{display:flex;align-items:center;gap:7px;padding:9px 15px 5px;cursor:pointer;user-select:none;font-size:12px;color:var(--dsw-alias-label-tertiary);border:none;background:transparent;width:100%;text-align:left;border-radius:8px;position:relative}",
   ".au-wsg-head:hover{color:var(--dsw-alias-label-secondary)}",
+  /* P15 前修订 IV:目录头图标 = 文件夹 ⇄ 折叠三角 交叉淡切。此前规则从未生效
+     (Ic() 不挂类,两图标常显重叠)。非悬浮=文件夹;悬浮=三角(closed 指右 /
+     open 指下);opacity+scale 双轴过渡 */
   ".au-ws-ic{position:relative;width:13px;height:13px;flex:none}",
-  ".au-ws-ic svg{position:absolute;inset:0;width:13px;height:13px;transition:opacity .16s,transform .25s}",
-  ".au-ws-ic .au-chev2{color:var(--dsw-alias-label-tertiary);opacity:0}",
-  ".au-ws-ic .au-fld{color:var(--aurum-gold-dim)}",
-  ".au-wsg-head:hover .au-chev2{opacity:1}",
-  ".au-wsg-head:hover .au-fld{opacity:0}",
-  ".au-wsg.au-closed .au-chev2{transform:rotate(-90deg)}",
-  ".au-wsg.au-closed .au-fld{opacity:1}",
-  ".au-wsg.au-closed .au-wsg-head:hover .au-fld{opacity:0}",
+  ".au-ws-ic svg{position:absolute;inset:0;margin:auto;width:13px;height:13px;transition:opacity .18s ease,transform .26s cubic-bezier(.22,.8,.26,1)}",
+  ".au-ws-ic .au-fld{color:var(--aurum-gold-dim);opacity:1;transform:none}",
+  ".au-ws-ic .au-chev2{color:var(--dsw-alias-label-tertiary);opacity:0;transform:scale(.55)}",
+  ".au-wsg-head:hover .au-fld{opacity:0;transform:scale(.72)}",
+  ".au-wsg-head:hover .au-chev2{opacity:1;transform:scale(1)}",
+  ".au-wsg.au-closed .au-wsg-head:hover .au-chev2{opacity:1;transform:scale(1) rotate(-90deg)}",
   ".au-wsg-head b{font-weight:500;font-size:12.5px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ds-font-family-code);color:inherit}",
   ".au-wsg-acts{display:flex;gap:1px;flex:none;opacity:0;transition:opacity .16s}",
   ".au-wsg:hover .au-wsg-acts,.au-wsg-acts:focus-within{opacity:1}",
@@ -809,8 +827,23 @@ const CSS2 = [
   ".au-wsg-act svg{width:13px;height:13px}",
   ".au-wsg-rename{flex:1;min-width:0;font-family:var(--ds-font-family-code);font-size:11px;color:var(--dsw-alias-label-primary);background:color-mix(in oklab,var(--aurum-gold) 14%,var(--dsw-alias-bg-layer-1));border:1px solid transparent;border-radius:6px;padding:2px 6px;outline:none}",
   ".au-wsg.au-curgroup .au-wsg-head b{color:var(--dsw-alias-label-secondary)}",
-  ".au-slist{display:flex;flex-direction:column;padding:0 6px;min-height:12px}",
-  ".au-wsg.au-closed .au-slist{display:none}",
+  /* P15 前修订 IV:分组收合非线性动画 —— grid-rows 0fr⇄1fr 插值(容器),
+     内容层渐隐;行级 stagger:animation-name 随 .au-closed 切换(closed 时
+     none → 展开时 au-row-in),每次展开都逐行重播(纯 CSS 无需 JS 重挂载) */
+  ".au-slist{display:grid;grid-template-rows:1fr;transition:grid-template-rows .42s cubic-bezier(.22,.9,.26,1)}",
+  ".au-wsg.au-closed .au-slist{grid-template-rows:0fr}",
+  ".au-slist-in{min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:0 6px;opacity:1;visibility:visible;transition:opacity .26s ease .04s,visibility 0s .44s}",
+  ".au-wsg.au-closed .au-slist-in{opacity:0;visibility:hidden;transition:opacity .18s ease,visibility 0s .18s}",
+  ".au-wsg.au-closed .au-slist-in .au-srow{animation-name:none}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:au-row-in .3s cubic-bezier(.22,.9,.3,1) both}",
+  "@keyframes au-row-in{from{opacity:0;transform:translateX(-6px)}}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(1){animation-delay:.02s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(2){animation-delay:.05s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(3){animation-delay:.08s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(4){animation-delay:.11s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(5){animation-delay:.14s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(6){animation-delay:.17s}",
+  ".au-wsg:not(.au-closed) .au-slist-in .au-srow:nth-child(n+7){animation-delay:.2s}",
   ".au-srowwrap{display:flex;flex-direction:column}",
   ".au-srow{display:flex;align-items:center;gap:7px;height:34px;padding:0 9px;margin:1px 0;border-radius:9px;cursor:pointer;color:var(--dsw-alias-label-secondary);font-size:13px;position:relative;border:none;background:transparent;width:100%;text-align:left;transition:background .15s,color .15s}",
   ".au-srow:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--dsw-alias-label-primary)}",
@@ -976,7 +1009,7 @@ const CSS3 = [
      官方 input.dock 是卡上方的 column-flex 区 —— flex:1 会变纵向拔高;
      改按官方 TodoDock(lXshSW_root)同形几何:与输入卡对齐、居中、不拔高 */
   ".todo-bar{flex:none;box-sizing:border-box;width:calc(100% - var(--dsh-composer-side-clearance)*2 - var(--dsh-composer-dock-inset)*4);max-width:calc(var(--dsh-composer-card-max-width) - var(--dsh-composer-dock-inset)*4);margin:0 auto}",
-  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}}"
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}.au-slist,.au-slist-in,.au-ws-ic svg{transition:none!important}.au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:none!important}}"
 ];
 
 const CSS = CSS1.concat(CSS2, CSS3).join("\n");
@@ -1029,8 +1062,9 @@ function auDur(ms) {
   if (ms < 1000) return Math.round(ms) + "ms";
   return (ms / 1000).toFixed(1) + "s";
 }
-function Ic(kind) {
+function Ic(kind, cls) {
   const a = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
+  if (cls) a.className = cls;
   if (kind === "search") return h("svg", a, h("circle", { cx: 11, cy: 11, r: 7 }), h("path", { d: "m20 20-3.5-3.5" }));
   if (kind === "read") return h("svg", a, h("path", { d: "M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" }), h("path", { d: "M14 3v5h5M9 13h6M9 17h4" }));
   if (kind === "edit") return h("svg", a, h("path", { d: "M11 5h6a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-6" }), h("path", { d: "M17 3l4 4L11 17l-5 1 1-5Z" }));
@@ -1411,14 +1445,17 @@ function AuGroup(props) {
   const rv = props.renameValue != null ? props.renameValue : g.label;
   return h("div", { className: "au-wsg" + (closed ? " au-closed" : "") + (props.containsCurrent ? " au-curgroup" : "") },
     h("button", { type: "button", className: "au-wsg-head", title: g.ws ? (g.ws.path || g.label) : "", onClick: props.onToggle },
-      h("span", { className: "au-ws-ic" }, Ic("chevdown"), Ic(closed ? "folder" : "folderopen")),
+      h("span", { className: "au-ws-ic" }, Ic("chevdown", "au-chev2"), Ic(closed ? "folder" : "folderopen", "au-fld")),
       renaming
         ? h("input", { className: "au-wsg-rename", value: rv, autoFocus: true, spellCheck: false, onChange: function (e) { props.onRenameValue(e.target.value); }, onClick: function (e) { e.stopPropagation(); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); props.onRenameCommit(); } if (e.key === "Escape") { e.preventDefault(); props.onRenameCancel(); } }, onBlur: function () { props.onRenameCommit(); } })
         : h("b", null, g.label),
       renaming ? null : h("span", { className: "au-wsg-acts" },
         g.menuSlot,
         g.ws ? h("button", { type: "button", className: "au-wsg-act", title: "在此目录新建会话", "aria-label": "在此目录新建会话", onClick: function (e) { e.stopPropagation(); au.startSession(g.ws.workspaceId); } }, Ic("plus")) : null)),
-    h("div", { className: "au-slist" }, closed ? null : props.children));
+    /* P15 前修订 IV:children 保留挂载(不随 closed 卸载),收合交给
+       .au-slist grid-rows 插值 + .au-slist-in 渐隐;行级 stagger 见 CSS
+       (animation-name 随 .au-closed 切换,每次展开重播) */
+    h("div", { className: "au-slist" }, h("div", { className: "au-slist-in" }, props.children)));
 }
 
 function AuBrowserWide(props) {
