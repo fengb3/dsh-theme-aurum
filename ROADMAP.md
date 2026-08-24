@@ -332,3 +332,9 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
 - **发版后追补(同日)**:工具卡展开/收合曲线统一 ease-in-out(.45,0,.55,1,
   两头慢中间快,去过冲);Markdown 表格分隔线修复(border token 全 transparent
   误伤 md 表格网格,scoped 直写 fg 12% tint 分隔线 + 表头 surface-2 底)。
+- **追补 II/III(同日,用户连续报)**:◈ 上下文注入与 reasoning 折叠态统一为
+  au-tool 同款卡壳(紧凑 header + chevron 点击展开;替换 II 的悬停展开方案);
+  连续 ◈ 平铺 → 逐节点紧凑卡;assistant 鲸鱼头像移除(原型无);运行态
+  「Deep diving」滚字 → 原型三点 bob(5px 金点 1.2s delay .15/.3);md li 因
+  去头像宽于原型 42px,proto-diff 记 INFO_ONLY。verify-cards3.js 门禁 +
+  gate/p11/proto-diff 回归绿。

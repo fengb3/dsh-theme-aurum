@@ -308,7 +308,22 @@ window.__ModuleLoader__.load({
        + 表头 surface-2 70% 底 + 1.5px 下边线。实测 tdBorder=1px 可见、
        表头底色落地、5 行表格网格完整。
     回归 gate/p11 全绿;proto-diff md li 行为内容噪声(样本行数不同,
-       宽度/字号/padding 全一致),非缺陷。 */
+       宽度/字号/padding 全一致),非缺陷。
+
+    ── P15 追补 III · 三处形态统一(2026-08-24,用户报)──────────
+    1. ◈ 上下文注入 = au-tool 同款卡壳(替换追补 II 悬停方案,用户嫌丑):每个
+       注入节点一张紧凑卡 —— header(官方 Sparkle + 「上下文注入」+ 首行摘要 +
+       chevron)点击 grid 展开/收合全文,面色/hover/chevron/曲线与工具卡全同。
+    2. reasoning 折叠态 = 同款卡壳(QWLzlG_* 换皮升级):r14 + 面色同 au-tool +
+       row 10 13 可点 hover + chevron 旋转;separator 隐藏;thinkBody 保持 serif
+       italic;运行扫光金保留。
+    3. 运行态「Deep diving」滚字 → 原型三点跳动(用户指定):turnStatus 元素 =
+       点1,::before/::after = 点2/3(5px 金点,bob 1.2s,delay 0/.15/.3,原型
+       .t-dots 逐字参数);shimmer 文字/渐变底清零,时钟隐藏。
+    实测(verify-cards3.js,真实触发运行回合):ctx 卡×3 r14 收合 0→展开 294、
+    chevron 90°;reasoning r14 pad 10 13 pointer、sep none、chevron 旋转;
+    dots 5×5 au-bob 1.2s delay .15/.3 金色。md li 因去头像比原型宽 42(原型 md
+    内缩于头像列)→ proto-diff 该行改 INFO_ONLY。回归 gate/p11/proto-diff 绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -659,15 +674,31 @@ const CSS1 = [
   "body .wSkVaW_tab:hover{color:var(--fg)}",
   "body .wSkVaW_tabActive,body .wSkVaW_tab.wSkVaW_tabActive{background:oklch(79% 0.13 84 / .16);color:var(--gold-strong)}",
   "body:not([data-ds-dark-theme]) .wSkVaW_tabActive{background:oklch(55% 0.115 80 / .13)}",
-  /* ── P9 残留 · reasoning 折叠段(官方 ReasoningRow QWLzlG_*,原型 .reasoning)──
-     卡片化(surface tint r12)+ mono 头 + serif italic 思路体 + 虚线分隔;运行扫光换金 */
-  "body [data-chat-flow-kind=assistant-step] .QWLzlG_root{background:color-mix(in oklab,var(--surface) 55%,transparent);border-radius:12px;margin-bottom:10px;overflow:hidden}",
-  "body .QWLzlG_row{padding:8px 13px}",
-  "body .QWLzlG_title{font-family:var(--font-mono);font-weight:400;font-size:11.5px;color:var(--faint);letter-spacing:.04em}",
-  "body .QWLzlG_summary{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);line-height:1.7}",
-  "body .QWLzlG_chevron{color:var(--gold-dim)}",
-  "body .QWLzlG_thinkBody{font-family:var(--font-serif);font-style:italic;font-size:13px;line-height:1.9;color:var(--muted);padding:8px 15px 12px;margin:0 13px;border-top:1px dashed color-mix(in oklab,var(--muted) 25%,transparent)}",
+  /* ── P15 追补 III · reasoning 折叠态 = au-tool 同款卡壳(用户指定)──
+     官方 DisclosureRow(icon+title+summary+chevron,行点击展开)套 au-tool 面色/
+     圆角14/hover/chevron 旋转;展开体保持 serif italic 思路;运行扫光换金 */
+  "body [data-chat-flow-kind=assistant-step] .QWLzlG_root{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);border-radius:14px;margin:2px 0;overflow:hidden}",
+  "body .QWLzlG_row{padding:10px 13px;display:flex;align-items:center;gap:11px;cursor:pointer;user-select:none;transition:background .15s}",
+  "body .QWLzlG_row:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
+  "body .QWLzlG_leading{color:var(--dsw-alias-label-tertiary);display:inline-flex}",
+  "body .QWLzlG_title{font-family:var(--font-mono);font-weight:400;font-size:12.5px;color:var(--dsw-alias-label-primary);letter-spacing:.04em}",
+  "body .QWLzlG_separator{display:none}",
+  "body .QWLzlG_summary{font-family:var(--ds-font-family-code);font-size:12px;color:var(--dsw-alias-label-secondary);line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}",
+  "body .QWLzlG_chevron{color:var(--dsw-alias-label-tertiary);display:inline-flex;transition:transform .34s cubic-bezier(.3,1.35,.45,1)}",
+  "body .QWLzlG_root .QWLzlG_chevron{transform:rotate(90deg)}",
+  "body .QWLzlG_thinkBody{font-family:var(--font-serif);font-style:italic;font-size:13px;line-height:1.9;color:var(--muted);padding:11px 15px 13px;margin:0 13px;border-top:1px dashed color-mix(in oklab,var(--muted) 25%,transparent)}",
   "body .QWLzlG_root[data-state=running] .QWLzlG_row:after{background:linear-gradient(90deg,transparent 0%,color-mix(in oklab,var(--gold) 16%,transparent) 55%,transparent 100%)}",
+  /* ── P15 追补 III · 运行态状态行 = 原型三点跳动(用户指定,替换 Deep diving 滚字)──
+     官方 Md3f7G_turnStatus(shimmer 文字+时钟)整体改造:元素=点1,::before/::after=
+     点2/3(5px 金点,bob 1.2s,delay 0/.15/.3 —— 原型 .t-dots 逐字参数);文字/
+     渐变底/shimmer 动画全清零,时钟隐藏(原型无时钟) */
+  "body .Md3f7G_turnStatus{background-image:none!important;-webkit-background-clip:initial!important;background-clip:initial!important;-webkit-text-fill-color:initial!important;font-size:0;width:5px;height:5px;border-radius:50%;background-color:var(--gold-dim)!important;position:relative;overflow:visible;display:inline-block;align-self:flex-start;margin:10px 0 4px;animation:au-bob 1.2s infinite!important}",
+  "body .Md3f7G_turnStatus::before,body .Md3f7G_turnStatus::after{content:\"\";position:absolute;top:0;width:5px;height:5px;border-radius:50%;background:var(--gold-dim)}",
+  "body .Md3f7G_turnStatus::before{left:10px;animation:au-bob 1.2s infinite .15s}",
+  "body .Md3f7G_turnStatus::after{left:20px;animation:au-bob 1.2s infinite .3s}",
+  "body .Md3f7G_turnStatusClock{display:none}",
+  "@keyframes au-bob{30%{transform:translateY(-4px);opacity:.5}}",
+  "@media (prefers-reduced-motion:reduce){body .Md3f7G_turnStatus,body .Md3f7G_turnStatus::before,body .Md3f7G_turnStatus::after{animation:none!important}}",
   "body ::selection{background:var(--aurum-selection)}",
   "body :focus-visible{outline:2px solid var(--aurum-focus);outline-offset:2px}",
   "body [data-composer-card]{border-radius:22px;transition:box-shadow .25s ease}",
@@ -783,7 +814,26 @@ const CSS2 = [
   ".au-user-row{display:flex;justify-content:flex-end;margin:2px 0}",
   ".au-bubble{max-width:min(525px,82%);border-radius:22px;padding:13px 19px;background:linear-gradient(135deg,color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent),color-mix(in oklab,var(--aurum-gold-strong) 7%,transparent));font-family:var(--dsw-font-markdown-base-font-family);font-size:15px;line-height:1.85;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word}",
   ".au-img{max-width:100%;border-radius:14px;display:block;margin-top:8px}",
-  ".au-ctx-row{font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--aurum-gold-dim);padding:2px 4px;letter-spacing:.03em;display:flex;align-items:center;gap:8px}",
+  /* P15 追补 III:◈ 上下文注入 = au-tool 同款卡壳(用户指定,替换追补 II 悬停方案)——
+     每个注入节点一张紧凑卡:header(官方 Sparkle + mono 名 + 首行摘要 + chevron),
+     点击 grid 展开/收合全文;面色/hover/chevron/曲线与工具卡完全一致 */
+  ".au-ctx-card{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
+  ".au-ctx-card .au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none;transition:background .15s}",
+  ".au-ctx-card .au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
+  ".au-ctx-card .au-ico{width:27px;height:27px;border-radius:8px;flex:none;display:grid;place-items:center;background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);color:var(--aurum-gold-strong)}",
+  ".au-ctx-card .au-ico svg{width:14px;height:14px}",
+  ".au-ctx-card .au-txt{flex:1;min-width:0;text-align:left}",
+  ".au-ctx-card .au-name{font-family:var(--ds-font-family-code);font-size:12.5px;color:var(--dsw-alias-label-primary);display:flex;gap:8px;align-items:baseline}",
+  ".au-ctx-card .au-name em{font-style:normal;color:var(--dsw-alias-label-tertiary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}",
+  ".au-ctx-card .au-chev{width:13px;height:13px;color:var(--dsw-alias-label-tertiary);flex:none;display:inline-flex;transition:transform .34s cubic-bezier(.3,1.35,.45,1)}",
+  ".au-ctx-card .au-chev svg{width:13px;height:13px}",
+  ".au-ctx-card.au-open .au-chev{transform:rotate(90deg)}",
+  ".au-ctx-card .au-x{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.45,0,.55,1)}",
+  ".au-ctx-card.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
+  ".au-ctx-card .au-clip{overflow:hidden;min-height:0}",
+  ".au-ctx-card .au-in{padding:2px 15px 13px 51px}",
+  ".au-ctx-full{font-family:var(--ds-font-family-code);font-size:11px;line-height:1.8;color:var(--dsw-alias-label-secondary);white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 40%,transparent);border-radius:8px;padding:9px 12px}",
+  "@media (prefers-reduced-motion:reduce){.au-ctx-card .au-x,.au-ctx-card .au-chev{transition:none!important}}",
   ".au-callrow{margin:0}",
   ".au-fstat{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-right:auto}",
   ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
@@ -1000,9 +1050,8 @@ const CSS3 = [
      就近继承压不过 —— 挂 [data-conversation-scroll] 结构锚并对全部后代逐元素定义
      (自有定义恒胜继承,且不耦合混淆类名) */
   "body [data-conversation-scroll],body [data-conversation-scroll] *{--dsh-chat-content-width:712px}",
-  "[data-chat-flow-kind=assistant-step]{position:relative;padding-left:42px}",
-  "[data-chat-flow-kind=assistant-step]::before{content:\"\";position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;background:color-mix(in oklab,var(--gold) 9%,transparent)}",
-  "[data-chat-flow-kind=assistant-step]::after{content:\"\";position:absolute;left:4.5px;top:6.5px;width:19px;height:19px;background-color:var(--gold);-webkit-mask:url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M23.0584%204.95203C22.8129%204.83203%2022.7074%205.06103%2022.5639%205.17704C22.5149%205.21454%2022.4734%205.26354%2022.4319%205.30854C22.0734%205.69155%2021.6543%205.94306%2021.1073%205.91306C20.3073%205.86806%2019.6243%206.11957%2019.0203%206.73158C18.8918%205.97706%2018.4652%205.52655%2017.8162%205.23754C17.4767%205.08753%2017.1332%204.93703%2016.8952%204.61052C16.7292%204.37801%2016.6837%204.11901%2016.6007%203.8635C16.5477%203.70949%2016.4952%203.55199%2016.3177%203.52549C16.1252%203.49549%2016.0497%203.65699%2015.9742%203.792C15.6722%204.34401%2015.5552%204.95203%2015.5667%205.56805C15.5932%206.95359%2016.1782%208.05712%2017.3407%208.84215C17.4727%208.93215%2017.5067%209.02215%2017.4652%209.15366C17.3857%209.42416%2017.2917%209.68667%2017.2087%209.95718C17.1557%2010.1297%2017.0767%2010.1677%2016.8917%2010.0922C16.2537%209.82568%2015.7027%209.43117%2015.2156%208.95465C14.3891%208.15513%2013.6416%207.2726%2012.7096%206.58158C12.4906%206.42007%2012.2716%206.27007%2012.045%206.12707C11.094%205.20354%2012.1696%204.44502%2012.4186%204.35501C12.6791%204.26101%2012.5091%203.938%2011.6675%203.942C10.826%203.9455%2010.056%204.22751%209.07446%204.60302C8.93096%204.65952%208.77995%204.70052%208.62545%204.73452C7.73492%204.56552%206.80989%204.52802%205.84386%204.63702C4.02481%204.83953%202.57177%205.69955%201.50373%207.1676C0.220694%208.93215%20-0.0813148%2010.9372%200.288196%2013.0283C0.676708%2015.2323%201.80174%2017.0569%203.53029%2018.4834C5.32285%2019.9625%207.38741%2020.6875%209.74298%2020.5485C11.1735%2020.466%2012.7661%2020.2745%2014.5626%2018.7539C15.0156%2018.9795%2015.4912%2019.0695%2016.2797%2019.137C16.8872%2019.1935%2017.4722%2019.107%2017.9252%2019.013C18.6347%2018.8629%2018.5857%2018.2059%2018.3292%2018.0854C16.2497%2017.1169%2016.7062%2017.5109%2016.2912%2017.1919C17.3477%2015.9419%2018.9618%2013.7198%2019.4598%2010.6942C19.5088%2010.3602%2019.5713%209.88968%2019.5638%209.61917C19.5598%209.45417%2019.5978%209.39016%2019.7863%209.37116C20.3073%209.31116%2020.8128%209.16866%2021.2773%208.91315C22.6249%208.17713%2023.1684%206.96809%2023.2964%205.51905C23.3154%205.29754%2023.2924%205.06853%2023.0584%204.95203ZM11.3165%2017.9954C9.30097%2016.4109%208.32344%2015.8894%207.91992%2015.9119C7.54241%2015.9344%207.61042%2016.3664%207.69342%2016.6479C7.78042%2016.9259%207.89342%2017.1174%208.05193%2017.3614C8.16143%2017.5229%208.23694%2017.7629%207.94243%2017.9434C7.29341%2018.3449%206.16487%2017.8084%206.11187%2017.7819C4.79833%2017.0084%203.7003%2015.9874%202.92628%2014.5908C2.17875%2013.2468%201.74474%2011.8047%201.67324%2010.2657C1.65424%209.89418%201.76374%209.76267%202.13375%209.69517C2.62077%209.60517%203.12278%209.58617%203.6093%209.65767C5.66636%209.95818%207.41741%2010.8777%208.88545%2012.3348C9.72348%2013.1643%2010.3575%2014.1558%2011.0105%2015.1243C11.705%2016.1529%2012.4521%2017.1329%2013.4036%2017.9364C13.7396%2018.2179%2014.0076%2018.4319%2014.2641%2018.5899C13.4906%2018.6764%2012.1996%2018.6949%2011.3165%2017.9964V17.9954ZM12.2826%2011.7817C12.2826%2011.6167%2012.4146%2011.4852%2012.5806%2011.4852C12.6181%2011.4852%2012.6521%2011.4927%2012.6826%2011.5037C12.7241%2011.5187%2012.7621%2011.5412%2012.7921%2011.5752C12.8451%2011.6277%2012.8751%2011.7027%2012.8751%2011.7817C12.8751%2011.9467%2012.7431%2012.0782%2012.5771%2012.0782C12.4111%2012.0782%2012.2826%2011.9467%2012.2826%2011.7817ZM15.2831%2013.3208C15.0906%2013.3998%2014.8981%2013.4673%2014.7131%2013.4748C14.4261%2013.4898%2014.1131%2013.3733%2013.9431%2013.2308C13.6791%2013.0093%2013.4901%2012.8853%2013.4111%2012.4988C13.3771%2012.3338%2013.3961%2012.0782%2013.4261%2011.9317C13.4941%2011.6162%2013.4186%2011.4137%2013.1961%2011.2297C13.0151%2011.0797%2012.7846%2011.0382%2012.5316%2011.0382C12.4371%2011.0382%2012.3506%2010.9967%2012.2861%2010.9632C12.1806%2010.9107%2012.0936%2010.7792%2012.1766%2010.6177C12.2031%2010.5652%2012.3316%2010.4377%2012.3616%2010.4152C12.7051%2010.2197%2013.1011%2010.2837%2013.4676%2010.4302C13.8071%2010.5692%2014.0641%2010.824%2014.4336%2011.1847C14.8111%2011.6202%2014.8791%2011.7402%2015.0941%2012.0672C15.2641%2012.3228%2015.4186%2012.5853%2015.5247%2012.8858C15.5887%2013.0733%2015.5057%2013.2268%2015.2831%2013.3208Z%22%2F%3E%3C%2Fsvg%3E\") center/contain no-repeat;mask:url(\"data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2024%2024%22%3E%3Cpath%20fill%3D%22black%22%20d%3D%22M23.0584%204.95203C22.8129%204.83203%2022.7074%205.06103%2022.5639%205.17704C22.5149%205.21454%2022.4734%205.26354%2022.4319%205.30854C22.0734%205.69155%2021.6543%205.94306%2021.1073%205.91306C20.3073%205.86806%2019.6243%206.11957%2019.0203%206.73158C18.8918%205.97706%2018.4652%205.52655%2017.8162%205.23754C17.4767%205.08753%2017.1332%204.93703%2016.8952%204.61052C16.7292%204.37801%2016.6837%204.11901%2016.6007%203.8635C16.5477%203.70949%2016.4952%203.55199%2016.3177%203.52549C16.1252%203.49549%2016.0497%203.65699%2015.9742%203.792C15.6722%204.34401%2015.5552%204.95203%2015.5667%205.56805C15.5932%206.95359%2016.1782%208.05712%2017.3407%208.84215C17.4727%208.93215%2017.5067%209.02215%2017.4652%209.15366C17.3857%209.42416%2017.2917%209.68667%2017.2087%209.95718C17.1557%2010.1297%2017.0767%2010.1677%2016.8917%2010.0922C16.2537%209.82568%2015.7027%209.43117%2015.2156%208.95465C14.3891%208.15513%2013.6416%207.2726%2012.7096%206.58158C12.4906%206.42007%2012.2716%206.27007%2012.045%206.12707C11.094%205.20354%2012.1696%204.44502%2012.4186%204.35501C12.6791%204.26101%2012.5091%203.938%2011.6675%203.942C10.826%203.9455%2010.056%204.22751%209.07446%204.60302C8.93096%204.65952%208.77995%204.70052%208.62545%204.73452C7.73492%204.56552%206.80989%204.52802%205.84386%204.63702C4.02481%204.83953%202.57177%205.69955%201.50373%207.1676C0.220694%208.93215%20-0.0813148%2010.9372%200.288196%2013.0283C0.676708%2015.2323%201.80174%2017.0569%203.53029%2018.4834C5.32285%2019.9625%207.38741%2020.6875%209.74298%2020.5485C11.1735%2020.466%2012.7661%2020.2745%2014.5626%2018.7539C15.0156%2018.9795%2015.4912%2019.0695%2016.2797%2019.137C16.8872%2019.1935%2017.4722%2019.107%2017.9252%2019.013C18.6347%2018.8629%2018.5857%2018.2059%2018.3292%2018.0854C16.2497%2017.1169%2016.7062%2017.5109%2016.2912%2017.1919C17.3477%2015.9419%2018.9618%2013.7198%2019.4598%2010.6942C19.5088%2010.3602%2019.5713%209.88968%2019.5638%209.61917C19.5598%209.45417%2019.5978%209.39016%2019.7863%209.37116C20.3073%209.31116%2020.8128%209.16866%2021.2773%208.91315C22.6249%208.17713%2023.1684%206.96809%2023.2964%205.51905C23.3154%205.29754%2023.2924%205.06853%2023.0584%204.95203ZM11.3165%2017.9954C9.30097%2016.4109%208.32344%2015.8894%207.91992%2015.9119C7.54241%2015.9344%207.61042%2016.3664%207.69342%2016.6479C7.78042%2016.9259%207.89342%2017.1174%208.05193%2017.3614C8.16143%2017.5229%208.23694%2017.7629%207.94243%2017.9434C7.29341%2018.3449%206.16487%2017.8084%206.11187%2017.7819C4.79833%2017.0084%203.7003%2015.9874%202.92628%2014.5908C2.17875%2013.2468%201.74474%2011.8047%201.67324%2010.2657C1.65424%209.89418%201.76374%209.76267%202.13375%209.69517C2.62077%209.60517%203.12278%209.58617%203.6093%209.65767C5.66636%209.95818%207.41741%2010.8777%208.88545%2012.3348C9.72348%2013.1643%2010.3575%2014.1558%2011.0105%2015.1243C11.705%2016.1529%2012.4521%2017.1329%2013.4036%2017.9364C13.7396%2018.2179%2014.0076%2018.4319%2014.2641%2018.5899C13.4906%2018.6764%2012.1996%2018.6949%2011.3165%2017.9964V17.9954ZM12.2826%2011.7817C12.2826%2011.6167%2012.4146%2011.4852%2012.5806%2011.4852C12.6181%2011.4852%2012.6521%2011.4927%2012.6826%2011.5037C12.7241%2011.5187%2012.7621%2011.5412%2012.7921%2011.5752C12.8451%2011.6277%2012.8751%2011.7027%2012.8751%2011.7817C12.8751%2011.9467%2012.7431%2012.0782%2012.5771%2012.0782C12.4111%2012.0782%2012.2826%2011.9467%2012.2826%2011.7817ZM15.2831%2013.3208C15.0906%2013.3998%2014.8981%2013.4673%2014.7131%2013.4748C14.4261%2013.4898%2014.1131%2013.3733%2013.9431%2013.2308C13.6791%2013.0093%2013.4901%2012.8853%2013.4111%2012.4988C13.3771%2012.3338%2013.3961%2012.0782%2013.4261%2011.9317C13.4941%2011.6162%2013.4186%2011.4137%2013.1961%2011.2297C13.0151%2011.0797%2012.7846%2011.0382%2012.5316%2011.0382C12.4371%2011.0382%2012.3506%2010.9967%2012.2861%2010.9632C12.1806%2010.9107%2012.0936%2010.7792%2012.1766%2010.6177C12.2031%2010.5652%2012.3316%2010.4377%2012.3616%2010.4152C12.7051%2010.2197%2013.1011%2010.2837%2013.4676%2010.4302C13.8071%2010.5692%2014.0641%2010.824%2014.4336%2011.1847C14.8111%2011.6202%2014.8791%2011.7402%2015.0941%2012.0672C15.2641%2012.3228%2015.4186%2012.5853%2015.5247%2012.8858C15.5887%2013.0733%2015.5057%2013.2268%2015.2831%2013.3208Z%22%2F%3E%3C%2Fsvg%3E\") center/contain no-repeat}",
+  /* P15 追补 II:assistant 节鲸鱼头像移除(用户指定,原型无此物)—— 金圈/鲸鱼 mask/42px 缩进全撤 */
+  "[data-chat-flow-kind=assistant-step]{position:relative}",
   "[data-chat-flow-kind=assistant-step] :is(ul,ol){margin:2px 0 12px 4px;list-style:none;padding:0}",
   "[data-chat-flow-kind=assistant-step] li{position:relative;padding-left:18px;margin-bottom:7px;color:var(--muted);list-style:none;font:400 15px/1.95 var(--font-serif)}",
   "[data-chat-flow-kind=assistant-step] li::before{content:\"◆\";position:absolute;left:0;top:0;font-size:8px;color:var(--gold-dim);line-height:2.6}",
@@ -1875,12 +1924,24 @@ function AuUserBubble(props) {
     texts.length ? h("div", null, texts.join("\n\n")) : null,
     imgs.map(function (a, i) { return h(AuImg, { key: i, attachment: a, loadImage: props.loadImage }); })));
 }
+/* P15 追补 III:上下文注入卡 = au-tool 同款卡壳(替换 ◈ 平步行)——
+   header(官方 Sparkle + 「上下文注入」+ 首行摘要 + chevron)点击展开全文,
+   grid 收合曲线与工具卡一致(ease-in-out) */
 function AuContext(props) {
   const node = props.node || {};
   const data = node.data || node;
   const txt = auText(data.content);
   if (!txt) return null;
-  return h("div", { className: "au-ctx-row" }, "◈ " + txt);
+  const st = React.useState(false);
+  const open = st[0];
+  const fl = auFirstLine(txt);
+  const em = fl.length > 56 ? fl.slice(0, 53) + "…" : fl;
+  return h("div", { className: "au-ctx-card" + (open ? " au-open" : "") },
+    h("div", { className: "au-main", onClick: function () { st[1](!open); } },
+      h("span", { className: "au-ico" }, Ic("stars")),
+      h("span", { className: "au-txt" }, h("span", { className: "au-name" }, "上下文注入", h("em", null, em))),
+      h("span", { className: "au-chev" }, Ic("chevron"))),
+    h("div", { className: "au-x" }, h("div", { className: "au-clip" }, h("div", { className: "au-in" }, h("div", { className: "au-ctx-full" }, txt)))));
 }
 
 /* ═══ P9 · 会话流尾部节点(htm + 原型类名,恒等映射)═══

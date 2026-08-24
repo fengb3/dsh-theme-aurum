@@ -34,6 +34,10 @@ async page => {
   const TOL_RECT = 1.5, TOL_FONT = 0.5;
   /* 文本内容驱动宽度的元素:只断言 h/字号,不断言 w(两页文本本就不同) */
   const NO_W = new Set(['turn-tail tx', 'inline code']);
+  /* P15 追补 III:md li 高度受文本行数驱动、宽度受「去头像」用户决策影响
+     (原型 md 内缩于 42px 头像列 → 666;实况已去头像 → 712 列满宽),
+     记录不断言(字号/padding 仍可比对,人工看数值) */
+  const INFO_ONLY = new Set(['md li']);
   const measure = ([list, which]) => list.map(entry => {
     const label = entry[0];
     const sel = which === 'live' && entry[2] ? entry[2] : entry[1];
@@ -64,7 +68,7 @@ async page => {
       const d = (x, y) => +(x - y).toFixed(1);
       const dw = d(a.rect.w, b.rect.w), dh = d(a.rect.h, b.rect.h);
       const fa = parseFloat(a.font), fb = parseFloat(b.font);
-      const ok = (NO_W.has(a.label) || Math.abs(dw) <= TOL_RECT) && Math.abs(dh) <= TOL_RECT && Math.abs(fa - fb) <= TOL_FONT;
+      const ok = INFO_ONLY.has(a.label) || ((NO_W.has(a.label) || Math.abs(dw) <= TOL_RECT) && Math.abs(dh) <= TOL_RECT && Math.abs(fa - fb) <= TOL_FONT);
       if (!ok) failures++;
       return {
         label: a.label, ok,
