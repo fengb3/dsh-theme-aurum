@@ -16,6 +16,21 @@ window.__ModuleLoader__.load({
 		      避开本 loader 文件的 module.exports 语义)· P9 恒等映射流水基础设施 ── */
 		!function(){var n=function(t,e,s,u){var r;e[0]=0;for(var h=1;h<e.length;h++){var p=e[h++],a=e[h]?(e[0]|=p?1:2,s[e[h++]]):e[++h];3===p?u[0]=a:4===p?u[1]=Object.assign(u[1]||{},a):5===p?(u[1]=u[1]||{})[e[++h]]=a:6===p?u[1][e[++h]]+=a+"":p?(r=t.apply(a,n(t,a,s,["",null])),u.push(r),a[0]?e[0]|=2:(e[h-2]=0,e[h]=r)):u.push(a)}return u},t=new Map,e=function(e){var s=t.get(this);return s||(s=new Map,t.set(this,s)),(s=n(this,s.get(e)||(s.set(e,s=function(n){for(var t,e,s=1,u="",r="",h=[0],p=function(n){1===s&&(n||(u=u.replace(/^\s*\n\s*|\s*\n\s*$/g,"")))?h.push(0,n,u):3===s&&(n||u)?(h.push(3,n,u),s=2):2===s&&"..."===u&&n?h.push(4,n,0):2===s&&u&&!n?h.push(5,0,!0,u):s>=5&&((u||!n&&5===s)&&(h.push(s,0,u,e),s=6),n&&(h.push(s,n,0,e),s=6)),u=""},a=0;a<n.length;a++){a&&(1===s&&p(),p(a));for(var o=0;o<n[a].length;o++)t=n[a][o],1===s?"<"===t?(p(),h=[h],s=3):u+=t:4===s?"--"===u&&">"===t?(s=1,u=""):u=t+u[0]:r?t===r?r="":u+=t:'"'===t||"'"===t?r=t:">"===t?(p(),s=1):s&&("="===t?(s=5,e=u,u=""):"/"===t&&(s<5||">"===n[a][o+1])?(p(),3===s&&(h=h[0]),s=h,(h=h[0]).push(2,0,s),s=0):" "===t||"\t"===t||"\n"===t||"\r"===t?(p(),s=2):u+=t),3===s&&"!--"===u&&(s=4,h=h[0])}return p(),h}(e)),s),arguments,[])).length>1?s:s[0]};self.htm=e}();
 		const html = self.htm.bind(React.createElement);
+		/* ── P15 前修订 VI:图标一律 DSH 官方原版 ──
+		   官方插件同款通道 require("@deepseek-ai/dsh-client-ui-primitives") 直接拿
+		   React 图标组件(与官方 ToolRow VARIANT_ICONS 同表);失败(模块不可用)回退
+		   自绘保底。映射(figma 官方):read=Browse、write/edit=Edit、search=Search、
+		   bash=Api、todo=Checklist、web=Globe、others 兜底=Sparkle(官方兜底即
+		   四角星,与用户指定形态一致)、folder=FolderClose/Open、ask=Question */
+		let AU_PI = null;
+		try { AU_PI = require("@deepseek-ai/dsh-client-ui-primitives"); } catch (e) { AU_PI = null; }
+		const AU_ICON_OFFICIAL = {
+			folder: "IconFolderClose16", folderopen: "IconFolderOpen16",
+			search: "IconSearchOutline16", read: "IconBrowseOutline16", edit: "IconEditOutline16",
+			todo: "IconChecklistOutline14", globe: "IconGlobeOutline14", terminal: "IconApiOutline14",
+			stars: "IconSparkle16", question: "IconQuestionOutline14",
+			chevdown: "IconChevronDownOutline14", plus: "IconPlusOutline16"
+		};
 /* ═══ Aurum 鎏金主题 — P7 = P5 + 左侧历史会话栏整体重写(原型级) ═══
    按 dsh-agent-workspace.html 原型重写左侧会话栏:
    1. 以 priority:-1 遮蔽注册 sidebar.workspaces(官方浏览器保留在册, 插件停止即还原),
@@ -261,7 +276,21 @@ window.__ModuleLoader__.load({
        同轴实测:字标中心 47 ≡ 标题中心 47(delta 0,padding-top 24 校准)。
     4. tab 选中横杠移除:官方 :after 2px 底线 display:none,选中仅以
        胶囊金底呈现(放大截图复核无独立线条)。
-    回归:gate(三态)/p8b/p8c/proto-diff/p10 全绿。 */
+    回归:gate(三态)/p8b/p8c/proto-diff/p10 全绿。
+
+    ── P15 前修订 VI · 图标全量官方化(2026-08-24,用户指定)──────────
+    通道:factory 内 require("@deepseek-ai/dsh-client-ui-primitives")(官方插件
+    同款),Ic(kind) 优先渲染官方 React 图标组件,模块不可用才回退自绘。
+    映射 = 官方 ToolRow VARIANT_ICONS 同表:read=Browse16、write/edit=Edit16、
+    search/grep=Search16、bash·pwsh=Api14、todo=Checklist14、web=Globe14、
+    兜底=Sparkle16(官方兜底即四角星,与用户此前指定形态一致,自绘 stars 淘汰)、
+    folder=FolderClose16/FolderOpen16(分组头)、ask=Question14;连带 plus/chevdown
+    也换官方。渲染尺寸仍由既有 CSS 控制(css 覆盖 size 属性,viewBox 不失真),
+    交叉淡切类挂外包 span、stroke=currentColor 沿色链。
+    实测(verify-icons.js viewBox 普查):分组头 fld=16/chev2=14;工具卡
+    read16/grep16/pwsh14/edit16/write16/glob=Sparkle16/mcp=Sparkle16 全官方;
+    残留自绘仅 au-ws-ibtn 的 view/folderplus(自建功能钮,官方无对应原语,保留)。
+    回归 gate/p8c/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -1084,6 +1113,11 @@ function auDur(ms) {
   return (ms / 1000).toFixed(1) + "s";
 }
 function Ic(kind, cls) {
+  /* P15 前修订 VI:官方组件优先 —— 外层 span 承接交叉淡切类(au-fld/au-chev2),
+     svg 的 stroke=currentColor 沿色链继承;渲染尺寸由既有 CSS 控制
+     (css 覆盖 svg 的 size 属性,viewBox 不失真) */
+  const C = AU_PI && AU_PI[AU_ICON_OFFICIAL[kind]];
+  if (C) return h("span", cls ? { className: cls } : null, h(C, { size: 16 }));
   const a = { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
   if (cls) a.className = cls;
   if (kind === "search") return h("svg", a, h("circle", { cx: 11, cy: 11, r: 7 }), h("path", { d: "m20 20-3.5-3.5" }));
