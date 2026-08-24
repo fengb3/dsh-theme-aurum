@@ -84,7 +84,22 @@ window.__ModuleLoader__.load({
    与拖拽调宽无拔河);railNew leftPad=8=(56-40)/2 对齐原型;展开/回展 264@(12,12)
    无损;浮动菜单 items=[重命名F2/分支/归档]+sep+danger、Esc 关、F2 行内改名聚焦、
    视图菜单 4 项 manual✓;拖拽合成 DragEvent 全链 reorder 持久化(DOM 序翻转实测);
-   aurum-light 同门禁全绿。 */
+   aurum-light 同门禁全绿。
+
+   ── P9 残留收口(sh-head + reasoning,2026-08-24)─────────────
+   1. sh-head 主区头部(官方 DOM CSS 瞄准 wSkVaW_*,不重排结构):渐隐底、crumb 换
+      DISPLAY 18.5、模式 chip/Session log 换 mono 10.5 faint、tabs 胶囊右置
+      (radius999+bg-deep 底,tabActive 金 on,深浅双份)。官方=76px 双行带,原型=70 单行
+      浮头 —— 保留双行(重排=DOM 手术,违背铁律),同轴机制记残差。
+   2. reasoning 折叠段(官方 ReasoningRow QWLzlG_*,CSS 换皮):surface tint 卡 r12 +
+      mono 头 11.5 faint + thinkBody serif italic 13/1.9 + 虚线分隔 + 运行扫光换金。
+      不接管组件 —— 官方 disclosure 交互(chevron/流式摘要)原样保留。
+   3. in-tok/typing 记「不适用」:context 节点数据无 token 计数;官方无独立 typing 行
+      (运行态由 ReasoningRow/工具卡扫光承载)。
+   4. 浅色 --font-* 四族补齐(CSS3 light 块此前漏定义,DISPLAY/serif 在浅色全部失效)。
+   实测:crumb=Cormorant Garamond 18.5px(双主题)、tabs x=1292 r999 右置金 on、
+   reasoning 卡 oklab surface .55 r12 mb14、QWLzlG_title=JetBrains Mono;
+   verify-gate/p8b/p8c/proto-diff 回归全绿,主题切换往返无损。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -366,6 +381,29 @@ const CSS1 = [
   /* P9:逐节点入场(原型 .node rise)——挂在官方 flowItem 行上;列 gap16+行距12=原型 .node 28px 节奏 */
   "body [data-chat-anchor-key]{margin-bottom:12px;animation:aurum-rise .6s cubic-bezier(.22,.8,.26,1) both}",
   "@keyframes aurum-rise{from{opacity:0;transform:translateY(12px)}}",
+  /* ── P9 残留 · sh-head 主区头部(官方 DOM 瞄准 wSkVaW_*,原型 §5 sh-head/tabs)──
+     官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
+     渐隐底、DISPLAY 标题、mono 弱化 chips、tabs 胶囊右置金 on。 */
+  "body .wSkVaW_header{background:linear-gradient(180deg,color-mix(in oklab,var(--bg) 92%,transparent) 52%,transparent);border-bottom:none}",
+  "body .wSkVaW_header *{border-color:transparent!important}",
+  "body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-family:var(--font-display);font-weight:500;font-size:18.5px;letter-spacing:.02em;color:var(--fg)}",
+  "body .wSkVaW_crumbs{min-width:0;overflow:hidden}",
+  "body .wSkVaW_headerActions .SVAs4q_label{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.14em}",
+  "body .nL4_yW_sessionLogButton{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.1em}",
+  "body .wSkVaW_tabs{display:flex;justify-content:flex-end;width:max-content;margin-left:auto;gap:2px;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
+  "body .wSkVaW_tab{padding:5px 15px;border-radius:999px;font-size:12.5px;color:var(--muted);transition:.18s;white-space:nowrap}",
+  "body .wSkVaW_tab:hover{color:var(--fg)}",
+  "body .wSkVaW_tabActive,body .wSkVaW_tab.wSkVaW_tabActive{background:oklch(79% 0.13 84 / .16);color:var(--gold-strong)}",
+  "body:not([data-ds-dark-theme]) .wSkVaW_tabActive{background:oklch(55% 0.115 80 / .13)}",
+  /* ── P9 残留 · reasoning 折叠段(官方 ReasoningRow QWLzlG_*,原型 .reasoning)──
+     卡片化(surface tint r12)+ mono 头 + serif italic 思路体 + 虚线分隔;运行扫光换金 */
+  "body [data-chat-flow-kind=assistant-step] .QWLzlG_root{background:color-mix(in oklab,var(--surface) 55%,transparent);border-radius:12px;margin-bottom:14px;overflow:hidden}",
+  "body .QWLzlG_row{padding:8px 13px}",
+  "body .QWLzlG_title{font-family:var(--font-mono);font-weight:400;font-size:11.5px;color:var(--faint);letter-spacing:.04em}",
+  "body .QWLzlG_summary{font-family:var(--font-mono);font-size:11.5px;color:var(--faint);line-height:1.7}",
+  "body .QWLzlG_chevron{color:var(--gold-dim)}",
+  "body .QWLzlG_thinkBody{font-family:var(--font-serif);font-style:italic;font-size:13px;line-height:1.9;color:var(--muted);padding:8px 15px 12px;margin:0 13px;border-top:1px dashed color-mix(in oklab,var(--muted) 25%,transparent)}",
+  "body .QWLzlG_root[data-state=running] .QWLzlG_row:after{background:linear-gradient(90deg,transparent 0%,color-mix(in oklab,var(--gold) 16%,transparent) 55%,transparent 100%)}",
   "body ::selection{background:var(--aurum-selection)}",
   "body :focus-visible{outline:2px solid var(--aurum-focus);outline-offset:2px}",
   "body [data-composer-card]{border-radius:22px;transition:box-shadow .25s ease}",
@@ -551,7 +589,7 @@ const CSS2 = [
    自建组件从这里起直接消费原型类名与变量,不再翻译成 au-* 体系。 */
 const CSS3 = [
   "body[data-ds-dark-theme]{--bg:oklch(16% .014 330);--bg-deep:oklch(13.5% .012 330);--surface:oklch(21% .016 328);--surface-2:oklch(25.5% .018 326);--rail-1:oklch(19% .015 329);--rail-2:oklch(21.5% .016 329);--rail-raised:oklch(23.5% .018 328);--fg:oklch(93% .015 85);--muted:oklch(74% .022 328);--faint:oklch(56% .022 330);--border:transparent;--border-soft:transparent;--gold:oklch(83% .115 88);--gold-strong:oklch(79% .13 84);--gold-dim:oklch(70% .10 85);--gold-ink:oklch(21% .03 60);--rose:oklch(77% .095 350);--rose-strong:oklch(73% .115 350);--success:oklch(78% .10 155);--danger:oklch(68% .16 15);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
-  "body:not([data-ds-dark-theme]){--bg:oklch(96.5% .012 82);--bg-deep:oklch(94.5% .014 82);--surface:oklch(98.5% .008 82);--surface-2:oklch(92% .016 84);--rail-1:oklch(94.5% .014 82);--rail-2:oklch(96.5% .012 82);--rail-raised:oklch(98.5% .008 82);--fg:oklch(28% .05 330);--muted:oklch(46% .035 330);--faint:oklch(62% .03 330);--border:transparent;--border-soft:transparent;--gold:oklch(55% .115 80);--gold-strong:oklch(50% .12 78);--gold-dim:oklch(66% .11 82);--gold-ink:oklch(99% .005 85);--rose:oklch(58% .14 350);--rose-strong:oklch(53% .15 350);--success:oklch(52% .11 155);--danger:oklch(52% .16 18)}",
+  "body:not([data-ds-dark-theme]){--bg:oklch(96.5% .012 82);--bg-deep:oklch(94.5% .014 82);--surface:oklch(98.5% .008 82);--surface-2:oklch(92% .016 84);--rail-1:oklch(94.5% .014 82);--rail-2:oklch(96.5% .012 82);--rail-raised:oklch(98.5% .008 82);--fg:oklch(28% .05 330);--muted:oklch(46% .035 330);--faint:oklch(62% .03 330);--border:transparent;--border-soft:transparent;--gold:oklch(55% .115 80);--gold-strong:oklch(50% .12 78);--gold-dim:oklch(66% .11 82);--gold-ink:oklch(99% .005 85);--rose:oklch(58% .14 350);--rose-strong:oklch(53% .15 350);--success:oklch(52% .11 155);--danger:oklch(52% .16 18);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
   /* ── §5 尾部节点(整段拷贝)── */
   ".compress-head{display:flex;align-items:center;gap:8px;width:100%;padding:8px 4px;font-family:var(--font-mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em;text-align:left;background:none;border:none;cursor:pointer}",
   ".compress-head:hover{color:var(--muted)}",

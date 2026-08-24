@@ -63,6 +63,22 @@ async page => {
       await page.waitForTimeout(900);
       const after = await page.evaluate(() => [...document.querySelectorAll('[data-slot=sidebar] .au-srow .au-s-title')].map(s => s.textContent.trim()));
       out.drag = { ok: before.join('|') !== after.join('|'), before: before.slice(0, 3), after: after.slice(0, 3) };
+      /* 还原测试拖拽(把 src 拖回 dst 上沿 = before) */
+      await page.evaluate(() => {
+        const qs = document.querySelectorAll('[data-slot=sidebar] .au-srow');
+        window.__auR = { src: qs[2], dst: qs[1], dt: new DataTransfer() };
+        window.__auR.src.dispatchEvent(new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: window.__auR.dt }));
+      });
+      await page.waitForTimeout(120);
+      await page.evaluate(() => {
+        const t = window.__auR;
+        const r = t.dst.getBoundingClientRect();
+        const at = { clientX: r.x + 60, clientY: r.y + 4 };
+        t.dst.dispatchEvent(new DragEvent('dragover', Object.assign({ bubbles: true, cancelable: true, dataTransfer: t.dt }, at)));
+        t.dst.dispatchEvent(new DragEvent('drop', Object.assign({ bubbles: true, cancelable: true, dataTransfer: t.dt }, at)));
+        t.src.dispatchEvent(new DragEvent('dragend', { bubbles: true, cancelable: true, dataTransfer: t.dt }));
+      });
+      await page.waitForTimeout(700);
     } catch (e) {
       out.drag = { ok: false, error: e.message.split('\n')[0] };
     }
