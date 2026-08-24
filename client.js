@@ -249,7 +249,19 @@ window.__ModuleLoader__.load({
     实测(verify-group.js):idle fld=1/chev=0、hover fld=0(.72 缩)+chev=1 交叉;
     收合插值中 12.5px → 终态 0px+渐隐+visibility hidden;重展开行
     animName=au-row-in delay=.02s 重播、终态 180px;行点击可用;
-    回归 gate/p8b/p8c/proto-diff 全绿。 */
+    回归 gate/p8b/p8c/proto-diff 全绿。
+
+    ── P15 前修订 V · 主区 header 重造 + 主题文案(2026-08-24,用户报五处)──
+    0. 主题切换按钮文案去「鎏金」(用户指定):显示「深色主题/浅色主题」,
+       title「切换到浅色主题/切换到深色主题」。
+    1-3. header 按原型 .sh-head 方案重造(取代此前两列 grid 布局):
+       absolute 浮头(z30,高 70,不占文档流)—— 消息从纱下滚过渐隐,
+       不再被文档流实底块硬截断;渐变纱 = 底色 92% → 透明 52%(原型形态);
+       scroll 区 padding-top 86 让位;单行 flex:标题/tabs/actions 同一水平线。
+       同轴实测:字标中心 47 ≡ 标题中心 47(delta 0,padding-top 24 校准)。
+    4. tab 选中横杠移除:官方 :after 2px 底线 display:none,选中仅以
+       胶囊金底呈现(放大截图复核无独立线条)。
+    回归:gate(三态)/p8b/p8c/proto-diff/p10 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -579,15 +591,23 @@ const CSS1 = [
   "body .wSkVaW_crumbs{min-width:0;overflow:hidden}",
   "body .wSkVaW_headerActions .SVAs4q_label{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.14em}",
   "body .nL4_yW_sessionLogButton{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.1em}",
-  /* P15 前修订:tabs 与右上槽位左右排布 —— header 改两列 grid,titleRow
-     display:contents 提升子项:行1=crumbs+chips,行2=[tabs …… utilities]。
-     (此前 tabs 行与 utilities 上下堆叠在右侧,视觉挤成一团) */
-  "body .wSkVaW_header{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:6px}",
+  /* P15 前修订 V(原型 .sh-head 同轴浮头方案,取代此前两列 grid 布局):
+     header = absolute 浮头(不占文档流,消息从纱下滚过渐隐,不再硬截断);
+     高度 70 = 12 缩进 + 58 栏头,padding-top 12 + 内容行 58 居中 →
+     标题中心线 41 ≡ 侧栏字标中心线(卡 pad 12 + logoRow 58/2);
+     渐变纱 = 底色 92% → 透明(原型形态,消息透出 8%);单行 flex:
+     [crumb …… tabs …… actions/utilities] 同一水平线 */
+  "body .wSkVaW_root{position:relative}",
+  "body .wSkVaW_header{position:absolute;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:14px;height:70px;box-sizing:border-box;padding:24px 22px 0 20px;background:linear-gradient(180deg,color-mix(in oklab,var(--bg) 92%,transparent) 52%,transparent)}",
   "body .wSkVaW_titleRow{display:contents}",
-  "body .wSkVaW_titleCluster{grid-area:1/1;min-height:32px}",
-  "body .wSkVaW_headerActions{grid-area:1/2;justify-self:end;margin-left:20px}",
-  "body .wSkVaW_headerUtilities{grid-area:2/2;justify-self:end}",
-  "body .wSkVaW_tabs{grid-area:2/1;justify-self:end;display:flex;gap:2px;margin:0 14px 0 0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
+  "body .wSkVaW_titleCluster{flex:1;min-width:0;min-height:0}",
+  "body .wSkVaW_headerActions{order:3;margin-left:0}",
+  "body .wSkVaW_headerUtilities{order:2}",
+  "body .wSkVaW_tabs{order:1;display:flex;gap:2px;margin:0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
+  /* 滚动区顶部让位浮头(70 纱高 + 16 原留白),消息初始态在纱下方完整可见 */
+  "body .Md3f7G_scroll{padding-top:86px}",
+  /* tab 选中态去横杠(官方 :after 2px 底线),选中仅以胶囊金底呈现(原型 .tab.on) */
+  "body .wSkVaW_tab:after{display:none}",
   "body .wSkVaW_tab{padding:5px 15px;border-radius:999px;font-size:12.5px;color:var(--muted);transition:.18s;white-space:nowrap}",
   "body .wSkVaW_tab:hover{color:var(--fg)}",
   "body .wSkVaW_tabActive,body .wSkVaW_tab.wSkVaW_tabActive{background:oklch(79% 0.13 84 / .16);color:var(--gold-strong)}",
@@ -995,7 +1015,7 @@ const CSS3 = [
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
   /* ── P14 · 响应式降档(原型 §10;抽屉不适用:官方 ≤900 自动 68px 折叠轨,
      无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */
-  "@media (max-width:820px){body .wSkVaW_header{padding:10px 14px 0}body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-size:16px}body .Md3f7G_scroll{padding:12px calc(var(--dsh-composer-side-clearance) + 8px)}body .uV2eYG_root{padding-bottom:6px}body .pXSMma_headline{font-size:25px}body .pXSMma_stack{max-width:calc(100vw - 48px)}}",
+  "@media (max-width:820px){body .wSkVaW_header{padding-left:14px;padding-right:14px}body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-size:16px}body .Md3f7G_scroll{padding:12px calc(var(--dsh-composer-side-clearance) + 8px);padding-top:78px}body .uV2eYG_root{padding-bottom:6px}body .pXSMma_headline{font-size:25px}body .pXSMma_stack{max-width:calc(100vw - 48px)}}",
   "@media (max-width:640px){body .wSkVaW_tab{padding:4px 11px;font-size:12px}body .au-bubble{font-size:14.5px;max-width:90%}body .goal-track{width:64px}body .FJxK0a_sep{margin:0 6px}body .FJxK0a_root{font-size:9.5px}}",
   "@media (max-width:480px){body .todo-bar{min-width:100%}body .au-name em{display:none}body .turn-tail .tx{font-size:9.5px;letter-spacing:.02em}body .todo-it{font-size:10.5px}body .au-srow .au-s-title{font-size:11.5px}}",
   /* ── P11 · §7 子调用(整段拷贝;AuToolCallTree 消费)── */
@@ -1032,8 +1052,9 @@ function AurumFootToggle(props) {
   const isAurum = snap.id === "aurum-dark" || snap.id === "aurum-light";
   const dark = snap.mode === "dark";
   const wide = props.wide !== false;
-  const label = (isAurum ? "鎏金 · " : "进入鎏金 · ") + (dark ? "深色" : "浅色");
-  const title = isAurum ? (dark ? "切换到鎏金 · 浅色" : "切换到鎏金 · 深色") : "启用鎏金主题(保持当前深浅)";
+  /* P15 前修订 V:文案去「鎏金」(用户指定)—— 显示态就叫深色/浅色主题 */
+  const label = dark ? "深色主题" : "浅色主题";
+  const title = isAurum ? (dark ? "切换到浅色主题" : "切换到深色主题") : "启用主题(保持当前深浅)";
   return h("button", { type: "button", className: "aurum-footRow" + (wide ? "" : " au-rail"), title: title, "aria-label": title, onClick: function () { props.api.toggle(); } }, dark ? h(MoonIcon) : h(SunIcon), wide ? h("span", null, label) : null);
 }
 

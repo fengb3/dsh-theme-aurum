@@ -126,11 +126,12 @@
 
 - ✅ 用户气泡(右对齐、22px 圆角、金渐变 tint、≤525px/82%)、◈ 上下文行、图片附件。
 - ⬜→记「不适用」◈ 行 in-tok 标注:DSH context 节点数据无 token 计数,无法标注(2026-08-24)。
-- ✅ sh-head 主区标题栏(2026-08-24,CSS 瞄准 wSkVaW_*):渐隐底、DISPLAY 18.5 标题
-  (Cormorant 实测)、mono 弱化 chips、tabs 胶囊右置金 on(官方本就有对话/轨迹 tabs)。
-  残差:官方=76px 双行带 vs 原型 70 单行浮头,同轴机制以双行近似(重排=DOM 手术,不做)。
-  P15 前修订(2026-08-24):header 改两列 grid + titleRow display:contents ——
-  行2 = [tabs …… utilities] 同行左右排布(实测 sameRow、gap 34),不再右侧堆叠。
+- ✅ sh-head 主区标题栏(P15 前修订 V 重造,2026-08-24):按原型 .sh-head 方案 ——
+  absolute 浮头(高 70,z30,不占文档流)+ 渐变纱(底色 92%→透明 52%),消息从纱下
+  滚过渐隐不再硬截断;scroll padding-top 86 让位;单行 flex:标题/tabs/actions
+  同一水平线;同轴 delta=0(字标中心 47 ≡ 标题中心 47,padding-top 24 校准);
+  tab 选中横杠(:after 底线)移除;主题切换文案去「鎏金」= 深色/浅色主题。
+  此前形态(双行带、两列 grid)被本方案取代。
 - ✅ assistant 节:鲸鱼头像(P9 纯 CSS mask)+ reasoning 折叠段(2026-08-24,官方
   ReasoningRow QWLzlG_* CSS 换皮:surface 卡 r12 + mono 头 + serif italic 体 + 虚线分隔 +
   金扫光;官方 disclosure 交互原样保留)+ a-actions 悬停操作(P9 turn-tail 内)。
