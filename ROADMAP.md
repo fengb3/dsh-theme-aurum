@@ -79,6 +79,10 @@
   造成左右分界、主区浑浊;sh-head 渐隐纱同步撤(background:none);输入卡由官方
   solid input-major 换 surface 半透明(深 70%/浅 82%),点阵隐约透过。
 - ✅ 侧栏浮动卡(264px、radius 20、渐变面+阴影、`overflow:hidden`)、折叠细条卡片化。
+  修订(2026-08-24 用户报「假半透明底板」):官方 pI_x6G_sidebarCol 自带
+  overflow:hidden 裁掉卡阴影 → 4px 窗口硬切成竖线;放开列裁切 + 阴影调长调柔
+  (18/56/.45、18/52/.16),shadowscan.mjs 像素验证列界跳变 ≤2/255、渐变单调,
+  点阵连续(残留粗粞点=点阵圆点)。
 - ◐→✅ 滚动条(P9 已做):10px 宽 / thumb 26% 透明度 / hover 金,几何按原型微调。
 - ◐→✅ 栏头同轴机制(P9 近似):侧栏 logoRow 58px + sh-head 换皮;官方双行带(82px 实测)
   vs 原型 70 单行,中心线差约 12px —— 结构性残差,接受(重排=DOM 手术)。

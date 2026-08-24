@@ -220,7 +220,19 @@ window.__ModuleLoader__.load({
        width:100%×height:38(叉官方 28×28 → 实测 498×38,横贯顶部)。
        收紧到 button.VOzbGW_trigger(真正的目标:侧栏设置触发行)。
        实测:close 28×28 距右 15/顶 21、navCell 171×38、动作钮 94×28、
-       aurumRow=false;回归 p13/gate/p8b/p8c/proto-diff 全绿。 */
+       aurumRow=false;回归 p13/gate/p8b/p8c/proto-diff 全绿。
+
+    ── P15 前修订 III · 侧栏阴影渐变(2026-08-24,用户报「假半透明底板」)──
+    用户看到的「对话界面左侧半透明底板」实为:侧栏卡阴影被官方
+    .pI_x6G_sidebarCol{overflow:hidden} 裁切 —— 卡右缘 276 → 列界 280,
+    44px 柔影只剩 4px 可见窗口,硬切出一条竖线。主区 DOM 链逐层取证全透明,
+    并无遮挡层;唯一裁切源就是列容器。修:sidebarCol overflow:visible
+    (卡片自身 overflow:hidden 管内容,列级放开无溢出源)+ 阴影调长调柔
+    (深 16/48/.55 → 18/56/.45,浅 16/44/.18 → 18/52/.16)。
+    实测(shadowscan.mjs 像素扫描 y=420):列界跳变 278→282 仅 2(light)/
+    1(dark)/255,渐变形态 = 卡面色 → 阴影谷 → 缓升回画布;残留粗粞点全部
+    落在 24px 等距位 = 点阵圆点,非阴影缺陷;vision 复核无分割线、点阵连续;
+    回归 gate(三态零溢出)/p8b/p8c/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -451,15 +463,19 @@ const AURUM_LIGHT = { id: "aurum-light", colorScheme: "light", tokens: Object.as
 
 const CSS1 = [
   "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');",
-  "body[data-ds-dark-theme]{--aurum-gold:oklch(83% .115 88);--aurum-gold-strong:oklch(79% .13 84);--aurum-gold-dim:oklch(70% .10 85);--aurum-dot:oklch(83% .115 88 / .08);--aurum-sheen-top:oklch(83% .115 88 / .07);--aurum-sheen-rose:oklch(77% .095 350 / .05);--aurum-rail-1:oklch(19% .015 329);--aurum-rail-2:oklch(21.5% .016 329);--aurum-rail-shadow:0 16px 48px oklch(8% .02 330 / .55);--aurum-ring:oklch(79% .13 84 / .22);--aurum-ring-glow:oklch(79% .13 84 / .12);--aurum-focus:oklch(83% .115 88 / .55);--aurum-selection:oklch(79% .13 84 / .35);--aurum-sweep:oklch(83% .115 88 / .18)}",
-  "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(94.5% .014 82);--aurum-rail-2:oklch(96.5% .012 82);--aurum-rail-shadow:0 16px 44px oklch(30% .05 330 / .18);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
+  "body[data-ds-dark-theme]{--aurum-gold:oklch(83% .115 88);--aurum-gold-strong:oklch(79% .13 84);--aurum-gold-dim:oklch(70% .10 85);--aurum-dot:oklch(83% .115 88 / .08);--aurum-sheen-top:oklch(83% .115 88 / .07);--aurum-sheen-rose:oklch(77% .095 350 / .05);--aurum-rail-1:oklch(19% .015 329);--aurum-rail-2:oklch(21.5% .016 329);--aurum-rail-shadow:0 18px 56px oklch(8% .02 330 / .45);--aurum-ring:oklch(79% .13 84 / .22);--aurum-ring-glow:oklch(79% .13 84 / .12);--aurum-focus:oklch(83% .115 88 / .55);--aurum-selection:oklch(79% .13 84 / .35);--aurum-sweep:oklch(83% .115 88 / .18)}",
+  "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(94.5% .014 82);--aurum-rail-2:oklch(96.5% .012 82);--aurum-rail-shadow:0 18px 52px oklch(30% .05 330 / .16);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
   /* 背景画布(2026-08-24 用户决策:去晕染):只留底色 + 点阵,不再叠金辉/玫粉 radial ——
      此前两片晕染横向压在主区(50%/-12% 与 88%/112%),侧栏区没有,造成左右分界、主区浑浊 */
   "body{background-color:var(--dsw-alias-bg-base);background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px}",
   "body #root,body [data-slot=root]>div,body [data-slot=conversation]>div{background-color:transparent}",
   /* 栏几何: 内容根即卡片本体(原型 .sidebar), 列只负责四向留白 — 左12/右4 使卡片恰为 264px;
      卡片自带 overflow:hidden, 内部行/hover 永不溢出圆角边界 */
-  "body [data-slot=root]>div>div:first-child{background:transparent;border-right:none;padding:12px 4px 12px 12px;box-sizing:border-box}",
+  /* P15 前修订 III:官方 .pI_x6G_sidebarCol 自带 overflow:hidden —— 卡片阴影在
+     列内被硬切(卡右缘 276 → 列界 280,44px 柔影只剩 4px 窗口),视觉 = 一道
+     分割线/半透明底板。放开列裁切让阴影完整铺过主区(主区链已验证全透明);
+     卡片自身 overflow:hidden 管住内容,列级放开无溢出源 */
+  "body [data-slot=root]>div>div:first-child{background:transparent;border-right:none;padding:12px 4px 12px 12px;box-sizing:border-box;overflow:visible}",
   /* P8c 折叠细条:轨道 68 = 12 留白 + 56 卡(原型 .app.no-sb margin 12 + width 56)。
      覆写与官方内联同形(px/minmax/px),0.3s grid 过渡可正常插值;仅折叠态生效,
      展开轨宽(用户拖拽值)不受影响 —— 折叠轨本就是常量 56,无动态可跟 */
