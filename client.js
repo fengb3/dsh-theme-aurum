@@ -63,7 +63,28 @@ window.__ModuleLoader__.load({
    6. 逐节点入场: [data-chat-anchor-key] 阶梯 rise(官方列 gap16+行距12 约等于原型 28px 节奏)。
    实测(2026-08-24, verify-proto-diff 双页门禁): failures=0 —— row-retry 712=712、
    md li 666=666(dh 0.1)、inline code h19=19 字号同;turn-tail/compress/row-err 为数据驱动
-   (回合闭合才渲染, 本次窗口未含, 结构已由前轮实测);侧栏几何门禁回归无损(264x696)。 */
+   (回合闭合才渲染, 本次窗口未含, 结构已由前轮实测);侧栏几何门禁回归无损(264x696)。
+
+   ── P8c · 侧栏残差收口(原型 §4)──────────────────────────
+   1. 折叠细条 56px:官方折叠列宽 56、列 padding 归零 → 卡满栏(原型 .app.no-sb .sidebar
+      56px, rail 钮 40 居中左右各 8);展开⇄折叠交叉淡切以挂载动画近似(rail 淡入
+      .26s .18s / wide 淡入 .22s .2s, 宽度动画仍交官方 grid 过渡)。
+   2. AuBrowserRail 自建细条:logo 悬停「鲸鱼⇄展开面板」交叉淡切(rl-whale 内联 SVG =
+      P9 头像同源 path)点击展开;新建 = 金 tint 钮(当前工作区 startSession);搜索 =
+      展开后 300ms 聚焦搜索框(window.__auFocusSearch 握手);官方 logoRow/newSession
+      折叠态隐藏,底部设置/主题钮保留(CSS1 40px 方钮)。
+   3. 行操作对齐原型浮动菜单(已决策): .menu/.mi/.mk/.menu-sep 整段拷贝, fixed 定位
+      免卡裁切;会话 = 重命名(F2)/分支/归档(danger), 目录 = 重命名/删除(二次确认);
+      置顶/导出无 DSH API 不渲染;F2 悬停行重命名;点外/Esc 关闭。
+   4. 拖拽排序:draggable + drop-before/after 金线 + .dragging 半透明(原型 CSS),
+      持久化走 workspacesSvc.insertSessionBefore(手动序);视图菜单补排序切换
+      (最近活动/名称/手动序)+ 平铺开关,默认手动序(= 服务端 sessionIds 真实顺序)。
+   实测(2026-08-24):折叠卡 56×876@(12,12) r17(轨道 68=12+56, 与官方内联同形
+   px/minmax/px 覆写, 0.3s grid 过渡可插值;卡几何 56+margin12 直写 —— 折叠轨为常量,
+   与拖拽调宽无拔河);railNew leftPad=8=(56-40)/2 对齐原型;展开/回展 264@(12,12)
+   无损;浮动菜单 items=[重命名F2/分支/归档]+sep+danger、Esc 关、F2 行内改名聚焦、
+   视图菜单 4 项 manual✓;拖拽合成 DragEvent 全链 reorder 持久化(DOM 序翻转实测);
+   aurum-light 同门禁全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -301,10 +322,14 @@ const CSS1 = [
   /* 栏几何: 内容根即卡片本体(原型 .sidebar), 列只负责四向留白 — 左12/右4 使卡片恰为 264px;
      卡片自带 overflow:hidden, 内部行/hover 永不溢出圆角边界 */
   "body [data-slot=root]>div>div:first-child{background:transparent;border-right:none;padding:12px 4px 12px 12px;box-sizing:border-box}",
-  "body [data-slot=root]>div[data-sidebar-collapsed]>div:first-child{padding:12px 8px}",
+  /* P8c 折叠细条:轨道 68 = 12 留白 + 56 卡(原型 .app.no-sb margin 12 + width 56)。
+     覆写与官方内联同形(px/minmax/px),0.3s grid 过渡可正常插值;仅折叠态生效,
+     展开轨宽(用户拖拽值)不受影响 —— 折叠轨本就是常量 56,无动态可跟 */
+  "body [data-slot=root]>div[data-sidebar-collapsed]{grid-template-columns:68px minmax(0px,1fr) 0px!important}",
+  "body [data-slot=root]>div[data-sidebar-collapsed]>div:first-child{padding:12px 0}",
   "body [data-slot=root]>div>div:nth-child(3){background:transparent;border-left:none;padding:12px;box-sizing:border-box}",
   "body [data-slot=sidebar]>div:first-child{background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);border-radius:20px;overflow:hidden;width:auto!important;font-size:13px;--dsh-sidebar-inline-padding:0px;transition:border-radius .42s cubic-bezier(.22,.8,.26,1)}",
-  "body [data-slot=sidebar]>div:first-child[class*=collapsed]{padding:0;border-radius:17px}",
+  "body [data-slot=sidebar]>div:first-child[class*=collapsed]{padding:0;border-radius:17px;width:56px!important;margin-left:12px}",
   "body [data-slot=details]>div:first-child{background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);border-radius:20px;overflow:hidden;width:auto!important}",
   "body [data-slot=sidebar] [class*=logoRow]{height:58px;margin:0;padding:0 12px 0 14px;gap:6px;flex:none}",
   "body [data-slot=sidebar] [class*=logoRow] [class*=brand]{flex:1;min-width:0;height:38px;border-radius:11px;padding:0 10px;transition:background .18s,color .18s,transform .1s}",
@@ -328,13 +353,10 @@ const CSS1 = [
   "body [data-slot=sidebar] [class*=settingsArea] button:hover,body [data-slot=sidebar] [class*=settingsArea] [role=button]:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
   "body [data-slot=sidebar] [class*=settingsArea] svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
   "body [data-slot=sidebar] [class*=settingsArea] :hover>svg,body [data-slot=sidebar] [class*=settingsArea] button:hover svg{color:var(--aurum-gold)}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow]{height:auto;margin:9px 0 0;padding:0;justify-content:center}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow] [class*=brand]{display:none}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=iconButton]{width:40px;height:40px;border-radius:12px}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=iconButton] svg{width:17px;height:17px}",
-  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession]{margin:6px 0 0;width:40px;height:40px;border-radius:12px;min-width:0;padding:0}",
-  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession] span{display:none}",
-  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession]::before{left:50%;transform:translate(-50%,-50%);font-size:19px}",
+  /* P8c 折叠细条:顶部 logo/新建/搜索由 AuBrowserRail 自建(原型 .sb-rail),
+     由 AuBrowserRail 自建(原型 .sb-rail),官方 logoRow/newSession 隐藏;底部设置/主题钮保留 */
+  "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow]{display:none}",
+  "body [data-slot=sidebar] [class*=collapsed] button[class*=newSession]{display:none}",
   "body [data-slot=sidebar] [class*=collapsed] [class*=footArea]{border-top:none;padding:6px 0}",
   "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
   "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow span{display:none}",
@@ -506,7 +528,13 @@ const CSS2 = [
   ".au-s-abtn:hover{color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold) 12%,transparent)}",
   ".au-s-abtn.au-danger:hover{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-interactive-bg-hover-danger)}",
   ".au-ws-empty{padding:18px 16px;font-size:12px;color:var(--dsw-alias-label-tertiary);text-align:center}",
-  ".au-ws-rail{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0 8px}",
+  /* P8c:细条容器=原型 .sb-rail 几何(padding 9 0 12,logo 中心线 12+9+20=41 与主区标题同轴);
+     淡入 delay .18s 等面板先收窄(原型 sb-rail .26s .18s 交叉淡切的挂载近似) */
+  ".au-ws-rail{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;padding:9px 0 12px;animation:au-rail-in .26s .18s cubic-bezier(.22,.8,.26,1) both}",
+  "@keyframes au-rail-in{from{opacity:0}}",
+  /* wide 内容回场淡入(原型 sb-main .22s .2s) */
+  ".au-ws.au-ws-wide{animation:au-main-in .22s .2s ease both}",
+  "@keyframes au-main-in{from{opacity:0}}",
   ".au-ws-railbtn{width:40px;height:40px;border:none;border-radius:12px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.18s;padding:0}",
   ".au-ws-railbtn:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--aurum-gold)}",
   ".au-ws-railbtn:active{transform:scale(.96)}",
@@ -570,7 +598,40 @@ const CSS3 = [
   "body ::-webkit-scrollbar-thumb{background:color-mix(in oklab, var(--muted) 26%, transparent);border-radius:8px;border:3px solid transparent;background-clip:content-box}",
   "body ::-webkit-scrollbar-thumb:hover{background:var(--gold-dim);border:3px solid transparent;background-clip:content-box}",
   "body ::-webkit-scrollbar-track{background:transparent}",
-  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}}"
+  /* ── P8c · §4 折叠细条(原型 .sb-rail 子钮,整段拷贝;容器=存量 .au-ws-rail)── */
+  ".rail-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--muted);transition:.18s;background:none;border:none;cursor:pointer;padding:0}",
+  ".rail-btn:hover{background:var(--surface-2);color:var(--fg)}",
+  ".rail-btn:active{transform:scale(.96)}",
+  ".rail-btn svg{width:17px;height:17px}",
+  ".rail-new{background:color-mix(in oklab, var(--gold) 15%, var(--surface));color:var(--gold-strong)}",
+  ".rail-new:hover{background:color-mix(in oklab, var(--gold) 22%, var(--surface));color:var(--gold-strong)}",
+  ".rail-flex{flex:1;min-height:6px}",
+  ".rail-logo{position:relative;width:40px;height:40px;border-radius:12px;flex:none;color:var(--gold);transition:background .18s;background:none;border:none;cursor:pointer;padding:0}",
+  ".rail-logo:hover{background:var(--surface-2)}",
+  ".rail-logo svg,.rail-logo .rl-whale{position:absolute;inset:0;margin:auto;transition:opacity .16s ease,transform .2s cubic-bezier(.22,.8,.26,1)}",
+  ".rail-logo .rl-whale{width:21px;height:21px}",
+  ".rail-logo .rl-panel{width:19px;height:19px;color:var(--faint);opacity:0;transform:scale(.72)}",
+  ".rail-logo:hover .rl-whale{opacity:0;transform:scale(.72)}",
+  ".rail-logo:hover .rl-panel{opacity:1;transform:none;color:var(--gold-strong)}",
+  /* ── P8c · 会话行拖拽排序落点(原型 .s-row drop/dragging,容器适配 .au-srow)── */
+  ".au-srow.drop-before::before{content:\"\";position:absolute;left:6px;right:6px;top:-2px;height:2px;background:var(--gold);border-radius:2px}",
+  ".au-srow.drop-after::after{content:\"\";position:absolute;left:6px;right:6px;bottom:-2px;height:2px;background:var(--gold);border-radius:2px}",
+  ".au-srow.dragging{opacity:.35}",
+  /* ── P8c · §9 通用浮动菜单(原型 .menu/.mi/.mk/.menu-sep 整段拷贝;fixed 挂载避卡裁切)── */
+  ".menu{position:absolute;min-width:186px;background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:6px;box-shadow:var(--shadow-panel,0 16px 48px oklch(8% .02 330 / .55));z-index:90}",
+  ".menu.open{display:block;animation:pop .16s cubic-bezier(.22,.8,.26,1)}",
+  ".menu.fixed{position:fixed}",
+  "@keyframes pop{from{opacity:0;transform:translateY(5px) scale(.98)}}",
+  ".mi{display:flex;align-items:center;gap:9px;width:100%;padding:8px 11px;border-radius:8px;font-size:12.5px;font-family:var(--font-ui);color:var(--muted);text-align:left;background:none;border:none;cursor:pointer;transition:background .15s,color .15s}",
+  ".mi:hover{background:oklch(79% 0.13 84 / .1);color:var(--fg)}",
+  ".mi svg{width:13px;height:13px;color:var(--faint);flex:none}",
+  ".mi:hover svg{color:var(--gold-strong)}",
+  ".mi.danger,.mi.danger svg{color:var(--danger)}",
+  ".mi.danger:hover{background:oklch(69% 0.15 15 / .1)}",
+  ".mi .mk{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--faint)}",
+  ".mi .mk.on{color:var(--gold-strong)}",
+  ".menu-sep{height:1px;background:color-mix(in oklab, var(--fg) 8%, transparent);margin:5px 8px}",
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}}"
 ];
 
 const CSS = CSS1.concat(CSS2, CSS3).join("\n");
@@ -668,6 +729,8 @@ function AuPill(props) {
   else if (props.state === "err") cls += " au-err";
   return h("span", { className: cls }, props.text);
 }
+/* P8c · 鲸鱼(原型 #dsw-whale 同源 path,与 P9 assistant 头像 mask 同一份图形) */
+const AU_WHALE_PATH = "M23.0584 4.95203C22.8129 4.83203 22.7074 5.06103 22.5639 5.17704C22.5149 5.21454 22.4734 5.26354 22.4319 5.30854C22.0734 5.69155 21.6543 5.94306 21.1073 5.91306C20.3073 5.86806 19.6243 6.11957 19.0203 6.73158C18.8918 5.97706 18.4652 5.52655 17.8162 5.23754C17.4767 5.08753 17.1332 4.93703 16.8952 4.61052C16.7292 4.37801 16.6837 4.11901 16.6007 3.8635C16.5477 3.70949 16.4952 3.55199 16.3177 3.52549C16.1252 3.49549 16.0497 3.65699 15.9742 3.792C15.6722 4.34401 15.5552 4.95203 15.5667 5.56805C15.5932 6.95359 16.1782 8.05712 17.3407 8.84215C17.4727 8.93215 17.5067 9.02215 17.4652 9.15366C17.3857 9.42416 17.2917 9.68667 17.2087 9.95718C17.1557 10.1297 17.0767 10.1677 16.8917 10.0922C16.2537 9.82568 15.7027 9.43117 15.2156 8.95465C14.3891 8.15513 13.6416 7.2726 12.7096 6.58158C12.4906 6.42007 12.2716 6.27007 12.045 6.12707C11.094 5.20354 12.1696 4.44502 12.4186 4.35501C12.6791 4.26101 12.5091 3.938 11.6675 3.942C10.826 3.9455 10.056 4.22751 9.07446 4.60302C8.93096 4.65952 8.77995 4.70052 8.62545 4.73452C7.73492 4.56552 6.80989 4.52802 5.84386 4.63702C4.02481 4.83953 2.57177 5.69955 1.50373 7.1676C0.220694 8.93215 -0.0813148 10.9372 0.288196 13.0283C0.676708 15.2323 1.80174 17.0569 3.53029 18.4834C5.32285 19.9625 7.38741 20.6875 9.74298 20.5485C11.1735 20.466 12.7661 20.2745 14.5626 18.7539C15.0156 18.9795 15.4912 19.0695 16.2797 19.137C16.8872 19.1935 17.4722 19.107 17.9252 19.013C18.6347 18.8629 18.5857 18.2059 18.3292 18.0854C16.2497 17.1169 16.7062 17.5109 16.2912 17.1919C17.3477 15.9419 18.9618 13.7198 19.4598 10.6942C19.5088 10.3602 19.5713 9.88968 19.5638 9.61917C19.5598 9.45417 19.5978 9.39016 19.7863 9.37116C20.3073 9.31116 20.8128 9.16866 21.2773 8.91315C22.6249 8.17713 23.1684 6.96809 23.2964 5.51905C23.3154 5.29754 23.2924 5.06853 23.0584 4.95203ZM11.3165 17.9954C9.30097 16.4109 8.32344 15.8894 7.91992 15.9119C7.54241 15.9344 7.61042 16.3664 7.69342 16.6479C7.78042 16.9259 7.89342 17.1174 8.05193 17.3614C8.16143 17.5229 8.23694 17.7629 7.94243 17.9434C7.29341 18.3449 6.16487 17.8084 6.11187 17.7819C4.79833 17.0084 3.7003 15.9874 2.92628 14.5908C2.17875 13.2468 1.74474 11.8047 1.67324 10.2657C1.65424 9.89418 1.76374 9.76267 2.13375 9.69517C2.62077 9.60517 3.12278 9.58617 3.6093 9.65767C5.66636 9.95818 7.41741 10.8777 8.88545 12.3348C9.72348 13.1643 10.3575 14.1558 11.0105 15.1243C11.705 16.1529 12.4521 17.1329 13.4036 17.9364C13.7396 18.2179 14.0076 18.4319 14.2641 18.5899C13.4906 18.6764 12.1996 18.6949 11.3165 17.9964V17.9954ZM12.2826 11.7817C12.2826 11.6167 12.4146 11.4852 12.5806 11.4852C12.6181 11.4852 12.6521 11.4927 12.6826 11.5037C12.7241 11.5187 12.7621 11.5412 12.7921 11.5752C12.8451 11.6277 12.8751 11.7027 12.8751 11.7817C12.8751 11.9467 12.7431 12.0782 12.5771 12.0782C12.4111 12.0782 12.2826 11.9467 12.2826 11.7817ZM15.2831 13.3208C15.0906 13.3998 14.8981 13.4673 14.7131 13.4748C14.4261 13.4898 14.1131 13.3733 13.9431 13.2308C13.6791 13.0093 13.4901 12.8853 13.4111 12.4988C13.3771 12.3338 13.3961 12.0782 13.4261 11.9317C13.4941 11.6162 13.4186 11.4137 13.1961 11.2297C13.0151 11.0797 12.7846 11.0382 12.5316 11.0382C12.4371 11.0382 12.3506 10.9967 12.2861 10.9632C12.1806 10.9107 12.0936 10.7792 12.1766 10.6177C12.2031 10.5652 12.3316 10.4377 12.3616 10.4152C12.7051 10.2197 13.1011 10.2837 13.4676 10.4302C13.8071 10.5692 14.0641 10.824 14.4336 11.1847C14.8111 11.6202 14.8791 11.7402 15.0941 12.0672C15.2641 12.3228 15.4186 12.5853 15.5247 12.8858C15.5887 13.0733 15.5057 13.2268 15.2831 13.3208Z";
 function AuBody(props) {
   return h("div", { className: "au-x" + (props.open ? " au-open" : "") }, h("div", { className: "au-clip" }, h("div", { className: "au-in" }, props.children)));
 }
@@ -876,7 +939,6 @@ function AuSessionRow(props) {
   const s = props.s;
   const au = props.au;
   const cur = props.current === s.id;
-  const open = props.menuOpen === true;
   const renaming = props.renaming === true;
   const rv = props.renameValue != null ? props.renameValue : auTitle(s);
   let stateCls = "";
@@ -886,30 +948,48 @@ function AuSessionRow(props) {
   else if (s.completed === true && !cur) { stateCls = "au-done"; tip += " · 已完成"; }
   const ago = auAgo(s.updatedAt);
   if (ago) tip += " · " + ago;
-  return h("div", { className: "au-srowwrap" },
-    h("button", { type: "button", className: "au-srow" + (cur ? " au-cur" : "") + (stateCls ? " " + stateCls : ""), title: tip, onClick: function () { au.open(s.id); } },
+  /* P8c:行内操作条已废 —— 悬停 ··· 开原型形态浮动菜单(.menu fixed,AuBrowserWide 渲染);
+     拖拽排序:drop-before/after 金线落点 + .dragging 半透明(持久化走 insertSessionBefore) */
+  const dropPos = props.dropPos;
+  const cls = "au-srow" + (cur ? " au-cur" : "") + (stateCls ? " " + stateCls : "")
+    + (dropPos ? " drop-" + dropPos : "") + (props.dragging ? " dragging" : "");
+  const dragHandlers = props.canDrag
+    ? {
+        draggable: !renaming,
+        onDragStart: function (e) {
+          e.dataTransfer.effectAllowed = "move";
+          try { e.dataTransfer.setData("text/plain", s.id); } catch (err) {}
+          props.onDragState(s.id, true);
+        },
+        onDragEnd: function () { props.onDragState(null, false); },
+        onDragOver: function (e) {
+          if (!props.onCanDrop || !props.onCanDrop(s)) return;
+          e.preventDefault();
+          const r = e.currentTarget.getBoundingClientRect();
+          props.onDropMark(s, e.clientY < r.top + r.height / 2 ? "before" : "after");
+        },
+        onDrop: function (e) {
+          e.preventDefault();
+          props.onDropCommit(s);
+        }
+      }
+    : {};
+  return h("div", { className: "au-srowwrap", onMouseEnter: props.onHover, onMouseLeave: props.onHoverEnd },
+    h("button", Object.assign({ type: "button", className: cls, title: tip, onClick: function () { au.open(s.id); } }, dragHandlers),
       h("span", { className: "au-s-ic" }),
       props.wsLabel ? h("span", { className: "au-s-meta" }, props.wsLabel) : null,
       renaming
         ? h("input", { className: "au-s-rename", value: rv, autoFocus: true, spellCheck: false, onChange: function (e) { props.onRenameValue(e.target.value); }, onClick: function (e) { e.stopPropagation(); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); props.onRenameCommit(); } if (e.key === "Escape") { e.preventDefault(); props.onRenameCancel(); } }, onBlur: function () { props.onRenameCommit(); } })
         : h("span", { className: "au-s-title" }, auTitle(s)),
-      renaming ? null : h("button", { type: "button", className: "au-s-menu", title: "会话操作", "aria-label": "会话操作", onClick: function (e) { e.stopPropagation(); props.onMenuToggle(); } }, Ic("dots"))),
-    open ? h("div", { className: "au-s-actions au-open2" },
-      h("div", { className: "au-s-clip" },
-        h("div", { className: "au-s-actrow" },
-          h("button", { type: "button", className: "au-s-abtn", onClick: function () { props.onRenameStart(); } }, "重命名"),
-          h("button", { type: "button", className: "au-s-abtn", onClick: function () { au.fork(s.id); props.onMenuClose(); } }, "分支"),
-          h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { au.archive(s.id); props.onMenuClose(); } }, "归档")))) : null);
+      renaming ? null : h("button", { type: "button", className: "au-s-menu", title: "会话操作", "aria-label": "会话操作", onClick: function (e) { e.stopPropagation(); props.onMenuOpen(e); } }, Ic("dots"))));
 }
 
 function AuGroup(props) {
   const g = props.g;
   const au = props.au;
   const closed = props.closed === true;
-  const menuOpen = props.menuOpen === true;
   const renaming = props.renaming === true;
   const rv = props.renameValue != null ? props.renameValue : g.label;
-  const delConfirm = props.delConfirm === true;
   return h("div", { className: "au-wsg" + (closed ? " au-closed" : "") + (props.containsCurrent ? " au-curgroup" : "") },
     h("button", { type: "button", className: "au-wsg-head", title: g.ws ? (g.ws.path || g.label) : "", onClick: props.onToggle },
       h("span", { className: "au-ws-ic" }, Ic("chevdown"), Ic(closed ? "folder" : "folderopen")),
@@ -919,13 +999,6 @@ function AuGroup(props) {
       renaming ? null : h("span", { className: "au-wsg-acts" },
         g.menuSlot,
         g.ws ? h("button", { type: "button", className: "au-wsg-act", title: "在此目录新建会话", "aria-label": "在此目录新建会话", onClick: function (e) { e.stopPropagation(); au.startSession(g.ws.workspaceId); } }, Ic("plus")) : null)),
-    menuOpen ? h("div", { className: "au-s-actions au-open2" },
-      h("div", { className: "au-s-clip" },
-        h("div", { className: "au-s-actrow" },
-          h("button", { type: "button", className: "au-s-abtn", onClick: function () { props.onRenameStart(); } }, "重命名目录"),
-          g.ws ? (delConfirm
-            ? h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { au.deleteWorkspace(g.ws.workspaceId); props.onMenuClose(); } }, "确认删除?")
-            : h("button", { type: "button", className: "au-s-abtn au-danger", onClick: function () { props.onDelArm(); } }, "删除工作区")) : null))) : null,
     h("div", { className: "au-slist" }, closed ? null : props.children));
 }
 
@@ -939,10 +1012,17 @@ function AuBrowserWide(props) {
   const addOpenSt = React.useState(false);
   const addPathSt = React.useState("");
   const closedSt = React.useState({});
+  /* P8c:menu/headMenu 带 fixed 坐标(原型 .menu.fixed);drag/over 拖拽排序;hoverId 供 F2;
+     sort = manual(sessionIds 手动序,默认)| recent | name */
   const menuSt = React.useState(null);
+  const headMenuSt = React.useState(null);
   const renSt = React.useState(null);
   const renValSt = React.useState("");
   const delSt = React.useState(null);
+  const dragSt = React.useState(null);
+  const overSt = React.useState(null);
+  const hoverSt = React.useState(null);
+  const sortSt = React.useState("manual");
   const inputRef = React.useRef(null);
   const searchOpen = searchOpenSt[0], setSearchOpen = searchOpenSt[1];
   const query = querySt[0], setQuery = querySt[1];
@@ -951,23 +1031,60 @@ function AuBrowserWide(props) {
   const addPath = addPathSt[0], setAddPath = addPathSt[1];
   const closed = closedSt[0], setClosed = closedSt[1];
   const menu = menuSt[0], setMenu = menuSt[1];
+  const headMenu = headMenuSt[0], setHeadMenu = headMenuSt[1];
   const ren = renSt[0], setRen = renSt[1];
   const renVal = renValSt[0], setRenVal = renValSt[1];
   const del = delSt[0], setDel = delSt[1];
+  const drag = dragSt[0], setDrag = dragSt[1];
+  const over = overSt[0], setOver = overSt[1];
+  const hoverId = hoverSt[0], setHoverId = hoverSt[1];
+  const sort = sortSt[0], setSort = sortSt[1];
 
   React.useEffect(function () {
     if (searchOpen && inputRef.current && inputRef.current.focus) inputRef.current.focus();
   }, [searchOpen]);
 
+  /* P8c · 细条搜索钮握手:展开后 300ms 聚焦搜索框(原型行为) */
+  React.useEffect(function () {
+    if (window.__auFocusSearch) {
+      window.__auFocusSearch = false;
+      setSearchOpen(true);
+      const t = setTimeout(function () { if (inputRef.current && inputRef.current.focus) inputRef.current.focus(); }, 300);
+      return function () { clearTimeout(t); };
+    }
+  }, []);
+
+  /* P8c · 浮动菜单:点外/Esc 关闭(原生监听,非操纵官方 DOM) */
+  const menusOpen = menu !== null || headMenu !== null;
+  React.useEffect(function () {
+    if (!menusOpen) return;
+    const onDown = function (e) {
+      const t = e.target;
+      if (t && t.closest && t.closest(".menu,.au-s-menu,.au-wsg-act,.au-ws-ibtn")) return;
+      setMenu(null); setHeadMenu(null); setDel(null);
+    };
+    const onKey = function (e) {
+      if (e.key === "Escape") { setMenu(null); setHeadMenu(null); setDel(null); }
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return function () { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
+  }, [menusOpen]);
+
   const archived = new Set((wsState && wsState.archivedSessionIds) || []);
   const workspaces = (wsState && wsState.items) || [];
   const current = list.current;
+
+  /* P8c · 排序:manual = sessionIds 手动序(拖拽持久序,默认);recent/name 只影响展示 */
+  const auSortFn = sort === "name"
+    ? function (a, b) { return auTitle(a).localeCompare(auTitle(b), "zh") || auByRecency(a, b); }
+    : auByRecency;
 
   const groups = [];
   const accounted = new Set();
   for (let i = 0; i < workspaces.length; i++) {
     const w = workspaces[i];
-    const members = [];
+    let members = [];
     const ids = w.sessionIds || [];
     for (let j = 0; j < ids.length; j++) {
       const s = list.byId[ids[j]];
@@ -976,6 +1093,7 @@ function AuBrowserWide(props) {
       if (!auVisible(s, current, archived)) continue;
       members.push(s);
     }
+    if (sort !== "manual") members = members.slice().sort(auSortFn);
     groups.push({ key: w.workspaceId, ws: w, label: auWsLabel(w), sessions: members, containsCurrent: ids.indexOf(current) !== -1 });
   }
   const stray = (list.ids || []).filter(function (id) { const s = list.byId[id]; return s !== undefined && !accounted.has(id) && auVisible(s, current, archived); }).map(function (id) { return list.byId[id]; }).sort(auByRecency);
@@ -998,11 +1116,24 @@ function AuBrowserWide(props) {
   const flatAll = [];
   if (flat && results === null) {
     for (let gi = 0; gi < groups.length; gi++) for (let si = 0; si < groups[gi].sessions.length; si++) flatAll.push({ s: groups[gi].sessions[si], wsLabel: groups[gi].ws ? groups[gi].label : "" });
-    flatAll.sort(function (a, b) { return auByRecency(a.s, b.s); });
+    const pairSort = function (a, b) { return auSortFn(a.s, b.s); };
+    flatAll.sort(pairSort);
   }
 
-  const closeMenu = function () { setMenu(null); setDel(null); };
+  const closeMenu = function () { setMenu(null); setHeadMenu(null); setDel(null); };
   const startRename = function (kind, id, initial) { setRen({ kind: kind, id: id }); setRenVal(initial); closeMenu(); };
+
+  /* P8c · F2 = 重命名悬停行(原型 mk 快捷键;须在 list/startRename 声明后注册) */
+  React.useEffect(function () {
+    const onKey = function (e) {
+      if (e.key === "F2" && hoverId && list.byId[hoverId]) {
+        e.preventDefault();
+        startRename("s", hoverId, auTitle(list.byId[hoverId]));
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return function () { document.removeEventListener("keydown", onKey); };
+  }, [hoverId, list, ren]);
   const commitRename = function () {
     if (ren === null) return;
     const v = renVal.trim();
@@ -1020,13 +1151,85 @@ function AuBrowserWide(props) {
     Promise.resolve(au.createWorkspace(p)).catch(function (e) { console.error("aurum: createWorkspace failed", e); });
   };
 
-  const renderRow = function (entry, gForMenu) {
+  /* P8c · 拖拽提交:insertSessionBefore(workspaceId, sessionId, beforeId) 持久化;
+     after 目标 = before 目标的下一个兄弟(DOM-insertBefore 语义),末位 append */
+  const onDragState = function (id, isOn) {
+    if (isOn) setDrag({ id: id });
+    else { setDrag(null); setOver(null); }
+  };
+  const onCanDrop = function (g, s) {
+    return drag !== null && g && g.ws && drag.id !== s.id;
+  };
+  const onDropCommit = function (g, s) {
+    if (drag === null || !g || !g.ws || drag.id === s.id) { setDrag(null); setOver(null); return; }
+    const ids = g.ws.sessionIds || [];
+    const ti = ids.indexOf(s.id);
+    const before = over && over.id === s.id && over.pos === "before"
+      ? s.id
+      : (ti + 1 < ids.length ? ids[ti + 1] : undefined);
+    au.moveSession(g.ws.workspaceId, drag.id, before);
+    setDrag(null); setOver(null);
+  };
+
+  /* P8c · 原型形态浮动菜单(.menu/.mi/.mk/.menu-sep,fixed 定位免卡裁切) */
+  const auMi = function (key, label, opts) {
+    opts = opts || {};
+    return h("button", { key: key, type: "button", className: "mi" + (opts.danger ? " danger" : ""), onClick: opts.onClick },
+      opts.icon || null, label,
+      opts.mkOn ? h("span", { className: "mk on" }, opts.mk || "✓") : (opts.mk ? h("span", { className: "mk" }, opts.mk) : null));
+  };
+  const auSep = function (key) { return h("div", { className: "menu-sep", key: key }); };
+  const renderFmenu = function (pos, items) {
+    const live = items.filter(Boolean);
+    const H = 14 + live.length * 37;
+    let top = pos.y;
+    if (top + H > window.innerHeight - 8) top = Math.max(8, pos.anchorBottom - H - 4);
+    const left = Math.min(Math.max(8, pos.x - 186), window.innerWidth - 194);
+    return h("div", { className: "menu open fixed", role: "menu", style: { left: left + "px", top: top + "px" } }, live);
+  };
+  const menuItemsFor = function (m) {
+    if (m.kind === "s") {
+      const s = list.byId[m.id];
+      if (!s) return null;
+      return [
+        auMi("ren", "重命名", { icon: Ic("edit"), mk: "F2", onClick: function () { startRename("s", s.id, auTitle(s)); } }),
+        auMi("fork", "分支新会话", { icon: Ic("branch"), onClick: function () { au.fork(s.id); closeMenu(); } }),
+        auSep("s1"),
+        auMi("arch", "归档", { icon: Ic("folder"), danger: true, onClick: function () { au.archive(s.id); closeMenu(); } })
+      ];
+    }
+    const g = groups.filter(function (x) { return x.key === m.id; })[0];
+    if (!g) return null;
+    const out = [auMi("ren", "重命名目录", { icon: Ic("edit"), onClick: function () { startRename("ws", g.key, g.label); } })];
+    if (g.ws) {
+      out.push(auSep("w0"));
+      out.push(auMi("del", del === g.key ? "确认删除工作区?" : "删除工作区", { icon: Ic("error"), danger: true, onClick: function () { if (del === g.key) { au.deleteWorkspace(g.ws.workspaceId); closeMenu(); } else setDel(g.key); } }));
+    }
+    return out;
+  };
+  const viewMenuItems = function () {
+    return [
+      auMi("v-recent", "按最近活动排序", { mkOn: sort === "recent", onClick: function () { setSort("recent"); closeMenu(); } }),
+      auMi("v-name", "按名称排序", { mkOn: sort === "name", onClick: function () { setSort("name"); closeMenu(); } }),
+      auMi("v-manual", "手动顺序（拖拽）", { mkOn: sort === "manual", onClick: function () { setSort("manual"); closeMenu(); } }),
+      auSep("v0"),
+      auMi("v-flat", "平铺会话列表", { mkOn: flat, onClick: function () { setFlat(!flat); closeMenu(); } })
+    ];
+  };
+
+  const renderRow = function (entry, gForMenu, inGroup) {
     const s = entry.s;
-    const rowMenu = menu !== null && menu.kind === "s" && menu.id === s.id;
     return h(AuSessionRow, {
       key: s.id, s: s, au: au, current: current, wsLabel: entry.wsLabel || null,
-      menuOpen: rowMenu, onMenuToggle: function () { if (rowMenu) closeMenu(); else { setMenu({ kind: "s", id: s.id }); setDel(null); } },
-      onMenuClose: closeMenu,
+      canDrag: inGroup === true && gForMenu && gForMenu.ws && results === null,
+      onDragState: onDragState,
+      onCanDrop: function (target) { return onCanDrop(gForMenu, target); },
+      onDropMark: function (target, pos) { if (!over || over.id !== target.id || over.pos !== pos) setOver({ id: target.id, pos: pos }); },
+      onDropCommit: function (target) { onDropCommit(gForMenu, target); },
+      dropPos: over !== null && over.id === s.id ? over.pos : null,
+      dragging: drag !== null && drag.id === s.id,
+      onHover: function () { setHoverId(s.id); }, onHoverEnd: function () { setHoverId(function (p) { return p === s.id ? null : p; }); },
+      onMenuOpen: function (e) { const r = e.currentTarget.getBoundingClientRect(); setMenu({ kind: "s", id: s.id, x: r.right, y: r.bottom + 4, anchorBottom: r.top }); },
       renaming: ren !== null && ren.kind === "s" && ren.id === s.id, renameValue: renVal,
       onRenameStart: function () { startRename("s", s.id, auTitle(s)); },
       onRenameValue: setRenVal, onRenameCommit: commitRename, onRenameCancel: function () { setRen(null); }
@@ -1035,52 +1238,71 @@ function AuBrowserWide(props) {
 
   const body = results !== null
     ? (results.length > 0
-      ? results.map(renderRow)
+      ? results.map(function (entry) { return renderRow(entry, null, false); })
       : [h("div", { key: "empty", className: "au-ws-empty" }, "无匹配会话")])
     : (flat
-      ? (flatAll.length > 0 ? flatAll.map(renderRow) : [h("div", { key: "empty", className: "au-ws-empty" }, "暂无会话")])
+      ? (flatAll.length > 0 ? flatAll.map(function (entry) { return renderRow(entry, null, false); }) : [h("div", { key: "empty", className: "au-ws-empty" }, "暂无会话")])
       : groups.map(function (g) {
-        const gMenu = menu !== null && menu.kind === "ws" && menu.id === g.key;
         return h(AuGroup, {
           key: g.key, g: g, au: au, closed: closed[g.key] === true, containsCurrent: g.containsCurrent,
-          menuOpen: gMenu, delConfirm: del !== null && del === g.key,
-          menuSlot: h("button", { type: "button", className: "au-wsg-act", title: "目录操作", "aria-label": "目录操作", onClick: function (e) { e.stopPropagation(); if (gMenu) closeMenu(); else { setMenu({ kind: "ws", id: g.key }); setDel(null); } } }, Ic("dots")),
+          menuSlot: h("button", { type: "button", className: "au-wsg-act", title: "目录操作", "aria-label": "目录操作", onClick: function (e) { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenu({ kind: "ws", id: g.key, x: r.right, y: r.bottom + 4, anchorBottom: r.top }); } }, Ic("dots")),
           onToggle: function () { setClosed(function (c) { const n = Object.assign({}, c); if (n[g.key]) delete n[g.key]; else n[g.key] = true; return n; }); },
-          onDelArm: function () { setDel(g.key); },
-          onMenuClose: closeMenu,
           renaming: ren !== null && ren.kind === "ws" && ren.id === g.key, renameValue: renVal,
           onRenameStart: function () { startRename("ws", g.key, g.label); },
           onRenameValue: setRenVal, onRenameCommit: commitRename, onRenameCancel: function () { setRen(null); }
-        }, g.sessions.map(function (s) { return renderRow({ s: s, wsLabel: null }, g); }));
+        }, g.sessions.map(function (s) { return renderRow({ s: s, wsLabel: null }, g, true); }));
       }));
 
-  return h("div", { className: "au-ws" },
+  return h("div", { className: "au-ws au-ws-wide" },
     h("div", { className: "au-ws-head" + (searchOpen ? " au-searching" : "") },
       h("span", { className: "au-ws-label" }, "工作区"),
       h("div", { className: "au-ws-search" + (searchOpen ? " au-open" : "") + (q !== "" ? " au-hasq" : "") },
         h("button", { type: "button", className: "au-ws-sbtn", title: "搜索会话", "aria-label": "搜索会话", onClick: function () { if (searchOpen && q === "") setSearchOpen(false); else setSearchOpen(true); } }, Ic("search")),
         h("input", { ref: inputRef, className: "au-ws-input", value: query, placeholder: "搜索会话…", type: "text", autoComplete: "off", onChange: function (e) { setQuery(e.target.value); }, onKeyDown: function (e) { if (e.key === "Escape") { setQuery(""); setSearchOpen(false); } if (e.key === "Enter" && results !== null && results.length > 0) au.open(results[0].s.id); } })),
       h("div", { className: "au-ws-acts" },
-        h("button", { type: "button", className: "au-ws-ibtn" + (flat ? " au-on" : ""), title: flat ? "分组视图" : "平铺视图", "aria-label": "切换视图", onClick: function () { setFlat(!flat); } }, Ic("view")),
+        h("button", { type: "button", className: "au-ws-ibtn" + (flat ? " au-on" : ""), title: "视图选项", "aria-label": "视图选项", onClick: function (e) { const r = e.currentTarget.getBoundingClientRect(); setHeadMenu({ x: r.right, y: r.bottom + 4, anchorBottom: r.top }); } }, Ic("view")),
         h("button", { type: "button", className: "au-ws-ibtn", title: "添加工作区", "aria-label": "添加工作区", onClick: function () { setAddOpen(!addOpen); } }, Ic("folderplus")))),
     addOpen ? h("div", { className: "au-ws-addrow" }, Ic("folder"),
       h("input", { value: addPath, placeholder: "输入路径，如 ~/repos/项目名", type: "text", spellCheck: false, autoComplete: "off", autoFocus: true, onChange: function (e) { setAddPath(e.target.value); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); commitAdd(); } if (e.key === "Escape") { setAddOpen(false); setAddPath(""); } } }),
       h("span", { className: "au-ws-addhint" }, "↵ 添加 · Esc 取消")) : null,
-    h("div", { className: "au-ws-body" }, body));
+    h("div", { className: "au-ws-body" }, body),
+    menu !== null ? renderFmenu(menu, menuItemsFor(menu)) : null,
+    headMenu !== null ? renderFmenu(headMenu, viewMenuItems()) : null);
 }
 
 function AuBrowser(props) {
   const wide = props.wide !== false;
   const au = props.au;
-  const expand = typeof props.expandSidebar === "function" ? props.expandSidebar : function () {};
-  if (!wide) {
-    return h("div", { className: "au-ws-rail" },
-      h("button", { type: "button", className: "au-ws-railbtn", title: "搜索会话", "aria-label": "搜索会话", onClick: function () { expand(); } }, Ic("search")));
-  }
+  if (!wide) return h(AuBrowserRail, props);
   if (typeof props.useSessions !== "function" || typeof props.useWorkspaces !== "function") {
     return h("div", { className: "au-ws-empty" }, "…");
   }
   return h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: au });
+}
+
+/* ═══ P8c · 折叠细条(原型 .sb-rail):logo 悬停「鲸鱼⇄展开面板」交叉淡切,点击展开;
+   新建(金 tint,当前工作区)/搜索(展开后 300ms 聚焦搜索框,经 window.__auFocusSearch
+   与 wide 组件握手);底部设置/主题钮是官方壳(CSS1 已收为 40px 方钮)。═══ */
+function AuBrowserRail(props) {
+  const au = props.au;
+  const expand = typeof props.expandSidebar === "function" ? props.expandSidebar : function () {};
+  const wsState = typeof props.useWorkspaces === "function" ? props.useWorkspaces(function (s) { return s; }) : null;
+  const list = typeof props.useSessions === "function" ? props.useSessions(function (s) { return s; }) : null;
+  const current = list ? list.current : null;
+  const items = (wsState && wsState.items) || [];
+  let curWsId;
+  for (let i = 0; i < items.length; i++) {
+    if ((items[i].sessionIds || []).indexOf(current) !== -1) { curWsId = items[i].workspaceId; break; }
+  }
+  return h("div", { className: "au-ws-rail" },
+    h("button", { type: "button", className: "rail-logo", title: "展开侧栏", "aria-label": "展开侧栏", onClick: function () { expand(); } },
+      h("svg", { className: "rl-whale", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": "true" }, h("path", { d: AU_WHALE_PATH })),
+      h("svg", { className: "rl-panel", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" },
+        h("rect", { x: 3, y: 4, width: 18, height: 16, rx: 3 }), h("path", { d: "M9.5 4v16" }), h("path", { d: "M13 12h4.5" }), h("path", { d: "m15.5 9.5 2.5 2.5-2.5 2.5" }))),
+    h("button", { type: "button", className: "rail-btn rail-new", title: "新建会话", "aria-label": "新建会话", onClick: function () { au.startSession(curWsId); } },
+      h("svg", { viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", "aria-hidden": "true" }, h("path", { d: "M12 5v14M5 12h14" }))),
+    h("button", { type: "button", className: "rail-btn", title: "搜索会话", "aria-label": "搜索会话", onClick: function () { window.__auFocusSearch = true; expand(); } }, Ic("search")),
+    h("div", { className: "rail-flex" }));
 }
 
 function AuImg(props) {
@@ -1331,6 +1553,9 @@ return {
         } catch (e) { console.error("aurum: fork failed", e); }
       },
       archive: function (sessionId) { Promise.resolve(workspacesSvc.archiveSession(sessionId)).catch(function (e) { console.error("aurum: archive failed", e); }); },
+      moveSession: function (workspaceId, sessionId, beforeSessionId) {
+        Promise.resolve(workspacesSvc.insertSessionBefore(workspaceId, sessionId, beforeSessionId)).catch(function (e) { console.error("aurum: moveSession failed", e); });
+      },
       createWorkspace: function (path) { return workspacesSvc.create({ path: path }); },
       renameWorkspace: function (workspaceId, title) { return workspacesSvc.rename(workspaceId, title); },
       deleteWorkspace: function (workspaceId) { return workspacesSvc.delete(workspaceId); }

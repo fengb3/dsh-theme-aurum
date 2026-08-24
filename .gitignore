@@ -1,5 +1,11 @@
+# deps
+node_modules/
+
 # playwright-cli 会话残留
 .playwright-cli/
+
+# 过程产物(截图,留在仓库当对照——按 AGENTS §6 它们不算验收凭据,重拍即弃)
+# aurum-*.png 保留入库,不忽略
 
 # 系统杂项
 Thumbs.db

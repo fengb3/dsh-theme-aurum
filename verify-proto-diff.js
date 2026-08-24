@@ -16,7 +16,10 @@
  * 随阶段逐项追加;P9 首批见下。
  */
 async page => {
-  const PROTO_URL = 'file:///C:/Users/fengb/dsh-themes/dsh-theme-aurum/prototype/dsh-agent-workspace.html';
+  /* 原型 URL 机器无关:runner(verify-run.mjs)在 Node 全局设 __AU_PROTO_URL__;
+     手动 playwright-cli 场景可先在控制台设该全局(window 属性亦可),未设时报错退出。 */
+  const PROTO_URL = (typeof __AU_PROTO_URL__ !== 'undefined' && __AU_PROTO_URL__)
+    || (() => { throw new Error('set __AU_PROTO_URL__ = file:///<repo>/prototype/dsh-agent-workspace.html before eval'); })();
   const SELECTORS = [
     // ── P9 · 会话流尾部节点(恒等映射)──
     ['turn-tail', '.turn-tail'],

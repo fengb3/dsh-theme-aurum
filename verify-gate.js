@@ -11,13 +11,26 @@ async page => {
   await page.click('[data-slot=sidebar] .hHd-Xa_toggle');
   await page.waitForTimeout(700);
   const collapsed = await gate();
-  const collapsedPlus = await page.evaluate(() => {
-    const b = document.querySelector('[data-slot=sidebar] .hHd-Xa_newSession');
-    const pr = b.getBoundingClientRect();
-    const pb = getComputedStyle(b, '::before');
-    return { btn: { x: +pr.x.toFixed(1), w: +pr.width.toFixed(1) }, before: pb.content + ' left:' + pb.left + ' transform:' + pb.transform };
+  /* P8c:折叠态官方 newSession/logoRow 已隐藏,细条自建 rail(56px 卡、rail 钮 40 居中
+     左右各 8);展开经 rail-logo(官方 toggle 钮随 logoRow 隐藏) */
+  const rail = await page.evaluate(() => {
+    const card = document.querySelector('[data-slot=sidebar]>div');
+    const cr = card.getBoundingClientRect();
+    const btn = document.querySelector('[data-slot=sidebar] .rail-new');
+    const br = btn.getBoundingClientRect();
+    const logo = document.querySelector('[data-slot=sidebar] .rail-logo');
+    const lr = logo.getBoundingClientRect();
+    const whale = logo.querySelector('.rl-whale');
+    return {
+      card: { x: +cr.x.toFixed(1), w: +cr.width.toFixed(1) },
+      railNew: { x: +br.x.toFixed(1), w: +br.width.toFixed(1), leftPad: +(br.x - cr.x).toFixed(1) },
+      railLogo: { x: +lr.x.toFixed(1), w: +lr.width.toFixed(1) },
+      whaleOpacity: getComputedStyle(whale).opacity,
+      whaleW: whale.getBoundingClientRect().width.toFixed(1)
+    };
   });
-  await page.click('[data-slot=sidebar] .hHd-Xa_toggle');
+  await page.click('[data-slot=sidebar] .rail-logo');
   await page.waitForTimeout(700);
-  return { expanded, collapsed, collapsedPlus };
+  const reexpanded = await gate();
+  return { expanded, collapsed, rail, reexpanded };
 }

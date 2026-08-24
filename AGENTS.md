@@ -7,20 +7,24 @@
 
 DSH(DeepSeek Harness)Web 的**鎏金主题插件**:由静态原型 `dsh-agent-workspace.html`
 (金粉奢华 · oklch)逐节移植。零构建、纯 loader 格式、单插件包。当前进度与剩余差异见
-ROADMAP.md 阶段表(P1–P8b ✅,P8c–P15 ⬜)。
+ROADMAP.md 阶段表(P1–P8b ✅,P9 ◐,P8c/P10–P15 ⬜)。
 
 ## 2 · 关键路径与环境
 
 | 什么 | 在哪 |
 |---|---|
-| 仓库(工作目录) | `C:\Users\fengb\dsh-themes\dsh-theme-aurum` |
+| 仓库(工作目录) | 本仓库根 = agent 启动时的工作目录(不写死机器绝对路径) |
 | 原型(唯一视觉基准) | 仓库内 `prototype\dsh-agent-workspace.html`(源自 Downloads,以仓库副本为准) |
-| 部署副本 | `C:\Users\fengb\.dsh\profiles\web\node_modules\dsh-theme-aurum\client.js` |
+| 部署副本 | `~\.dsh\profiles\web\node_modules\dsh-theme-aurum\client.js`(`dsh plugin --profile web add <仓库路径>` 安装生成) |
 | 验证页面 | `http://127.0.0.1:3080`(现有 `dsh web`,**禁止另起服务器**) |
 | 官方内部快照(逆向参考) | `runtime-snapshot.js` / `ui-conversation.js` / `bundle-snapshot.js` |
 | 浏览器验证 | playwright-cli;eval 脚本即仓库内 `verify-*.js` |
 
-部署副本是安装时硬链接,**任何编辑都会断链** —— 这是本仓库第一杀手,见 §3。
+部署副本两种形态:**link: 安装**(`dsh plugin --profile web add <仓库路径>`)时副本是
+仓库的符号链接 —— 编辑即生效,`sync-deploy.ps1` 检测同文件直接报 LINKED,**绝不可**
+Copy-Item 自拷贝(会截断文件);**拷贝安装**(旧机器形态)时编辑会断链,必须跑
+`sync-deploy.ps1` 同步。另外:新装/卸载插件改变组合(package.json bundles)必须重启
+`dsh web` —— hot-reload 只能换已加载插件的版本,捡不起全新插件。
 
 ## 3 · 硬性工作流(每次改 client.js 的循环)
 
@@ -88,6 +92,14 @@ ROADMAP.md 阶段表(P1–P8b ✅,P8c–P15 ⬜)。
 新阶段把该阶段 selector 填进 `verify-proto-diff.js` 的 SELECTORS 再跑。截图
 (`aurum-*.png`)是过程产物,留在仓库当对照,不算验收凭据。
 
+**运行方式(本机无 playwright-cli,用 Node runner)**:
+```
+node verify-run.mjs verify-gate.js verify-p8b.js verify-proto-diff.js
+```
+runner(`verify-run.mjs`)用仓库 devDependency `playwright-core` + 本机 Chrome(headless),
+打开 3080、注入 `window.__AU_PROTO_URL__`(原型的 file:// URL)后执行同款
+`async page => {}` 脚本 —— verify-*.js 保持浏览器 eval 格式不变。装依赖:`npm install`。
+
 ## 7 · 文件地图
 
 ```
@@ -97,6 +109,7 @@ package.json       dsh.bundle.patch + dsh.client.inject 声明(platform: web)
 cordis.patch.yml   bundle 层声明
 vendor/htm.js      htm@3.1.1 mini UMD 源(P9 起内联进 client.js 头部)
 verify-*.js        playwright 门禁脚本(见 §6)
+verify-run.mjs     门禁 Node runner(playwright-core + 本机 Chrome,见 §6)
 sync-deploy.ps1    部署副本同步(MD5 校验)
 ROADMAP.md         阶段路线 + 原型逐节差异盘点 + 各阶段验收标准
 README.md          面向使用者的说明(安装/功能/结构)
