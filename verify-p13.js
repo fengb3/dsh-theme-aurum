@@ -54,7 +54,10 @@ async page => {
     const cell = document.querySelector('.VOzbGW_navCell.VOzbGW_active') || document.querySelector('.VOzbGW_navCell');
     if (cell) { const cs = getComputedStyle(cell); r.navCell = { radius: cs.borderRadius, fontSize: cs.fontSize }; }
     r.navItems = [...document.querySelectorAll('.VOzbGW_navCell')].map(c => c.textContent.trim().slice(0, 10));
+    // 2026-08-24 用户决策:设置内「主题风格·鎏金」段删除;关闭叉须 28×28 归位
     r.aurumRow = !!document.querySelector('.aurum-row');
+    const cl = document.querySelector('.VOzbGW_close');
+    if (cl) { const b = cl.getBoundingClientRect(); r.close = { w: Math.round(b.width), h: Math.round(b.height) }; }
     return r;
   });
   await page.keyboard.press('Escape');

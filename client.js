@@ -206,7 +206,21 @@ window.__ModuleLoader__.load({
     2. tabs 与右上槽位左右排布:header 改两列 grid + titleRow display:contents
        —— 行1=crumbs+headerActions,行2=[tabs …… utilities] 同行
        (实测 sameRow、tabs 在左、gap 34)。此前 tabs 行与 utilities 上下堆叠。
-    回归:gate 三态零溢出(此前展开态 4 个 SVG 溢出清零)/p8b/p8c/proto-diff 全绿。 */
+    回归:gate 三态零溢出(此前展开态 4 个 SVG 溢出清零)/p8b/p8c/proto-diff 全绿。
+
+    ── P15 前修订 II · 设置面板(2026-08-24,用户报两处)──────────
+    1. 「主题风格 · 鎏金」段整体删除(用户决策,不需要在设置里切主题):
+       settings.general.item 注册、AurumSettingsRow/SEGMENT 组件、aurum-row/
+       aurum-seg/aurum-segBtn/aurum-hint CSS 全撤;主题切换保留侧栏底部
+       aurum-footRow 单一入口。
+    2. 关闭叉 28×28 归位:根因 = 铁律 6 第三次翻车 —— 旧规则
+       [data-slot=sidebar] [class*=settingsArea] button 泛匹配;设置弹窗 DOM
+       渲染在 sidebar.settings 槽内(所以 body 层扫描找不到它),settingsArea
+       是其祖先 → 弹窗内所有 button(close/navCell/actions)全被拉成
+       width:100%×height:38(叉官方 28×28 → 实测 498×38,横贯顶部)。
+       收紧到 button.VOzbGW_trigger(真正的目标:侧栏设置触发行)。
+       实测:close 28×28 距右 15/顶 21、navCell 171×38、动作钮 94×28、
+       aurumRow=false;回归 p13/gate/p8b/p8c/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -483,7 +497,11 @@ const CSS1 = [
   "body [data-slot=sidebar] [class*=regionArea]{flex:1;min-height:0;padding:0;margin:0;display:flex;flex-direction:column;overflow:hidden}",
   "body [data-slot=sidebar] [class*=footArea]{flex:none;border-top:1px solid var(--dsw-alias-border-l2);padding:8px;margin:0;gap:0}",
   "body [data-slot=sidebar] [class*=footerActions],body [data-slot=sidebar] [class*=settingsArea]{display:flex;flex-direction:column;gap:0}",
-  "body [data-slot=sidebar] [class*=settingsArea] button,body [data-slot=sidebar] [class*=settingsArea] [role=button]{display:flex;align-items:center;gap:10px;width:100%;height:38px;margin:0;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
+  /* 铁律 6 第三次翻车实录:旧规则 [class*=settingsArea] button 泛匹配 —— 设置
+     弹窗 DOM 渲染在 sidebar.settings 槽内,settingsArea 是其祖先,弹窗内所有
+     button(close/navCell/actions)全被拉成 100%×38(叉 28×28 → 498×38)。
+     收紧到真正的目标:侧栏设置触发钮 */
+  "body [data-slot=sidebar] button.VOzbGW_trigger{display:flex;align-items:center;gap:10px;width:100%;height:38px;margin:0;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
   "body [data-slot=sidebar] [class*=settingsArea] button:hover,body [data-slot=sidebar] [class*=settingsArea] [role=button]:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
   "body [data-slot=sidebar] [class*=settingsArea] svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
   "body [data-slot=sidebar] [class*=settingsArea] :hover>svg,body [data-slot=sidebar] [class*=settingsArea] button:hover svg{color:var(--aurum-gold)}",
@@ -566,13 +584,6 @@ const CSS1 = [
   ".aurum-footRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
   ".aurum-footRow svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
   ".aurum-footRow:hover svg{color:var(--aurum-gold)}",
-  ".aurum-row{border-bottom:1px solid transparent;display:flex;flex-direction:column;gap:8px;padding:16px 0}",
-  ".aurum-rowTitle{color:var(--dsw-alias-label-primary);font-size:14px;font-weight:400;line-height:22px}",
-  ".aurum-seg{display:flex;gap:2px;border:1px solid transparent;border-radius:999px;padding:3px;background:var(--dsw-alias-bg-layer-2);width:max-content;max-width:100%;flex-wrap:wrap}",
-  ".aurum-segBtn{padding:5px 14px;border:none;border-radius:999px;background:transparent;color:var(--dsw-alias-label-tertiary);font:400 12px/18px var(--dsw-font-family);cursor:pointer;transition:color .18s,background .18s;white-space:nowrap}",
-  ".aurum-segBtn:hover{color:var(--dsw-alias-label-primary)}",
-  ".aurum-segBtn[aria-pressed=true]{background:color-mix(in oklab,var(--aurum-gold) 16%,transparent);color:var(--aurum-gold-strong);font-weight:500}",
-  ".aurum-hint{color:var(--dsw-alias-label-tertiary);font:400 12px/19px var(--dsw-font-family);margin:0}",
   "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}}",
   /* ── P10 · 输入坞 composer 卡内部(uV2eYG_*,原型 §6 .composer/.c-tools)──
      排版 14.5/1.7 对齐原型 textarea;input/mirror/backdrop 三件套必须同步改,
@@ -975,22 +986,6 @@ function AurumFootToggle(props) {
   const label = (isAurum ? "鎏金 · " : "进入鎏金 · ") + (dark ? "深色" : "浅色");
   const title = isAurum ? (dark ? "切换到鎏金 · 浅色" : "切换到鎏金 · 深色") : "启用鎏金主题(保持当前深浅)";
   return h("button", { type: "button", className: "aurum-footRow" + (wide ? "" : " au-rail"), title: title, "aria-label": title, onClick: function () { props.api.toggle(); } }, dark ? h(MoonIcon) : h(SunIcon), wide ? h("span", null, label) : null);
-}
-const SEGMENT = [
-  { id: "aurum-dark", label: "鎏金 · 深" },
-  { id: "aurum-light", label: "鎏金 · 浅" },
-  { id: "dark", label: "官方 · 深" },
-  { id: "light", label: "官方 · 浅" },
-  { id: "system", label: "跟随系统" }
-];
-function AurumSettingsRow(props) {
-  const snap = useAurum(props.api);
-  return h("div", { className: "aurum-row" },
-    h("div", { className: "aurum-rowTitle" }, "主题风格 · 鎏金"),
-    h("div", { className: "aurum-seg", role: "group", "aria-label": "主题风格" }, SEGMENT.map(function (seg) {
-      return h("button", { key: seg.id, type: "button", className: "aurum-segBtn", "aria-pressed": snap.id === seg.id, onClick: function () { props.api.select(seg.id); } }, seg.label);
-    })),
-    h("p", { className: "aurum-hint" }, "鎏金 = 金粉奢华皮肤(香槟金 · 点阵画布 · 衬线正文),由临时插件提供,插件停止自动回退;官方 = 内置调色板。"));
 }
 
 function auText(content) {
@@ -1967,9 +1962,6 @@ return {
 
     slots.inject("sidebar.footer.action", function () {
       return slots.register({ name: "sidebar.footer.action", id: "theme-aurum", order: 40, label: "鎏金主题" }, function () { return h(AurumFootToggle, { api: api }); });
-    });
-    slots.inject("settings.general.item", function () {
-      return slots.register({ name: "settings.general.item", id: "theme-aurum", order: 15, label: "主题风格 · 鎏金" }, function () { return h(AurumSettingsRow, { api: api }); });
     });
 
     const sessionsSvc = ctx.sessions;

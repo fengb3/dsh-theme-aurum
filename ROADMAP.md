@@ -192,7 +192,10 @@
   surface-2 + item 金 hover + mono 名 + 分组头 mono 大写字距(= 原型 cmdMenu 形态)。
 - ✅ 设置弹窗:官方 VOzbGW_* 本就是居中 modal + 左导航双栏(nav 188px 与原型一致)——
   mask 深紫 50%+blur3、panel surface r18、nav tint + 金 hover/on、DISPLAY 标题、
-  鎏金段(aurum-row)在列。残差:几何保留官方 800px(五节内容 > 原型四节 424 高)。
+  修订(2026-08-24 用户决策):设置内「主题风格 · 鎏金」段删除(注册/组件/CSS 全撤),
+  主题切换唯一入口 = 侧栏底部 aurum-footRow;关闭叉 28×28 归位(铁律 6 第三次翻车:
+  settingsArea 泛 button 把弹窗内按钮全拉成 100%×38,收紧到 button.VOzbGW_trigger)。
+  残差:几何保留官方 800px(五节内容 > 原型四节 424 高)。
 - ◐ toast:官方 primitives 内部件、无稳定活实例可瞄;面色已随主题 token 对齐,
   形态微调待后续有实例时补(记档)。
 - ✅ scrim:即设置 mask,色彩按原型对齐。
