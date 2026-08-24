@@ -342,3 +342,10 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
   (JS scrollTop 直赋也被 CSS 平滑接管)+ 入场 rise 去 translateY 改纯淡入
   (原地展开,不再顶动刚滚到底的视口,0.6→0.42s);程序滚动实测 22 帧渐进
   到达(加速-减速)。reduced-motion 降级。回归全绿。
+- **追补 V · 移动端顶栏+抽屉(同日,用户报手机屏侧栏占宽)**:≤820 时 root
+  grid 改两行 —— 侧栏列 = 48px 顶栏(rail 横排:鲸鱼=抽屉开关/新建/搜索 +
+  右侧主题/设置),聊天区独占全宽;rail-logo 点按开左侧 fixed 抽屉(320px
+  r20 卡面,内嵌 AuBrowserWide 完整浏览器),Esc/遮罩/选中关闭;搜索复用
+  __auFocusSearch 握手。实测 390×844:顶栏 390×48、抽屉 63 行/7 组、三种
+  关闭全过、无横滚、桌面不变。注:mobile CSS 必须放 CSS3 末(数组拼接顺序,
+  CSS1/2 基础规则会后到覆盖)。verify-mobile.js 门禁 + gate/p8c/p14 回归绿。

@@ -333,7 +333,22 @@ window.__ModuleLoader__.load({
     2. rise 改纯淡入(去 translateY,原地展开),时长 0.6→0.42;reduced-motion
        下 smooth 回退 auto。
     实测:程序直赋 scrollTop 采样 22 帧渐进到达(加速-减速 ease,瞬跳消除);
-    CSS 断言 smooth 落地、rise 仅 opacity。回归 gate/p11/proto-diff 全绿。 */
+    CSS 断言 smooth 落地、rise 仅 opacity。回归 gate/p11/proto-diff 全绿。
+
+    ── P15 追补 V · 移动端顶栏 + 抽屉(2026-08-24,用户报手机屏侧栏占宽)──
+    官方 ≤900 自动折叠为 68px 竖轨,窄屏仍占一条。改造(≤820):
+    1. 布局:root grid 改两行 —— 侧栏列 = 48px 顶栏(满宽),聊天区独占全宽;
+    2. 顶栏:rail 横排(鲸鱼=抽屉开关/新建/搜索)+ 右侧主题/设置(row 化,
+       VOzbGW_trigger 收为内容宽胶囊);
+    3. 抽屉:AuIsNarrow(matchMedia 响应)分支 AuBrowserMobile —— rail-logo 点按
+       开左侧 fixed 抽屉(320px/min 86vw,r20 卡面+柔影+滑入),内嵌 AuBrowserWide
+       完整浏览器(分组/拖拽/菜单全功能);搜索钮复用 __auFocusSearch 握手;
+       Esc/遮罩/选中会话三种关闭;桌面(>820)行为不变。
+    4. CSS 落位注记:mobile 块必须放 CSS3 末(CSS1/CSS2 里的基础 .au-ws-rail
+       规则会以后到者覆盖 media 内的同特异性规则 —— 实测踩坑)。
+    实测(verify-mobile.js,390×844):顶栏 390×48@0,0、rail 同行、抽屉 320×824
+    63 行/7 组、closeOnSelect/Esc/Scrim 全 true、无横滚、桌面还原正常;
+    vision 复核关闭态无竖侧栏/聊天满宽。回归 gate/p8c/p14 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -1136,7 +1151,7 @@ const CSS3 = [
   ".goal-track{width:130px;height:4px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex:none}",
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
   /* ── P14 · 响应式降档(原型 §10;抽屉不适用:官方 ≤900 自动 68px 折叠轨,
-     无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */
+     无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */,
   "@media (max-width:820px){body .wSkVaW_header{padding-left:14px;padding-right:14px}body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-size:16px}body .Md3f7G_scroll{padding:12px calc(var(--dsh-composer-side-clearance) + 8px);padding-top:78px}body .uV2eYG_root{padding-bottom:6px}body .pXSMma_headline{font-size:25px}body .pXSMma_stack{max-width:calc(100vw - 48px)}}",
   "@media (max-width:640px){body .wSkVaW_tab{padding:4px 11px;font-size:12px}body .au-bubble{font-size:14.5px;max-width:90%}body .goal-track{width:64px}body .FJxK0a_sep{margin:0 6px}body .FJxK0a_root{font-size:9.5px}}",
   "@media (max-width:480px){body .todo-bar{min-width:100%}body .au-name em{display:none}body .turn-tail .tx{font-size:9.5px;letter-spacing:.02em}body .todo-it{font-size:10.5px}body .au-srow .au-s-title{font-size:11.5px}}",
@@ -1151,7 +1166,33 @@ const CSS3 = [
      官方 input.dock 是卡上方的 column-flex 区 —— flex:1 会变纵向拔高;
      改按官方 TodoDock(lXshSW_root)同形几何:与输入卡对齐、居中、不拔高 */
   ".todo-bar{flex:none;box-sizing:border-box;width:calc(100% - var(--dsh-composer-side-clearance)*2 - var(--dsh-composer-dock-inset)*4);max-width:calc(var(--dsh-composer-card-max-width) - var(--dsh-composer-dock-inset)*4);margin:0 auto}",
-  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}.au-slist,.au-slist-in,.au-ws-ic svg{transition:none!important}.au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:none!important}}"
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}.au-slist,.au-slist-in,.au-ws-ic svg{transition:none!important}.au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:none!important}}",
+  /* ── P15 追补 V · 移动端(≤820)顶栏 + 抽屉(用户指定):官方 ≤900 自动折叠
+     68px 竖轨占屏;窄屏改为 grid 两行 —— 侧栏列 = 48px 顶栏(rail 横排钮组,
+     rail-logo 即抽屉开关),完整浏览器自左侧抽屉滑入(遮罩/Esc/选中关闭)── */
+  "@media (max-width:820px){",
+  "body [data-slot=root]>div,body [data-slot=root]>div[data-sidebar-collapsed]{grid-template-columns:1fr!important;grid-template-rows:48px minmax(0px,1fr)!important}",
+  "body [data-slot=root]>div>div:first-child{grid-row:1;padding:0!important;overflow:visible}",
+  "body [data-slot=root]>div>div:nth-child(2){grid-row:2;min-height:0}",
+  "body [data-slot=sidebar]>div:first-child{border-radius:0;box-shadow:none;width:auto!important;height:48px}",
+  "body [data-slot=sidebar]>div:first-child[class*=collapsed]{width:auto!important;margin:0;border-radius:0}",
+  "body [data-slot=sidebar] .hHd-Xa_root{flex-direction:row;align-items:center;gap:6px;height:48px;padding:0 8px 0 10px}",
+  "body [data-slot=sidebar] [class*=regionArea]{flex:0 0 auto;padding:0;overflow:visible}",
+  "body [data-slot=sidebar] [class*=footArea]{margin-left:auto;border-top:none;padding:0;flex-direction:row;gap:4px}",
+  "body [data-slot=sidebar] [class*=footerActions],body [data-slot=sidebar] [class*=settingsArea]{flex-direction:row}",
+  "body [data-slot=sidebar] button.VOzbGW_trigger{width:auto!important;height:38px;padding:0 10px}",
+  ".au-ws-rail{flex-direction:row;gap:4px;padding:0;animation:none}",
+  ".rail-flex{display:none}",
+  ".rail-btn,.rail-logo{width:36px;height:36px}",
+  ".aurum-footRow.au-rail{width:36px;height:36px}",
+  "}",
+  ".au-drawer-scrim{position:fixed;inset:0;z-index:70;background:oklch(8% .02 330 / .5);animation:au-scrim-in .24s ease both}",
+  ".au-drawer{position:fixed;left:10px;top:10px;bottom:10px;z-index:80;width:min(320px,86vw);display:flex;flex-direction:column;border-radius:20px;overflow:hidden;background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);animation:au-drawer-in .32s cubic-bezier(.22,.8,.26,1) both}",
+  ".au-drawer .au-ws.au-ws-wide{animation:none}",
+  "@keyframes au-drawer-in{from{transform:translateX(-26px);opacity:0}}",
+  "@keyframes au-scrim-in{from{opacity:0}}",
+  "@media (prefers-reduced-motion:reduce){.au-drawer,.au-drawer-scrim{animation:none}}",
+
 ];
 
 const CSS = CSS1.concat(CSS2, CSS3).join("\n");
@@ -1874,10 +1915,44 @@ function AuBrowserWide(props) {
     headMenu !== null ? renderFmenu(headMenu, viewMenuItems()) : null);
 }
 
+/* ═══ P15 追补 V · 移动端(≤820):侧栏列 → 顶栏(rail 横排),rail-logo 点按开
+   左侧抽屉(内嵌 AuBrowserWide 完整浏览器);搜索钮复用 __auFocusSearch 握手
+   (抽屉挂载后 300ms 聚焦);Esc/遮罩/选中会话后自动关闭 ═══ */
+function AuIsNarrow() {
+  const st = React.useState(function () { return window.matchMedia("(max-width:820px)").matches; });
+  React.useEffect(function () {
+    const mq = window.matchMedia("(max-width:820px)");
+    const fn = function (e) { st[1](e.matches); };
+    if (mq.addEventListener) mq.addEventListener("change", fn); else mq.addListener(fn);
+    return function () { if (mq.removeEventListener) mq.removeEventListener("change", fn); else mq.removeListener(fn); };
+  }, []);
+  return st[0];
+}
+function AuBrowserMobile(props) {
+  const st = React.useState(false);
+  const open = st[0];
+  React.useEffect(function () {
+    if (!open) return;
+    const onKey = function (e) { if (e.key === "Escape") st[1](false); };
+    document.addEventListener("keydown", onKey);
+    return function () { document.removeEventListener("keydown", onKey); };
+  }, [open]);
+  const toggle = function () { st[1](!open); };
+  const railProps = Object.assign({}, props, { expandSidebar: toggle, _mobileBar: true });
+  return h(React.Fragment, null,
+    h(AuBrowserRail, railProps),
+    open ? h("div", { className: "au-drawer-scrim", onClick: function () { st[1](false); } }) : null,
+    open ? h("div", { className: "au-drawer", onClick: function (e) {
+      if (e.target && e.target.closest && e.target.closest(".au-srow")) setTimeout(function () { st[1](false); }, 160);
+    } }, h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: props.au })) : null);
+}
 function AuBrowser(props) {
   const wide = props.wide !== false;
   const au = props.au;
-  if (!wide) return h(AuBrowserRail, props);
+  if (!wide) {
+    if (typeof window !== "undefined" && window.matchMedia && AuIsNarrow()) return h(AuBrowserMobile, props);
+    return h(AuBrowserRail, props);
+  }
   if (typeof props.useSessions !== "function" || typeof props.useWorkspaces !== "function") {
     return h("div", { className: "au-ws-empty" }, "…");
   }
@@ -1899,7 +1974,7 @@ function AuBrowserRail(props) {
     if ((items[i].sessionIds || []).indexOf(current) !== -1) { curWsId = items[i].workspaceId; break; }
   }
   return h("div", { className: "au-ws-rail" },
-    h("button", { type: "button", className: "rail-logo", title: "展开侧栏", "aria-label": "展开侧栏", onClick: function () { expand(); } },
+    h("button", { type: "button", className: "rail-logo", title: props._mobileBar ? "打开历史会话" : "展开侧栏", "aria-label": props._mobileBar ? "打开历史会话" : "展开侧栏", onClick: function () { expand(); } },
       h("svg", { className: "rl-whale", viewBox: "0 0 24 24", fill: "currentColor", "aria-hidden": "true" }, h("path", { d: AU_WHALE_PATH })),
       h("svg", { className: "rl-panel", viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" },
         h("rect", { x: 3, y: 4, width: 18, height: 16, rx: 3 }), h("path", { d: "M9.5 4v16" }), h("path", { d: "M13 12h4.5" }), h("path", { d: "m15.5 9.5 2.5 2.5-2.5 2.5" }))),
