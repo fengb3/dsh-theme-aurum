@@ -290,7 +290,13 @@ window.__ModuleLoader__.load({
     实测(verify-icons.js viewBox 普查):分组头 fld=16/chev2=14;工具卡
     read16/grep16/pwsh14/edit16/write16/glob=Sparkle16/mcp=Sparkle16 全官方;
     残留自绘仅 au-ws-ibtn 的 view/folderplus(自建功能钮,官方无对应原语,保留)。
-    回归 gate/p8c/proto-diff 全绿。 */
+    回归 gate/p8c/proto-diff 全绿。
+
+    ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
+    全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
+    turn-tail tx 行高 1.34 校准(对齐原型 14px 行高,proto-diff failures 归零);
+    package.json inject 补 primitives(图标官方依赖显式化)、version 1.1.0、
+    README 重写。历次用户修订全景见各「P15 前修订」段。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -958,7 +964,7 @@ const CSS3 = [
   ".row-retry b{color:var(--success);font-weight:500}",
   ".turn-tail{display:flex;align-items:center;gap:14px;margin:20px 0 6px;font-family:var(--font-ui);font-size:14px;line-height:1}",
   ".turn-tail .ln{flex:1;height:1px;background:color-mix(in oklab, var(--fg) 9%, transparent)}",
-  ".turn-tail .tx{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.06em;white-space:nowrap}",
+  ".turn-tail .tx{font-family:var(--font-mono);font-size:10.5px;line-height:1.34;color:var(--faint);letter-spacing:.06em;white-space:nowrap}",
   ".pill{font-family:var(--font-mono);font-size:10.5px;padding:2.5px 9px;border-radius:999px;border:1px solid var(--border);color:var(--muted);white-space:nowrap;flex:none}",
   ".pill.err{color:var(--danger);background:oklch(69% .15 15 / .12)}",
   ".pill.warn{color:var(--gold-strong);background:oklch(79% .13 84 / .13)}",
