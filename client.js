@@ -162,7 +162,27 @@ window.__ModuleLoader__.load({
        2→0 + au-tool margin 2→1 + reasoning 卡 mb 14→10 + 用户气泡 4→2 —— 相邻
        卡间距约减半(实测 columnGap=8px,卡间视觉 8-10px 缝)。
     2. 兜底工具图标 = 双四角星(用户指定):Ic("stars") 大星左下+小星右上,
-       金色填充;兜底分支与 kid 行统一用它(废弃 META 图标登记表)。 */
+       金色填充;兜底分支与 kid 行统一用它(废弃 META 图标登记表)。
+
+    ── P13 · 全局浮层(2026-08-24)────────────────────────────
+    结构先行盘点:官方 hero 本就是 HeroShell(pXSMma_*)居中栈 + heroGlow;
+    设置本就是 VOzbGW_ 居中 modal + 左导航双栏(nav 188px 与原型一致);
+    命令菜单 = _3e4SsG_* MenuView —— 三块全部 CSS 换皮可达,零组件接管。
+    1. hero:pXSMma_headline 衬线 33px(实测 Cormorant);previewBadge → 原型
+       hero-badge(mono 10px 金字胶囊边);workspace 芯片 → 原型 hero-pill
+       (r99 + 金 hover 边);heroGlow 官方 SVG 插画藏画,容器改原型径向金辉
+       (gold 15% → 72% 渐隐,实测 bg=radial oklab 金)。
+    2. 通用菜单(_3e4SsG_,add 命令菜单/hero 工作区菜单同源):r13 + surface-2 +
+       item 金 hover + mono 名金 + 分组头 mono 大写字距。
+    3. 设置弹窗(VOzbGW_*):mask 深紫 50% + blur3;panel surface r18(几何保留
+       官方 800px,内容五节多于原型四节,原型 424 高装不下 —— 记残差);nav tint +
+       navCell 金 hover/on + DISPLAY 标题;无描边扫除覆盖子树;鎏金段在列实测。
+    4. 记「不适用/残差」:Toast 官方 primitives 内部件、无稳定活实例可瞄(面色已
+       随 token 对齐);品牌字标维持官方 brand(CSS 无法换 SVG 内容,DOM 手术
+       违铁律)—— ROADMAP §4 品牌残差就此定案;scrim 色彩即上述 mask。
+    实测:hero h1=33px Cormorant + badge mono r99 金 + glow artHidden=true +
+    芯片 r99;cmdMenu r13 item r9(7 项);settings panel 802 r18 surface +
+    nav 188 tint + 五节导航 + aurumRow 在列;回归 gate/p8b/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -450,6 +470,20 @@ const CSS1 = [
      官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
      mono 弱化 chips、tabs 胶囊右置金 on。(渐隐底纱 2026-08-24 撤:用户不要主区任何背景色) */
   "body .wSkVaW_header{background:none;border-bottom:none}",
+  /* ── P13 · hero 空态(官方 HeroShell pXSMma_* / composerHero,原型 §9 hero 栈)── */
+  "body .wSkVaW_composerHero{max-width:760px}",
+  "body .pXSMma_stack{gap:12px}",
+  "body .pXSMma_headline{font-family:var(--font-display);font-weight:500;font-size:33px;letter-spacing:.05em;line-height:1.25;color:var(--fg)}",
+  "body .pXSMma_headline .pXSMma_fish{color:var(--gold)}",
+  "body .pXSMma_previewBadge{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;color:var(--gold-strong);border:1px solid oklch(79% 0.13 84 / .35);border-radius:99px;padding:3px 10px 3px 11px;transform:translateY(1px);background:none}",
+  "body:not([data-ds-dark-theme]) .pXSMma_previewBadge{border-color:oklch(55% 0.115 80 / .35)}",
+  "body .pXSMma_workspace{background:var(--surface);border:1px solid var(--border-soft);border-radius:99px;padding:8px 14px;font-size:12.5px;color:var(--muted);transition:border-color .18s,color .18s}",
+  "body .pXSMma_workspace:hover:not(:disabled),body .pXSMma_workspace[aria-expanded=true]{border-color:color-mix(in oklab,var(--gold) 42%,var(--border-soft));color:var(--fg)}",
+  "body .pXSMma_workspace svg{color:var(--faint)}",
+  "body .pXSMma_workspace:hover:not(:disabled) svg{color:var(--gold-strong)}",
+  /* hero-glow:官方是 SVG 插画 → 藏画,容器改原型径向金辉(gold 15% → 72% 渐隐) */
+  "body .wSkVaW_heroGlow *{display:none}",
+  "body .wSkVaW_heroGlow{background:radial-gradient(50% 50% at 50% 50%,color-mix(in oklab,var(--gold) 15%,transparent),transparent 72%)}",
   /* 底栏滚出渐隐纱撤除(2026-08-24 续「背景去晕染」):composerSeat 官方画
      「transparent→bg 36px 渐变 + 下方实底」,色=body 底色 → 视觉=点阵在底栏
      分界处被半透明渐变吞掉。原型输入区是文档流内 .input-zone,无任何纱,
@@ -563,7 +597,33 @@ const CSS1 = [
   "body .lXshSW_root{background:var(--surface);border-color:transparent}",
   "body .lXshSW_root,body .lXshSW_root *{border-color:transparent!important}",
   "body ._7yHdaG_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}",
-  "body .lXshSW_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}"
+  "body .lXshSW_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}",
+  /* ── P13 · 通用菜单金色化(官方 MenuView _3e4SsG_*,含 add 钮命令菜单;
+     hero 工作区菜单同源)── 原型 .menu r13 + surface-2 + mi 金 hover */
+  "body ._3e4SsG_menu{background:var(--surface-2);border-color:transparent;border-radius:13px;box-shadow:var(--shadow-panel,0 16px 48px oklch(8% .02 330 / .55))}",
+  "body ._3e4SsG_item{border-radius:9px;font-size:12.5px;color:var(--muted)}",
+  "body ._3e4SsG_item:hover,body ._3e4SsG_item._3e4SsG_active{background:oklch(79% 0.13 84 / .1);color:var(--fg)}",
+  "body ._3e4SsG_itemName{font-family:var(--font-mono);font-size:12px;color:var(--fg)}",
+  "body ._3e4SsG_itemDescription{font-size:11px;color:var(--faint)}",
+  "body ._3e4SsG_item:hover ._3e4SsG_itemName,body ._3e4SsG_item._3e4SsG_active ._3e4SsG_itemName{color:var(--gold-strong)}",
+  "body ._3e4SsG_itemIcon{color:var(--faint)}",
+  "body ._3e4SsG_item:hover ._3e4SsG_itemIcon,body ._3e4SsG_item._3e4SsG_active ._3e4SsG_itemIcon{color:var(--gold-strong)}",
+  "body ._3e4SsG_sectionTitle,body ._3e4SsG_groupTitle{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;color:var(--faint);text-transform:uppercase}",
+  /* ── P13 · 设置弹窗(官方 SettingsRoot VOzbGW_*;官方本就是居中 modal+左导航双栏,
+     nav 188px 与原型一致)── 原型 set-dialog:r18 + surface 面 + nav tint + 金 on。
+     几何保留官方 800px(内容量多于原型 4 节,424 高装不下,记残差) */
+  "body .VOzbGW_mask{background:oklch(8% 0.02 330 / .5);backdrop-filter:blur(3px)}",
+  "body .VOzbGW_panel{background:var(--surface);border:1px solid var(--border-soft);border-radius:18px;box-shadow:var(--shadow-panel,0 16px 48px oklch(8% .02 330 / .55))}",
+  "body .VOzbGW_nav{border-right:1px solid var(--border-soft);background:color-mix(in oklab, var(--fg) 2.5%, transparent);padding:14px 8px 10px;gap:2px}",
+  "body .VOzbGW_navTitle{font-family:var(--font-display);font-weight:600;font-size:13.5px;letter-spacing:.01em;color:var(--fg);padding:0 10px 10px}",
+  "body .VOzbGW_navCell{border-radius:9px;font-size:12.5px;color:var(--muted);height:auto;padding:8px 10px;transition:.15s}",
+  "body .VOzbGW_navCell:hover{background:oklch(79% 0.13 84 / .07);color:var(--fg)}",
+  "body .VOzbGW_navCell.VOzbGW_active{background:oklch(79% 0.13 84 / .12);color:var(--fg);font-weight:500}",
+  "body .VOzbGW_navCell.VOzbGW_active .VOzbGW_navIcon{color:var(--gold-strong)}",
+  "body .VOzbGW_close{color:var(--faint)}",
+  "body .VOzbGW_close:hover{background:color-mix(in oklab, var(--fg) 7%, transparent);color:var(--fg)}",
+  "body .VOzbGW_panel,body .VOzbGW_panel *{border-color:transparent!important}",
+  "body .VOzbGW_nav{border-right-color:color-mix(in oklab, var(--fg) 8%, transparent)!important}",
 ];
 
 const CSS2 = [

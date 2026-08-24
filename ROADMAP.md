@@ -59,7 +59,7 @@
 | P10 | §6 | 输入坞全面接管:todo 进度条、chips、命令/模式/模型菜单、ctx-ring 圆环+面板、金色 send、c-stats | CSS + composer 槽位 | ✅ |
 | P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ✅ |
 | P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⏭ 跳过(用户决策 2026-08-24) |
-| P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ⬜ |
+| P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ✅ |
 | P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ⬜ |
 | P15 | 验收 | 全量截图 vs 原型逐节 diff + 三态几何门禁全绿,发版 1.1.0 | 验收 | ⬜ |
 
@@ -178,18 +178,22 @@
 
 - 不做。官方「轨迹」tab 保持官方原样;原型 §8 的 traj-grid/lane/tbar 瀑布图不移植。
 
-### §9 全局浮层(→ P13)
+### §9 全局浮层(P13 已对齐,2026-08-24)
 
-- ⬜ hero 新会话空态:`conversation.is-hero` —— session-body 隐藏、input-zone 垂直居中、
-  `hero-stack` 760px、`hero-glow` 金辉光斑、`hero-headline`(33px DISPLAY + 「预览版」badge)、
-  工作区/Agent 预设双胶囊菜单(hero-menu,mi sel 金)、hero-foot 返回链接;新会话时 dock/c-stats 隐藏。
-- ⬜ 通用 menu 金色化:radius 13 + surface-2 + `mi` hover 金 tint + danger 红 + `mk` 快捷键列
-  + menu-sep。当前菜单仅靠 token 换色。
-- ⬜ toast:fixed 底部 100px 居中、surface-2、radius 12、.3s 上滑。
-- ⬜ 设置弹窗:原型=屏幕居中 `set-modal`(mask blur 3px)+ `set-dialog` 680×424 双栏
-  (188px 左 nav:通用/模型/插件/Agent 预设,pane 切换记忆 localStorage,≤640 折叠为顶部横 nav);
-  当前=官方设置面板 + 注入的 AurumSettingsRow 段选。差异最大的一块。
-- ◐ scrim 遮罩:官方已有同类(色彩经 token 对齐即可)。
+- ✅ hero 新会话空态:官方 HeroShell(pXSMma_*)本就居中 —— headline 换 DISPLAY 33px
+  (实测 Cormorant)+ 鱼图标金色;previewBadge → hero-badge(mono 10 金字胶囊边);
+  workspace 芯片 → hero-pill(r99+金 hover 边);heroGlow 官方 SVG 插画藏画,容器改
+  原型径向金辉(gold 15%→72% 渐隐)。hero-foot 返回链接无官方对应物,不适用。
+- ✅ 通用菜单金色化:命令菜单/hero 工作区菜单同源(_3e4SsG_* MenuView)—— r13 +
+  surface-2 + item 金 hover + mono 名 + 分组头 mono 大写字距(= 原型 cmdMenu 形态)。
+- ✅ 设置弹窗:官方 VOzbGW_* 本就是居中 modal + 左导航双栏(nav 188px 与原型一致)——
+  mask 深紫 50%+blur3、panel surface r18、nav tint + 金 hover/on、DISPLAY 标题、
+  鎏金段(aurum-row)在列。残差:几何保留官方 800px(五节内容 > 原型四节 424 高)。
+- ◐ toast:官方 primitives 内部件、无稳定活实例可瞄;面色已随主题 token 对齐,
+  形态微调待后续有实例时补(记档)。
+- ✅ scrim:即设置 mask,色彩按原型对齐。
+- ✅ 品牌字标定案:维持官方 brand SVG —— CSS 无法替换 SVG 内容,DOM 手术违铁律
+  (§4 该残差就此关闭)。
 
 ### §10 响应式(→ P14)
 
@@ -269,10 +273,16 @@ send=linear-gradient(135deg 金)r12、ctx 金弧 trigger 31px、c-stats=JetBrain
 ### P12 · Trajectory(原型 §8)—— ⏭ 跳过(2026-08-24 用户决策)
 - 不做瀑布图映射;官方轨迹 tab 保持官方原样,不做皮肤接管。
 
-### P13 · 全局浮层(原型 §9)
-- 菜单(menu/mi)、Toast、scrim、设置弹窗(set-modal 左导航双栏,≤640 折叠为顶部横nav);
-- hero 空态:居中 composer 栈 + hero-glow 金辉 + 徽标字 + 工作区/预设胶囊;
-- 注意浮层挂 body 层,不受卡片 overflow:hidden 裁切(原型注释同样强调)。
+### P13 · 全局浮层(原型 §9)✅ 2026-08-24
+**实测**(双主题):hero h1=33px Cormorant + badge mono r99 金 + glow 画隐径向金辉 +
+工作区芯片 r99;命令菜单 r13/item r9 金 hover(7 项);设置 panel 802 r18 surface +
+nav 188 tint + 五节导航(通用设置/模型/插件/Agent 预设/豆包模式)+ aurumRow 在列;
+回归 gate/p8b/proto-diff 全绿。
+- 结构先行:hero(HeroShell)/设置(VOzbGW 居中双栏)/命令菜单(MenuView)官方
+  全部同构 —— 纯 CSS 换皮,零组件接管;
+- heroGlow:官方 SVG 插画藏画换原型径向金辉;
+- 记档:toast 无活实例(token 已对齐);品牌字标维持官方(CSS 换不了 SVG,定案);
+  设置几何保留 800px(内容五节 > 原型四节)。
 
 ### P14 · 响应式(原型 §10)
 - ≤1024:侧栏变 fixed 抽屉(transform 滑入,burger 显示)——需检查 DSH 移动端结构是否已有抽屉,
