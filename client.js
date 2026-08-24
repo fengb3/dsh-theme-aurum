@@ -182,7 +182,14 @@ window.__ModuleLoader__.load({
        违铁律)—— ROADMAP §4 品牌残差就此定案;scrim 色彩即上述 mask。
     实测:hero h1=33px Cormorant + badge mono r99 金 + glow artHidden=true +
     芯片 r99;cmdMenu r13 item r9(7 项);settings panel 802 r18 surface +
-    nav 188 tint + 五节导航 + aurumRow 在列;回归 gate/p8b/proto-diff 全绿。 */
+    nav 188 tint + 五节导航 + aurumRow 在列;回归 gate/p8b/proto-diff 全绿。
+
+    ── P14 · 响应式(2026-08-24)──────────────────────────────
+    探针实测:官方无抽屉 DOM,≤900 自动收 68px 折叠轨(即我们的细条)——
+    原型 §10 的 fixed 抽屉方案「不适用」,跟随官方折叠行为,只做逐档降密度:
+    ≤820 头部/流/输入坞收 padding、hero 25px;≤640 tab 12px、气泡 90%、
+    goal-track 64px、stats 分隔收窄;≤480 todo-bar 整行、工具卡参数摘要隐藏、
+    todo-it 10.5px。360-1920 全档零横向滚动(输入卡/清单条零溢出)。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -891,6 +898,11 @@ const CSS3 = [
   ".todo-it.now .td{background:var(--gold-strong);animation:au-pulse 1.2s infinite}",
   ".goal-track{width:130px;height:4px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex:none}",
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
+  /* ── P14 · 响应式降档(原型 §10;抽屉不适用:官方 ≤900 自动 68px 折叠轨,
+     无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */
+  "@media (max-width:820px){body .wSkVaW_header{padding:10px 14px 0}body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-size:16px}body .Md3f7G_scroll{padding:12px calc(var(--dsh-composer-side-clearance) + 8px)}body .uV2eYG_root{padding-bottom:6px}body .pXSMma_headline{font-size:25px}body .pXSMma_stack{max-width:calc(100vw - 48px)}}",
+  "@media (max-width:640px){body .wSkVaW_tab{padding:4px 11px;font-size:12px}body .au-bubble{font-size:14.5px;max-width:90%}body .goal-track{width:64px}body .FJxK0a_sep{margin:0 6px}body .FJxK0a_root{font-size:9.5px}}",
+  "@media (max-width:480px){body .todo-bar{min-width:100%}body .au-name em{display:none}body .turn-tail .tx{font-size:9.5px;letter-spacing:.02em}body .todo-it{font-size:10.5px}body .au-srow .au-s-title{font-size:11.5px}}",
   /* ── P11 · §7 子调用(整段拷贝;AuToolCallTree 消费)── */
   ".tool-kids{margin:9px 0 3px 19px;padding-left:13px;border-left:1px solid color-mix(in oklab, var(--fg) 9%, transparent);display:flex;flex-direction:column;gap:5px}",
   ".kid{display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);padding:4px 2px;cursor:pointer;border-radius:7px}",

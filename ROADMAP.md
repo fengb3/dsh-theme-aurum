@@ -60,7 +60,7 @@
 | P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ✅ |
 | P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⏭ 跳过(用户决策 2026-08-24) |
 | P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ✅ |
-| P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ⬜ |
+| P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ✅ |
 | P15 | 验收 | 全量截图 vs 原型逐节 diff + 三态几何门禁全绿,发版 1.1.0 | 验收 | ⬜ |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
@@ -195,13 +195,16 @@
 - ✅ 品牌字标定案:维持官方 brand SVG —— CSS 无法替换 SVG 内容,DOM 手术违铁律
   (§4 该残差就此关闭)。
 
-### §10 响应式(→ P14)
+### §10 响应式(P14 已对齐,2026-08-24)
 
-- ⬜ ≤1024:侧栏 fixed 抽屉(top/left/bottom 10、translateX 滑入)+ scrim + burger 显示 ——
-  先检查 DSH 移动端结构是否已有抽屉,有则只换皮。
-- ⬜ ≤820:sh-head 收 padding、flow/traj 收边距、hero 缩(25px/210px)、traj-grid 92px、lane 22px。
-- ⬜ ≤640:标题 16px、tab/bubble 90%、goal-track 64px、c-stats 分隔收窄。
-- ⬜ ≤480:seg 缩、mode/model 钮折叠为 m-chip 双字码、todo-bar 整行、`t-name em` 隐藏、tx 缩。
+- ✅ 抽屉方案「不适用」:探针实测官方无抽屉 DOM,≤900 自动收 68px 折叠轨
+  (即鎏金细条)—— 跟随官方折叠行为,不自造抽屉。
+- ✅ ≤820:sh-head 收 padding/crumb 16px、会话流收边距、hero 25px/栈收宽。
+- ✅ ≤640:tab 12px、气泡 14.5px/90%、goal-track 64px、c-stats 分隔收窄 6px。
+- ✅ ≤480:todo-bar 整行、工具卡参数摘要(au-name em)隐藏、todo-it 10.5px、
+  turn-tail tx 9.5px。
+- ✅ 门禁:360–1920 逐档实测零横向滚动,输入卡/清单条零溢出;360px 视觉复核
+  (侧栏窄条、流/输入卡完整、无重叠)。
 
 ## P8 实测记录(2026-08-24,基准门禁样例)
 
@@ -284,10 +287,13 @@ nav 188 tint + 五节导航(通用设置/模型/插件/Agent 预设/豆包模式
 - 记档:toast 无活实例(token 已对齐);品牌字标维持官方(CSS 换不了 SVG,定案);
   设置几何保留 800px(内容五节 > 原型四节)。
 
-### P14 · 响应式(原型 §10)
-- ≤1024:侧栏变 fixed 抽屉(transform 滑入,burger 显示)——需检查 DSH 移动端结构是否已有抽屉,
-  有则只换皮;≤820/≤640/≤480 逐档收 padding、字号、隐藏次要文字;
-- 门禁:每档 360–1920 拖一遍无横向滚动、无元素越出对应卡片。
+### P14 · 响应式(原型 §10)✅ 2026-08-24
+**实测**(1280/820/640/480/360 五档):全程零横向滚动;820 crumb 16px 收窄、
+640 气泡 14.5px/90% + goal-track 64px + stats 分隔 6px、480 参数摘要隐藏 +
+todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto-diff 全绿。
+- 抽屉记「不适用」:官方 ≤900 自动 68px 折叠轨(即鎏金细条),无抽屉 DOM;
+- 降档选择器全部走已遮蔽/已换皮类名(wSkVaW_/au-/goal-track/FJxK0a_/todo-*),
+  与既有两轨 CSS 一致,不新增体系。
 
 ### P15 · 验收发版
 - 原型与实况同 viewport 截图,逐节 ui-diff + `verify-proto-diff.js` 全绿 + 三态几何门禁全绿
