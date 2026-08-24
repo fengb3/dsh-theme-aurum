@@ -57,7 +57,7 @@
 | **P8c** | **§4 残差** | **侧栏残留差异:折叠 56 细条、rail-logo 淡切、拖拽排序、行/视图菜单形态** | **CSS + AuBrowser 补齐** | **✅** |
 | P9 | §5 | 会话流尾部节点:turn-tail/compress/retry/err/max-tokens + md 装饰 + 头像 + 列宽712 + sh-head/tabs + reasoning 皮肤 | htm 恒等映射 + CSS 瞄准 | ✅ |
 | P10 | §6 | 输入坞全面接管:todo 进度条、chips、命令/模式/模型菜单、ctx-ring 圆环+面板、金色 send、c-stats | CSS + composer 槽位 | ✅ |
-| P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ⬜ |
+| P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ✅ |
 | P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⬜ |
 | P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ⬜ |
 | P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ⬜ |
@@ -153,16 +153,26 @@
 - ⬜ cmdMenu 斜杠命令列表形态(官方命令菜单由通用 Popmenu 渲染):与 §9 通用菜单
   金色化同源,并入 P13 一并处理(点 add 钮展开的菜单即其形态)。
 
-### §7 工具卡(9 类已接管,残差 → P11)
+### §7 工具卡(P11 已对齐,2026-08-24)
 
-- ✅ grep/read/edit/write/todo_write/web_search/web_fetch/pwsh/bash 卡片框架
-  (药丸状态 + grid 展开插值 + 运行中金色扫光 + 详情体:diff/term/gline/todo/s-res)。
-- ◐ 尾注形态:原型 `.t-foot` 是 mono **统计尾注**(命中数/耗时/tokens/重试次数);当前
-  `au-foot` 是「打开文件/在轨迹中查看」操作链接行。可并存:统计左、操作右。
-- ⬜ 剩余工具类型:subagent/workflow/goal/ask_user_question/interrupt_agent/job_* 等按 DSH
-  实际 tool 名补 key,复用 AuToolCard 框架兜底。
-- ⬜ tool-kids 子调用列表:原型缩进 19px + 左竖线 13px、kid 行 hover、`k-sum` 右对齐摘要
-  (subagent/后台 job 的嵌套调用映射到这里)。
+- ✅ 9 类特判卡(grep/read/edit/write/todo_write/web_search/web_fetch/pwsh/bash:
+  药丸状态 + grid 展开插值 + 运行中金色扫光 + 详情体 diff/term/gline/todo/s-res)。
+- ✅ **未知工具兜底卡(2026-08-24 用户要求)**:官方对未知工具的兜底是硬编码在
+  ToolCall 内的 GenericToolCard(renderSlot fallback 参数,插件不可替换)→ 遮蔽上层
+  节点 `conversation.chat.node` key=tool-call(AuToolCallTree,priority:-1),
+  由 AuToolCard 渲染一切工具名:已知名特判,未知名走兜底分支(AU_TOOL_META 图标
+  登记 18 名 + auArgEm 参数摘要 + 结果首行 summary)。实测 glob×3 /
+  ask_user_question×1 / mcp__glm-vision__analyze_image×1 全走兜底,官方行残留 0。
+- ✅ tool-kids 子调用(原型 §7 整段拷贝):缩进 19px+左竖线 13px、kid 行 mono+
+  k-sum 右对齐、点击就地展开子卡;与官方 ToolCallBranch 消费同一 subCalls 字段
+  (逐字同源)。注:当前构建 subagent/workflow 子调用落子会话日志,平铺窗口无
+  嵌套样本(code-dispatch 边存在时自动出现),非渲染缺陷。
+- ✅ t-foot 统计尾注:耗时/命中/行数/源数(左)与「打开文件/在轨迹中查看」
+  操作链接(右)并存。
+- ✅ 尾注形态(收口):原型 .t-foot 的 mono 统计即上述 au-fstat,操作链接保留。
+- ✅ 详情栏去除(2026-08-24 既定决策)执行:全 UI 被本插件组件接管后无任何
+  openDetails 调用方 → root 第三列恒 0px(实测 [280,1160,0],pane 不可见);
+  官方 details 注册原样保留,停插件即还原。
 
 ### §8 Trajectory(→ P12)
 
@@ -245,12 +255,15 @@ send=linear-gradient(135deg 金)r12、ctx 金弧 trigger 31px、c-stats=JetBrain
 - 记「不适用」:ctx-ring ≥80% 变玫(CSS 读不到占用率);cmdMenu 形态并入 P13;
 - 决策记录:todo-bar 拷贝段唯一适配 flex:1→flex:none(column-flex 拔高),pulse→au-pulse。
 
-### P11 · 工具卡补全(原型 §7)
-- 已覆盖 9 类;剩余按 DSH 实际 tool 名补 key(subagent、workflow、goal、ask_user_question、
-  interrupt_agent、job_* 等),复用 AuToolCard 框架(药丸状态+grid 展开插值);
-- 子调用 tool-kids(缩进+左竖线+k-sum);t-foot 统计尾注(命中/耗时/tokens)与操作链接并存;
-- 决策已定(2026-08-24):**去除右侧详情栏**,详情并入工具卡(CSS 收宽隐藏,不动官方注册);
-- 门禁:长路径 `word-break:break-all` 不撑卡;运行中扫光不越卡边界。
+### P11 · 工具卡补全(原型 §7)✅ 2026-08-24
+**实测**(「帮 GLM MCP」会话 48 callrow,双主题):全 au-tool 卡、官方 GenericToolCard
+残留 0;未知工具 glob/ask_user_question/mcp__glm-vision__analyze_image 全走兜底
+(name/icon/pill/fstat 齐);详情栏第三列 0px 不可见;回归 gate/p8b/p8c/proto-diff 全绿。
+- 用户决策(同日):输入坞底条(todo/goal/queue)实色化 —— var(--surface),同输入卡;
+- 兜底实现:遮蔽 conversation.chat.node key=tool-call(官方 fallback 硬编码不可替换,
+  只能接管整棵树);AU_TOOL_META 18 名图标登记 + auArgEm 摘要推导;
+- tool-kids 与官方同源(subCalls 字段逐字一致);当前数据面无嵌套样本,记档不视为缺陷;
+- P12 前置已就绪:轨迹视图(inspect)链接保留可用。
 
 ### P12 · Trajectory(原型 §8)
 - 先确认 DSH 是否有等价轨迹/统计视图槽;有则映射 lane/tbar 金玫配色,无则记入「不适用」跳过。

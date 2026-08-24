@@ -133,7 +133,29 @@ window.__ModuleLoader__.load({
     实测(本会话 6 todo/1 now):todo-panel×1(无双重)、dockAboveCard=true、
     卡/bar 零溢出、ta=mirror=14.5px/1.7、send=linear-gradient(135deg 金)r12、
     ctx fill=金 trigger 31px、stats=JetBrains Mono 10.5;深浅双主题面色/ink 互换正确;
-    回归 gate(264/56 三态零溢出)/p8b(无描边)/p8c/proto-diff(failures=0)全绿。 */
+    回归 gate(264/56 三态零溢出)/p8b(无描边)/p8c/proto-diff(failures=0)全绿。
+
+    ── P11 · 工具卡补全 + 兜底(2026-08-24)──────────────────
+    0. 用户决策(同日):输入坞底条(todo-bar/goal/queue/TodoPanel)一律实色 —— 半透明
+       面全部换 solid var(--surface)(深浅各自解析),与输入卡同族。
+    1. 关键机制:官方对未知工具的兜底是硬编码在 ToolCall 内的 GenericToolCard
+       (renderSlot("tool.call.toolview",…,{entryKey,fallback}) 的 fallback 参数,
+       插件不可替换)→ 唯一全接管路径 = 遮蔽上层节点 conversation.chat.node
+       key=tool-call(官方 ToolCallTree,priority:-1)。
+    2. AuToolCallTree/AuToolBranch/AuKid:AuToolCard 渲染一切工具名;已知名走
+       特判,未知名走兜底分支(AU_TOOL_META 图标登记 18 名 + auArgEm 参数摘要
+       推导 + 结果首行 summary)。t-foot 补统计位(耗时/命中/行数/源数,左)与
+       操作链接(右)并存。
+    3. tool-kids(原型 §7 整段拷贝):AuToolBranch 递归 block.subCalls —— 与官方
+       ToolCallBranch 消费同一字段(逐字同源契约);kid 行 mono+k-sum,点击就地
+       展开子卡。注:当前构建 subagent/workflow 子调用落子会话日志,平铺窗口
+       无嵌套样本(code-dispatch 边存在时自动出现),非渲染缺陷。
+    4. 详情栏去除(2026-08-24 既定决策)执行:全 UI 已被本插件组件接管,无任何
+       openDetails 调用方 → 第三列恒 0px(实测 rootCols=[280,1160,0],
+       pane 不可见);官方 details 注册原样保留(停插件即还原)。
+    实测:「帮 GLM MCP」会话 48 callrow 全 au-tool 卡、官方行残留 0;未知工具
+    glob×3 / ask_user_question×1 / mcp__glm-vision__analyze_image×1 全走兜底
+    (name/icon/pill/fstat 齐);回归 gate/p8b/p8c/proto-diff 全绿,双主题无损。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -521,20 +543,17 @@ const CSS1 = [
   /* ── P10 · c-stats(官方 StatsLine FJxK0a_* → 原型 .c-stats mono 10.5)── */
   "body .FJxK0a_root{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;color:var(--faint);padding:4px 6px 0}",
   "body .FJxK0a_sep{color:color-mix(in oklab, var(--faint) 45%, transparent);margin:0 9px}",
-  /* ── P10 · goal 条(nLMEza_* → 原型 todo-bar 半透明面;无描边)── */
-  "body .nLMEza_bar{background:oklch(20% 0.016 328 / .5);border-radius:13px;border-color:transparent}",
-  "body:not([data-ds-dark-theme]) .nLMEza_bar{background:oklch(98.5% 0.008 82 / .8)}",
+  /* ── P10 · goal 条(nLMEza_* → 原型 todo-bar 面;P11 起实色,同输入卡决策)── */
+  "body .nLMEza_bar{background:var(--surface);border-radius:13px;border-color:transparent}",
   "body .nLMEza_bar,body .nLMEza_bar *{border-color:transparent!important}",
   "body .nLMEza_goalGlyph{color:var(--gold-dim)}",
   "body .nLMEza_label{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;color:var(--faint)}",
   "body .nLMEza_iconBtn:hover:not(:disabled){background:color-mix(in oklab,var(--gold) 12%,var(--surface-2));color:var(--gold-strong)}",
-  /* ── P10 · queue 条(_7yHdaG_*)与 TodoPanel 残影(lXshSW_*,详情栏内)同面 ── */
-  "body ._7yHdaG_panel{background:oklch(20% 0.016 328 / .5)}",
-  "body:not([data-ds-dark-theme]) ._7yHdaG_panel{background:oklch(98.5% 0.008 82 / .8)}",
+  /* ── P10 · queue 条(_7yHdaG_*)与 TodoPanel 残影(lXshSW_*,详情栏内)同面(实色)── */
+  "body ._7yHdaG_panel{background:var(--surface)}",
   "body ._7yHdaG_panel:after{border-color:transparent}",
   "body ._7yHdaG_panel,body ._7yHdaG_panel *{border-color:transparent!important}",
-  "body .lXshSW_root{background:oklch(20% 0.016 328 / .5);border-color:transparent}",
-  "body:not([data-ds-dark-theme]) .lXshSW_root{background:oklch(98.5% 0.008 82 / .8)}",
+  "body .lXshSW_root{background:var(--surface);border-color:transparent}",
   "body .lXshSW_root,body .lXshSW_root *{border-color:transparent!important}",
   "body ._7yHdaG_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}",
   "body .lXshSW_header:hover{background:color-mix(in oklab,var(--gold) 10%,transparent)}"
@@ -545,6 +564,8 @@ const CSS2 = [
   ".au-bubble{max-width:min(525px,82%);border-radius:22px;padding:13px 19px;background:linear-gradient(135deg,color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent),color-mix(in oklab,var(--aurum-gold-strong) 7%,transparent));font-family:var(--dsw-font-markdown-base-font-family);font-size:15px;line-height:1.85;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word}",
   ".au-img{max-width:100%;border-radius:14px;display:block;margin-top:8px}",
   ".au-ctx-row{font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--aurum-gold-dim);padding:2px 4px;letter-spacing:.03em;display:flex;align-items:center;gap:8px}",
+  ".au-callrow{margin:2px 0}",
+  ".au-fstat{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-right:auto}",
   ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:2px 0}",
   "body:not([data-ds-dark-theme]) .au-tool{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
   ".au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none}",
@@ -784,9 +805,10 @@ const CSS3 = [
   ".menu-sep{height:1px;background:color-mix(in oklab, var(--fg) 8%, transparent);margin:5px 8px}",
   /* ── P10 · §6 todo-bar(整段拷贝;AuTodoBar 消费)──
      唯一机械替换外的适配:.todo-it.now .td 的 keyframes pulse → au-pulse
-     (P8b 已有同名同体 50%{opacity:.25},避免全局 keyframe 名与官方冲突) */
-  ".todo-bar{flex:1;min-width:230px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;border:1px solid var(--border-soft);border-radius:13px;background:oklch(20% 0.016 328 / .5);padding:7px 13px;min-height:38px}",
-  "body:not([data-ds-dark-theme]) .todo-bar{background:oklch(98.5% 0.008 82 / .8)}",
+     (P8b 已有同名同体 50%{opacity:.25},避免全局 keyframe 名与官方冲突)。
+     2026-08-24 用户决策:底条不要半透明 → 面色改 solid var(--surface)(深浅各自解析),
+     与输入卡同族 */
+  ".todo-bar{flex:1;min-width:230px;display:flex;align-items:center;gap:11px;flex-wrap:wrap;border:1px solid var(--border-soft);border-radius:13px;background:var(--surface);padding:7px 13px;min-height:38px}",
   ".todo-label{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.14em;flex:none}",
   ".todo-items{display:flex;gap:6px;flex-wrap:wrap}",
   ".todo-it{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);border:1px solid transparent;background:color-mix(in oklab, var(--surface-2) 60%, transparent);border-radius:8px;padding:3px 9px;transition:.15s}",
@@ -798,6 +820,13 @@ const CSS3 = [
   ".todo-it.now .td{background:var(--gold-strong);animation:au-pulse 1.2s infinite}",
   ".goal-track{width:130px;height:4px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex:none}",
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
+  /* ── P11 · §7 子调用(整段拷贝;AuToolCallTree 消费)── */
+  ".tool-kids{margin:9px 0 3px 19px;padding-left:13px;border-left:1px solid color-mix(in oklab, var(--fg) 9%, transparent);display:flex;flex-direction:column;gap:5px}",
+  ".kid{display:flex;align-items:center;gap:9px;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);padding:4px 2px;cursor:pointer;border-radius:7px}",
+  ".kid:hover{color:var(--fg);background:oklch(24% 0.018 326 / .4)}",
+  ".kid svg{width:12px;height:12px;color:var(--gold-dim);flex:none}",
+  ".kid .k-sum{color:var(--faint);margin-left:auto;white-space:nowrap}",
+  "body:not([data-ds-dark-theme]) .kid:hover{background:oklch(92% 0.016 84 / .6)}",
   /* 独立挂载适配(ROADMAP §6 记录):原型 .todo-bar 设计于 .dock 横排(flex:1 拉宽),
      官方 input.dock 是卡上方的 column-flex 区 —— flex:1 会变纵向拔高;
      改按官方 TodoDock(lXshSW_root)同形几何:与输入卡对齐、居中、不拔高 */
@@ -891,6 +920,13 @@ function Ic(kind) {
   if (kind === "branch") return h("svg", a, h("circle", { cx: 6, cy: 6, r: 2.5 }), h("circle", { cx: 6, cy: 18, r: 2.5 }), h("circle", { cx: 18, cy: 8, r: 2.5 }), h("path", { d: "M6 8.5v7M6 13c6 0 6-3 10.5-3.5" }));
   if (kind === "retry") return h("svg", a, h("path", { d: "M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5" }));
   if (kind === "error") return h("svg", Object.assign({}, a, { strokeWidth: 1.9 }), h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M12 8v4.5M12 16h.01" }));
+  /* P11:兜底/新工具类型图标 */
+  if (kind === "target") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 8.6 }), h("circle", { cx: 12, cy: 12, r: 4 }), h("circle", Object.assign({}, a, { fill: "currentColor", stroke: "none", cx: 12, cy: 12, r: 1.4 })));
+  if (kind === "stop") return h("svg", Object.assign({}, a, { strokeWidth: 2 }), h("rect", { x: 6, y: 6, width: 12, height: 12, rx: 3 }));
+  if (kind === "list") return h("svg", a, h("path", { d: "M9 6h11M9 12h11M9 18h11" }), h("path", { d: "M4.5 6h.01M4.5 12h.01M4.5 18h.01", "stroke-linecap": "round", "stroke-width": 2.4 }));
+  if (kind === "image") return h("svg", a, h("rect", { x: 4, y: 5, width: 16, height: 14, rx: 2.5 }), h("circle", { cx: 9, cy: 10, r: 1.6 }), h("path", { d: "m6 17 4.2-4.2a1.5 1.5 0 0 1 2.1 0L20 20" }));
+  if (kind === "spark") return h("svg", a, h("path", { d: "M13 2 4.5 13.5H11l-1.2 8.5L18.5 10.5H12L13 2Z" }));
+  if (kind === "question") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7M12 17h.01" }));
   return null;
 }
 function AuPill(props) {
@@ -990,6 +1026,28 @@ function auTodoBody(args) {
   return h("div", { className: "au-todo" }, els);
 }
 
+/* P11 · 新工具类型图标/摘要登记表(兜底分支消费;em 统一走 auArgEm 推导) */
+const AU_TOOL_META = {
+  subagent: { icon: "branch" }, subagent_fork: { icon: "branch" }, send_message: { icon: "branch" },
+  workflow: { icon: "spark" }, ralph: { icon: "retry" }, skill: { icon: "spark" },
+  create_goal: { icon: "target" }, get_goal: { icon: "target" }, update_goal: { icon: "target" },
+  ask_user_question: { icon: "question" }, interrupt_agent: { icon: "stop" },
+  list_agents: { icon: "list" }, job_list: { icon: "list" }, job_output: { icon: "terminal" }, job_kill: { icon: "stop" },
+  read_image: { icon: "image" }, glob: { icon: "search" }, validate_dsh_ui: { icon: "view" }
+};
+function auArgEm(a) {
+  if (!a || typeof a !== "object") return "";
+  const ks = ["description", "objective", "prompt", "query", "pattern", "command", "path", "file_path", "url", "name", "skill"];
+  for (let i = 0; i < ks.length; i++) { const v = a[ks[i]]; if (typeof v === "string" && v) return v.length > 60 ? v.slice(0, 57) + "…" : v; }
+  for (const k in a) {
+    const v = a[k];
+    if (typeof v === "string" && v) return v.length > 60 ? v.slice(0, 57) + "…" : v;
+    if (Array.isArray(v) && v.length && typeof v[0] === "string") return v[0].length > 60 ? v[0].slice(0, 57) + "…" : v[0];
+  }
+  return "";
+}
+function auFirstLine(t) { if (!t) return ""; const nl = t.indexOf("\n"); return nl === -1 ? t : t.slice(0, nl); }
+
 function AuToolCard(props) {
   const b = props.block || {};
   const settled = b.kind === "tool-result";
@@ -1061,11 +1119,32 @@ function AuToolCard(props) {
     if (txt) body = h("pre", { className: "au-term" }, txt);
   }
 
-  const pill = running ? h(AuPill, { state: "run", text: "运行中" }) : isErr ? h(AuPill, { state: "err", text: "失败" }) : h(AuPill, { state: "ok", text: "完成 · " + auDur(settled && b.callTime != null ? b.time - b.callTime : null) });
+  /* P11 兜底:未特判的工具名(glob / ask_user_question / subagent / job 系列 / goal 系列
+     及一切未知插件工具)—— 图标查 META,em 与 summary 从 args、结果首行推导 */
+  if (summary === "" && em === "") {
+    const meta = AU_TOOL_META[name];
+    if (meta) icon = meta.icon;
+    em = auArgEm(args);
+    if (running) summary = (callView && callView.title) || "执行中…";
+    else {
+      const fl = auFirstLine(auText(b.content));
+      summary = fl ? (fl.length > 64 ? fl.slice(0, 61) + "…" : fl) : (isErr ? "调用失败" : "完成");
+    }
+  }
 
-  const foot = (filePath && typeof openFile === "function") || (typeof inspect === "function") ? h("div", { className: "au-foot" },
+  const durMs = settled && b.callTime != null ? b.time - b.callTime : null;
+  const pill = running ? h(AuPill, { state: "run", text: "运行中" }) : isErr ? h(AuPill, { state: "err", text: "失败" }) : h(AuPill, { state: "ok", text: "完成 · " + auDur(durMs) });
+
+  /* P11 t-foot:统计(左)与操作(右)并存 —— 耗时 + 已知结果统计 */
+  const statBits = [];
+  if (settled) statBits.push("耗时 " + auDur(durMs));
+  if (name === "grep" && resultView && resultView.total != null) statBits.push("命中 " + resultView.total);
+  if ((name === "read") && resultView && resultView.lines) statBits.push(resultView.lines.length + " 行");
+  if (name === "web_search" && resultView && resultView.sources) statBits.push(resultView.sources.length + " 源");
+  const foot = h("div", { className: "au-foot" },
+    statBits.length ? h("span", { className: "au-fstat" }, statBits.join(" · ")) : null,
     filePath && typeof openFile === "function" ? h("button", { className: "au-link", onClick: function (e) { e.stopPropagation(); openFile(filePath); } }, "打开文件") : null,
-    typeof inspect === "function" ? h("button", { className: "au-link", onClick: function (e) { e.stopPropagation(); inspect(); } }, "在轨迹中查看") : null) : null;
+    typeof inspect === "function" ? h("button", { className: "au-link", onClick: function (e) { e.stopPropagation(); inspect(); } }, "在轨迹中查看") : null);
 
   return h("div", { className: "au-tool" + (open ? " au-open" : ""), "data-state": running ? "running" : (isErr ? "error" : "ok"), "data-tool": name },
     h("div", { className: "au-main", onClick: function () { setOpen(!open); } },
@@ -1076,6 +1155,51 @@ function AuToolCard(props) {
       pill,
       h("span", { className: "au-chev" }, Ic("chevron"))),
     h(AuBody, { open: open }, body, foot));
+}
+
+/* ═══ P11 · 工具调用树(遮蔽官方 ToolCallTree:conversation.chat.node key=tool-call)═══
+   动机:官方对未知工具的兜底是硬编码在 ToolCall 内的 GenericToolCard
+   (renderSlot fallback 参数,插件不可替换);遮蔽整棵树后由 AuToolCard 的
+   兜底分支接管一切工具名 —— 已知名走特判,未知名走 META+推导,天然全覆盖。
+   subCalls 递归 = 原型 §7 tool-kids(缩进+左竖线+kid 行+k-sum);点 kid 行
+   就地展开该子调用的完整卡片。 */
+function AuKid(props) {
+  const b = props.block;
+  const settled = b.kind === "tool-result";
+  const name = settled ? ((b.call && b.call.name) || "") : (b.name || "");
+  const meta = AU_TOOL_META[name];
+  const st = React.useState(false);
+  const open = st[0];
+  const sum = !settled ? "运行中…" : (b.isError ? "失败" : auDur(b.callTime != null ? b.time - b.callTime : null));
+  return h("div", null,
+    h("div", { className: "kid", onClick: function () { st[1](!open); } },
+      Ic(meta ? meta.icon : "chevdown"),
+      h("span", null, name),
+      h("span", { className: "k-sum" }, sum)),
+    open ? h(AuToolCard, props.owner) : null);
+}
+function AuToolBranch(props) {
+  const b = props.block;
+  const settled = b.kind === "tool-result";
+  const toolName = settled ? ((b.call && b.call.name) || "") : (b.name || "");
+  const owner = {
+    callId: b.callId, toolName: toolName, block: b,
+    openFile: props.openFile, cwd: props.cwd, home: props.home,
+    inspect: function () { if (typeof props.inspectCall === "function") props.inspectCall(b.callId); }
+  };
+  const kids = (b.subCalls || []);
+  return h("div", { className: "au-callrow", "data-chat-anchor-key": "call:" + b.callId, "data-chat-call-id": b.callId, "data-selected": props.selectedCallId === b.callId || undefined },
+    h(AuToolCard, owner),
+    kids.length ? h("div", { className: "tool-kids", "data-subcalls": true },
+      kids.map(function (c) { return h(AuKid, { key: c.callId, block: c, owner: Object.assign({}, owner, { callId: c.callId, toolName: c.kind === "tool-result" ? ((c.call && c.call.name) || "") : (c.name || ""), block: c, inspect: function () { if (typeof props.inspectCall === "function") props.inspectCall(c.callId); } }) }); })) : null);
+}
+function AuToolCallTree(props) {
+  const root = props.node && props.node.data && props.node.data.root;
+  if (!root) return null;
+  return h(AuToolBranch, {
+    block: root, selectedCallId: props.selectedCallId, cwd: props.cwd, home: props.home,
+    openFile: props.openFile, inspectCall: props.inspectCall
+  });
 }
 
 function auWsLabel(w) {
@@ -1778,6 +1902,9 @@ return {
       reg("model-retry", AuRetry);
       reg("turn-error", AuTurnError);
       reg("turn-max-tokens", AuTurnMaxTokens);
+      /* P11:遮蔽整棵工具树 —— 未知工具兜底卡 + tool-kids 子调用;
+         官方 tool-call 注册保留(priority:-1 遮蔽,停插件即还原) */
+      reg("tool-call", AuToolCallTree);
       /* turn-tail 永远普通注册:children 槽位声明存在加载顺序竞态 —— 若本插件先注册,
          官方 conversation 包的同名声明会 throw 并炸掉官方 turn-tail(及后续 unknown)注册
          (2026-08-24 实测复现)。官方声明保留权威;本组件按 props 有无防御性调用 chain/actions */
