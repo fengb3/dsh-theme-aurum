@@ -1,22 +1,14 @@
 async page => {
-  await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('[data-slot=sidebar] .au-srow')];
-    const target = rows.find(r => /What We Left/i.test(r.textContent || '')) || rows[1];
-    if (target) target.click();
-  });
-  await page.waitForTimeout(1500);
   return await page.evaluate(() => {
-    const bcs = getComputedStyle(document.body);
-    const hcs = document.querySelector('.wSkVaW_header');
-    const comp = document.querySelector('[data-composer-card]');
+    const card = document.querySelector('[data-composer-card]');
+    const seats = [...document.querySelectorAll('.wSkVaW_composerSeat')];
     return {
-      body: {
-        bgImage: bcs.backgroundImage,
-        bgSize: bcs.backgroundSize,
-        layers: bcs.backgroundImage.split('radial-gradient').length - 1
-      },
-      header: hcs ? { bg: getComputedStyle(hcs).backgroundImage, color: getComputedStyle(hcs).backgroundColor } : null,
-      composer: comp ? { bg: getComputedStyle(comp).backgroundColor } : null
+      theme: document.body.getAttribute('data-ds-dark-theme') !== null ? 'dark' : 'light',
+      composerBg: card ? getComputedStyle(card).backgroundColor : null,
+      composerAlpha: card ? (match => match ? +match[1] : 1)(/\/\s*([\d.]+)\)$/.exec(getComputedStyle(card).backgroundColor)) : null,
+      seatCount: seats.length,
+      seatBgs: seats.map(s => getComputedStyle(s).backgroundImage === 'none' ? 'none' : getComputedStyle(s).backgroundImage.slice(0, 50)),
+      bodyLayers: (getComputedStyle(document.body).backgroundImage.match(/radial-gradient/g) || []).length
     };
   });
 }

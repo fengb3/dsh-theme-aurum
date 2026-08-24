@@ -128,6 +128,12 @@
 
 ### §6 输入坞(→ P10,当前仅 composer 金圈 focus)
 
+- ✅ 底栏画布清洁(2026-08-24,续「背景去晕染」):撤 composerSeat 官方滚出渐隐纱
+  (active 相位 36px 渐变+实底,特异性反超),点阵直通视口底部;输入卡最终 **solid
+  surface 实色**(用户明确不要半透明;实测 alpha=1,bgscan.mjs 像素级验证画布顶/底
+  漂移=0,双主题)。
+- ◐ dock·goal 条:官方 nLMEza_*(「进行中的目标」+暂停/编辑/完成钮,实底淡金)落在
+  dock 区,P10 按原型 todo-bar 半透明面(深 oklch(20% .016 328 / .5)/浅 .8)换皮。
 - ⬜ input-zone/iz-inner:812px 居中列 + 8/28/14 padding。
 - ⬜ dock·todo-bar:「清单」label + n/m 计数 + `goal-track` 130px 进度条(金→玫渐变填充、
   .8s 过渡)+ todo-items 胶囊(done 删除线 / now 金 tint 脉冲点)。

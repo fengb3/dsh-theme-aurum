@@ -105,7 +105,12 @@ window.__ModuleLoader__.load({
    主区「浑浊 vs 侧栏区清爽」的分界由 body 两片 radial 晕染造成(定位 50%/-12% 与
    88%/112% 都压主区);撤晕染 + 撤 sh-head 渐隐纱 + 输入卡 solid→surface 半透明
    (深 70%/浅 82%)。body 只留底色+点阵;background-size 收回单值 24px(两值配单层
-   会被浏览器截断成 auto,点阵栅距失效 —— 已实测修正)。 */
+   会被浏览器截断成 auto,点阵栅距失效 —— 已实测修正)。
+   补刀(同日):底栏分界残雾 = composerSeat 官方滚出渐隐纱(.wSkVaW_root[data-phase=active]
+   选择器 0-3-0 特异性,画「36px 透明→bg 渐变 + 下方实底」,色=body 底色 → 点阵在底栏
+   分界被半透明渐变吞掉)。body 前缀同形选择器(0-3-1)反超撤除;点阵现直通视口底部,
+   输入卡(半透明)与目标条(nLMEza_* 实底)各自浮于画布。实测:深浅两主题 seat
+   bg-image 均解析 none、涂层普查仅剩内容层;verify-gate/p8b 回归全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -393,6 +398,11 @@ const CSS1 = [
      官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
      mono 弱化 chips、tabs 胶囊右置金 on。(渐隐底纱 2026-08-24 撤:用户不要主区任何背景色) */
   "body .wSkVaW_header{background:none;border-bottom:none}",
+  /* 底栏滚出渐隐纱撤除(2026-08-24 续「背景去晕染」):composerSeat 官方画
+     「transparent→bg 36px 渐变 + 下方实底」,色=body 底色 → 视觉=点阵在底栏
+     分界处被半透明渐变吞掉。原型输入区是文档流内 .input-zone,无任何纱,
+     点阵直通底部;撤后输入卡(半透明)与目标条(实底)各自浮于画布上 */
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat,body .wSkVaW_composerSeat{background:none}",
   "body .wSkVaW_header *{border-color:transparent!important}",
   "body .wSkVaW_crumb,body .wSkVaW_crumbCurrent{font-family:var(--font-display);font-weight:500;font-size:18.5px;letter-spacing:.02em;color:var(--fg)}",
   "body .wSkVaW_crumbs{min-width:0;overflow:hidden}",
@@ -415,10 +425,9 @@ const CSS1 = [
   "body ::selection{background:var(--aurum-selection)}",
   "body :focus-visible{outline:2px solid var(--aurum-focus);outline-offset:2px}",
   "body [data-composer-card]{border-radius:22px;transition:box-shadow .25s ease}",
-  /* 输入卡半透明 surface(2026-08-24 用户决策:官方 solid input-major 在画布上读作色块;
-     换 surface 透明混合,点阵隐约透过,与原型 todo-bar 50% 透明面同路数) */
-  "body [data-composer-card]{background:color-mix(in oklab,var(--surface) 70%,transparent)}",
-  "body:not([data-ds-dark-theme]) [data-composer-card]{background:color-mix(in oklab,var(--surface) 82%,transparent)}",
+  /* 输入卡实色(2026-08-24 用户决策:不要任何半透明)—— solid surface,与侧栏/推理卡
+     同族面色,点阵不再透过;金圈 focus 与阴影保留 */
+  "body [data-composer-card]{background:var(--surface)}",
   /* 无描边原则(原型 --border 全透明): 侧栏/输入卡/详情栏子树内一律去描边,
      元素仅以面色 tint 与背景区分 — 官方默认主题在 body 层定义 --dsw-alias-border-*,
      主题 token 无法覆盖, 故直写 transparent */
