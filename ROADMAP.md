@@ -338,3 +338,7 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
   「Deep diving」滚字 → 原型三点 bob(5px 金点 1.2s delay .15/.3);md li 因
   去头像宽于原型 42px,proto-diff 记 INFO_ONLY。verify-cards3.js 门禁 +
   gate/p11/proto-diff 回归绿。
+- **追补 IV(同日)**:消息流滚动缓动 —— scrollBody scroll-behavior:smooth
+  (JS scrollTop 直赋也被 CSS 平滑接管)+ 入场 rise 去 translateY 改纯淡入
+  (原地展开,不再顶动刚滚到底的视口,0.6→0.42s);程序滚动实测 22 帧渐进
+  到达(加速-减速)。reduced-motion 降级。回归全绿。

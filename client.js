@@ -323,7 +323,17 @@ window.__ModuleLoader__.load({
     实测(verify-cards3.js,真实触发运行回合):ctx 卡×3 r14 收合 0→展开 294、
     chevron 90°;reasoning r14 pad 10 13 pointer、sep none、chevron 旋转;
     dots 5×5 au-bob 1.2s delay .15/.3 金色。md li 因去头像比原型宽 42(原型 md
-    内缩于头像列)→ proto-diff 该行改 INFO_ONLY。回归 gate/p11/proto-diff 绿。 */
+    内缩于头像列)→ proto-diff 该行改 INFO_ONLY。回归 gate/p11/proto-diff 绿。
+
+    ── P15 追补 IV · 消息流滚动缓动(2026-08-24,用户报新节点出现时跳一下)──
+    取证:滚动容器 = wSkVaW_scrollBody,scroll-behavior:auto;官方每逢新消息/
+    工具调用以 scrollTop 直赋瞬跳到底;叠加入场 rise 含 translateY(12px),刚到
+    底的视口再被顶起一下。两层修:
+    1. scroll-behavior:smooth 覆盖 —— JS 直赋也被 CSS 平滑接管(规格行为);
+    2. rise 改纯淡入(去 translateY,原地展开),时长 0.6→0.42;reduced-motion
+       下 smooth 回退 auto。
+    实测:程序直赋 scrollTop 采样 22 帧渐进到达(加速-减速 ease,瞬跳消除);
+    CSS 断言 smooth 落地、rise 仅 opacity。回归 gate/p11/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -623,8 +633,15 @@ const CSS1 = [
   "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] button,body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] [role=button]{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
   "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] span{display:none}",
   /* P9:逐节点入场(原型 .node rise)——挂在官方 flowItem 行上;列 gap16+行距12=原型 .node 28px 节奏 */
+  /* P15 追补 IV:消息流滚动缓动(用户报新节点出现时"跳一下")—— 官方滚动容器
+     wSkVaW_scrollBody 为 scroll-behavior:auto,每条新消息/工具调用出现时以
+     scrollTop 直赋瞬跳到底。smooth 覆盖后 JS 直赋也被 CSS 平滑接管(规格行为)。 */
+  "body .wSkVaW_scrollBody{scroll-behavior:smooth}",
   "body [data-chat-anchor-key]{margin-bottom:12px;animation:aurum-rise .6s cubic-bezier(.22,.8,.26,1) both}",
-  "@keyframes aurum-rise{from{opacity:0;transform:translateY(12px)}}",
+  /* 追补 IV 续:rise 的 translateY(12px) 会让刚被滚到底的视口再被顶起一下,
+     新节点改纯淡入(原地),滚动交给上面的 smooth;时长略缩(0.6→0.42)更利落 */
+  "@keyframes aurum-rise{from{opacity:0}}",
+  "body [data-chat-anchor-key]{animation-duration:.42s}",
   /* ── P9 残留 · sh-head 主区头部(官方 DOM 瞄准 wSkVaW_*,原型 §5 sh-head/tabs)──
      官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
      mono 弱化 chips、tabs 胶囊右置金 on。(渐隐底纱 2026-08-24 撤:用户不要主区任何背景色) */
@@ -715,7 +732,7 @@ const CSS1 = [
   ".aurum-footRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
   ".aurum-footRow svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
   ".aurum-footRow:hover svg{color:var(--aurum-gold)}",
-  "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}}",
+  "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}body .wSkVaW_scrollBody{scroll-behavior:auto}}",
   /* ── P10 · 输入坞 composer 卡内部(uV2eYG_*,原型 §6 .composer/.c-tools)──
      排版 14.5/1.7 对齐原型 textarea;input/mirror/backdrop 三件套必须同步改,
      否则 caret 测量(mirror)与背景层错位 */
