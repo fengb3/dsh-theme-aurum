@@ -58,7 +58,7 @@
 | P9 | §5 | 会话流尾部节点:turn-tail/compress/retry/err/max-tokens + md 装饰 + 头像 + 列宽712 + sh-head/tabs + reasoning 皮肤 | htm 恒等映射 + CSS 瞄准 | ✅ |
 | P10 | §6 | 输入坞全面接管:todo 进度条、chips、命令/模式/模型菜单、ctx-ring 圆环+面板、金色 send、c-stats | CSS + composer 槽位 | ✅ |
 | P11 | §7 | 工具卡补全:subagent/workflow/goal/ask/interrupt/job_* 等剩余类型 + 子调用缩进 + 统计尾注 | tool.call.toolview 补 key | ✅ |
-| P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⬜ |
+| P12 | §8 | Trajectory 瀑布图(若 DSH 有对应视图则映射,无则跳过) | 视图槽位 | ⏭ 跳过(用户决策 2026-08-24) |
 | P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ⬜ |
 | P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ⬜ |
 | P15 | 验收 | 全量截图 vs 原型逐节 diff + 三态几何门禁全绿,发版 1.1.0 | 验收 | ⬜ |
@@ -174,11 +174,9 @@
   openDetails 调用方 → root 第三列恒 0px(实测 [280,1160,0],pane 不可见);
   官方 details 注册原样保留,停插件即还原。
 
-### §8 Trajectory(→ P12)
+### §8 Trajectory(⏭ 跳过 · 2026-08-24 用户决策)
 
-- ⬜ tabs「轨迹」视图 + 瀑布图:`traj-grid`(118px 标签列 + lane 行)、lane 26px 条带底
-  (1/6 刻度线)、`tbar` 金/玫/danger/think 斜纹四态、图例、尾注(峰值上下文/缓存命中/最长调用)。
-  前置:确认 DSH 是否有等价轨迹/统计视图槽,无则记「不适用」。
+- 不做。官方「轨迹」tab 保持官方原样;原型 §8 的 traj-grid/lane/tbar 瀑布图不移植。
 
 ### §9 全局浮层(→ P13)
 
@@ -268,8 +266,8 @@ send=linear-gradient(135deg 金)r12、ctx 金弧 trigger 31px、c-stats=JetBrain
 - tool-kids 与官方同源(subCalls 字段逐字一致);当前数据面无嵌套样本,记档不视为缺陷;
 - P12 前置已就绪:轨迹视图(inspect)链接保留可用。
 
-### P12 · Trajectory(原型 §8)
-- 先确认 DSH 是否有等价轨迹/统计视图槽;有则映射 lane/tbar 金玫配色,无则记入「不适用」跳过。
+### P12 · Trajectory(原型 §8)—— ⏭ 跳过(2026-08-24 用户决策)
+- 不做瀑布图映射;官方轨迹 tab 保持官方原样,不做皮肤接管。
 
 ### P13 · 全局浮层(原型 §9)
 - 菜单(menu/mi)、Toast、scrim、设置弹窗(set-modal 左导航双栏,≤640 折叠为顶部横nav);
