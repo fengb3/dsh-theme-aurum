@@ -102,14 +102,16 @@
   不渲染;F2 悬停行重命名;点外/Esc 关闭。
 - ✅ 视图选项:排序三态(最近活动/名称/手动序,默认手动序=服务端真实顺序)+ 平铺开关;
   导出目录无 API 记「不适用」。
-- ◐ 品牌字标:原型 DSH wordmark SVG 182×24 + 金 badge;当前官方 brand(高 22px)。
-  微残差,并入 P13 一并处理。
+- ✅ 品牌字标(P15 前修订收口,2026-08-24):维持官方 brand SVG,布局锚点修正
+  (详见 §4 盘点同条)。
 - ✅ 行操作形态(已落地):对齐原型浮动菜单(重命名 F2/分支/归档 danger + 分隔线 +
   mk 快捷键列),菜单项按 DSH 实际 API 映射,置顶/导出无 API 不渲染。
 - ✅ 视图选项(已落地):视图菜单含排序三态(最近活动/名称/手动序)+ 平铺开关;
   导出全部目录无 API 记「不适用」。
-- ◐ 品牌字标:原型 DSH wordmark SVG 182×24,尾部带金色 badge(反白小字);当前用官方
-  brand(高 22px),badge 形态不同。微残差,并入 P13 一并处理。
+- ✅ 品牌字标(P15 前修订收口,2026-08-24):squish 根因 = P6 裸 [class*=brand]
+  命中官方三个子 span(铁律 6 二次翻车)。修正后按原型 .sb-brand 锚点:字标 svg
+  flex:none 定内在尺寸 156×24 永不收缩,窄卡按钮裁尾,<236px 卡宽容器查询隐藏
+  只留鲸鱼;鲸鱼贴左间隔 8、字标 0 偏移满尺寸、官方高度 24 恢复。实测三档全过。
 
 ### §5 会话流(P5+P9 已对齐)
 
@@ -118,6 +120,8 @@
 - ✅ sh-head 主区标题栏(2026-08-24,CSS 瞄准 wSkVaW_*):渐隐底、DISPLAY 18.5 标题
   (Cormorant 实测)、mono 弱化 chips、tabs 胶囊右置金 on(官方本就有对话/轨迹 tabs)。
   残差:官方=76px 双行带 vs 原型 70 单行浮头,同轴机制以双行近似(重排=DOM 手术,不做)。
+  P15 前修订(2026-08-24):header 改两列 grid + titleRow display:contents ——
+  行2 = [tabs …… utilities] 同行左右排布(实测 sameRow、gap 34),不再右侧堆叠。
 - ✅ assistant 节:鲸鱼头像(P9 纯 CSS mask)+ reasoning 折叠段(2026-08-24,官方
   ReasoningRow QWLzlG_* CSS 换皮:surface 卡 r12 + mono 头 + serif italic 体 + 虚线分隔 +
   金扫光;官方 disclosure 交互原样保留)+ a-actions 悬停操作(P9 turn-tail 内)。

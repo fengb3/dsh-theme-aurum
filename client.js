@@ -189,7 +189,24 @@ window.__ModuleLoader__.load({
     原型 §10 的 fixed 抽屉方案「不适用」,跟随官方折叠行为,只做逐档降密度:
     ≤820 头部/流/输入坞收 padding、hero 25px;≤640 tab 12px、气泡 90%、
     goal-track 64px、stats 分隔收窄;≤480 todo-bar 整行、工具卡参数摘要隐藏、
-    todo-it 10.5px。360-1920 全档零横向滚动(输入卡/清单条零溢出)。 */
+    todo-it 10.5px。360-1920 全档零横向滚动(输入卡/清单条零溢出)。
+
+    ── P15 前修订 · 品牌字标 + header tabs(2026-08-24,用户报两处)─────
+    1. 字标 squish/错位(取证:brandName 计算出 flex:1 1 0%、h38、内容 +10px 偏移,
+       官方样式表并无这些)—— 根因是 P6 老规则用裸 [class*=brand] 子串,同时命中
+       brandIdentity/brandMark/brandName 三个官方子 span:flex:1 使鲸鱼格与字标格
+       平分生长(鲸鱼后拖空隙、字标被推到按钮右缘)、padding 0 10px 平添偏移、
+       height 38 覆写官方 24。铁律 6(标签限定)第二次翻车实录。
+       修正:收紧到 button[class*=brand];字标 svg 按原型 .sb-brand 锚点
+       flex:none 定内在尺寸 156×24 永不收缩,窄卡由按钮 overflow:hidden 裁尾,
+       <236px 卡宽容器查询整体隐藏只留鲸鱼。中途试过槽位遮蔽渲染文字字标
+       (用户否决:clip 出「DeepSeek 1」半字母)与 flex:1 弹性链(不生效),已撤。
+       实测:鲸鱼距按钮左 10(pad)、间隔 8、字标 0 偏移满尺寸 156×24、
+       name 高回 24、中档(260 列)裁尾、窄档(240 列)隐藏。
+    2. tabs 与右上槽位左右排布:header 改两列 grid + titleRow display:contents
+       —— 行1=crumbs+headerActions,行2=[tabs …… utilities] 同行
+       (实测 sameRow、tabs 在左、gap 34)。此前 tabs 行与 utilities 上下堆叠。
+    回归:gate 三态零溢出(此前展开态 4 个 SVG 溢出清零)/p8b/p8c/proto-diff 全绿。 */
 
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
@@ -439,10 +456,20 @@ const CSS1 = [
   "body [data-slot=sidebar]>div:first-child[class*=collapsed]{padding:0;border-radius:17px;width:56px!important;margin-left:12px}",
   "body [data-slot=details]>div:first-child{background:linear-gradient(180deg,var(--aurum-rail-1),var(--aurum-rail-2) 36%);box-shadow:var(--aurum-rail-shadow);border-radius:20px;overflow:hidden;width:auto!important}",
   "body [data-slot=sidebar] [class*=logoRow]{height:58px;margin:0;padding:0 12px 0 14px;gap:6px;flex:none}",
-  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]{flex:1;min-width:0;height:38px;border-radius:11px;padding:0 10px;transition:background .18s,color .18s,transform .1s}",
-  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]:hover{background:var(--dsw-alias-interactive-bg-hover-solid)}",
-  "body [data-slot=sidebar] [class*=logoRow] [class*=brand]:active{transform:scale(.985)}",
-  "body [data-slot=sidebar] [class*=logoRow] [class*=brand] svg{width:auto;height:22px}",
+  /* P6 规则修正(P15 前取证):裸 [class*=brand] 同时命中 brandIdentity/brandMark/
+     brandName 三个官方子 span —— flex:1 使 mark 与 name 平分生长(鲸鱼后拖出空隙、
+     字标被推到按钮右缘),padding 0 10px 平添 10px 内容偏移,height 38 覆写官方 24。
+     铁律 6(标签限定)再次翻车实录。收紧到 button;svg 全量高度覆写撤销(鲸鱼回 24) */
+  "body [data-slot=sidebar] [class*=logoRow] button[class*=brand]{flex:1;min-width:0;height:38px;border-radius:11px;padding:0 10px;transition:background .18s,color .18s,transform .1s}",
+  "body [data-slot=sidebar] [class*=logoRow] button[class*=brand]:hover{background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  "body [data-slot=sidebar] [class*=logoRow] button[class*=brand]:active{transform:scale(.985)}",
+  /* P15 前修订(原型 .sb-brand 锚点原则):字标 svg 内在尺寸(156×24)恒定、
+     flex:none 不参与弹性收缩;窄卡由按钮 overflow:hidden 自然裁尾,
+     更窄(<236px 卡宽)容器查询整体隐藏只留鲸鱼。槽位匿名 wrapper 自带
+     inline display:contents,svg 直达 brandName,无需也无法样式化 wrapper */
+  "body .hHd-Xa_brand .hHd-Xa_brandName svg{flex:none}",
+  "body [data-slot=sidebar]>div:first-child{container-type:inline-size}",
+  "@container (max-width:236px){body .hHd-Xa_brand .hHd-Xa_brandName{display:none!important}}",
   "body [data-slot=sidebar] [class*=iconButton]{width:30px;height:30px;border-radius:9px;color:var(--dsw-alias-label-tertiary);transition:.18s}",
   "body [data-slot=sidebar] [class*=iconButton]:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--aurum-gold)}",
   "body [data-slot=sidebar] [class*=iconButton]:active{transform:scale(.96)}",
@@ -501,7 +528,15 @@ const CSS1 = [
   "body .wSkVaW_crumbs{min-width:0;overflow:hidden}",
   "body .wSkVaW_headerActions .SVAs4q_label{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.14em}",
   "body .nL4_yW_sessionLogButton{font-family:var(--font-mono);font-size:10.5px;color:var(--faint);letter-spacing:.1em}",
-  "body .wSkVaW_tabs{display:flex;justify-content:flex-end;width:max-content;margin-left:auto;gap:2px;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
+  /* P15 前修订:tabs 与右上槽位左右排布 —— header 改两列 grid,titleRow
+     display:contents 提升子项:行1=crumbs+chips,行2=[tabs …… utilities]。
+     (此前 tabs 行与 utilities 上下堆叠在右侧,视觉挤成一团) */
+  "body .wSkVaW_header{display:grid;grid-template-columns:1fr auto;align-items:center;row-gap:6px}",
+  "body .wSkVaW_titleRow{display:contents}",
+  "body .wSkVaW_titleCluster{grid-area:1/1;min-height:32px}",
+  "body .wSkVaW_headerActions{grid-area:1/2;justify-self:end;margin-left:20px}",
+  "body .wSkVaW_headerUtilities{grid-area:2/2;justify-self:end}",
+  "body .wSkVaW_tabs{grid-area:2/1;justify-self:end;display:flex;gap:2px;margin:0 14px 0 0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
   "body .wSkVaW_tab{padding:5px 15px;border-radius:999px;font-size:12.5px;color:var(--muted);transition:.18s;white-space:nowrap}",
   "body .wSkVaW_tab:hover{color:var(--fg)}",
   "body .wSkVaW_tabActive,body .wSkVaW_tab.wSkVaW_tabActive{background:oklch(79% 0.13 84 / .16);color:var(--gold-strong)}",
@@ -1678,9 +1713,13 @@ function AuBrowserRail(props) {
     h("div", { className: "rail-flex" }));
 }
 
+/* ═══ P15 前修订 · 品牌字标布局锚点(原型 .sb-brand 原则)═══
+   官方 sidebar.brand.name 槽位的匿名 wrapper(无类名 div)+ BrandWordmark svg
+   会随卡宽被 flex 压缩(meet 缩字)。原型方案 = svg 定宽 + flex:none 永不收缩,
+   窄卡由卡片 overflow:hidden 自然裁尾。锚点 CSS 见 CSS1 P15 前修订段。 */
+
 function AuImg(props) {
-  const att = props.attachment;
-  const load = props.loadImage;
+  const att = props.attachment;  const load = props.loadImage;
   const st = React.useState(null);
   React.useEffect(function () {
     let live = true;
@@ -1998,7 +2037,7 @@ return {
       return function () { for (let i = 0; i < disps.length; i++) disps[i](); };
     });
 
-    /* P10:遮蔽官方 TodoDock(id=todo)—— 同 id 注册替换,order 0 保位
+    /* P15 前修订:遮蔽官方 TodoDock(id=todo)—— 同 id 注册替换,order 0 保位
        (input.dock 在输入卡上方,goal/queue 条之前);inject 等 children 声明就绪 */
     slots.inject("conversation.input.dock", function () {
       return slots.register({ name: "conversation.input.dock", id: "todo", order: 0, priority: -1, registrant: "aurum" }, function (props) { return h(AuTodoBar, props); });
