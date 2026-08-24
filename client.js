@@ -1174,6 +1174,7 @@ const CSS3 = [
   "body [data-slot=root]>div,body [data-slot=root]>div[data-sidebar-collapsed]{grid-template-columns:1fr!important;grid-template-rows:48px minmax(0px,1fr)!important}",
   "body [data-slot=root]>div>div:first-child{grid-row:1;padding:0!important;overflow:visible}",
   "body [data-slot=root]>div>div:nth-child(2){grid-row:2;min-height:0}",
+  "body [data-slot=root]>div>div:nth-child(3){display:none!important}",
   "body [data-slot=sidebar]>div:first-child{border-radius:0;box-shadow:none;width:auto!important;height:48px}",
   "body [data-slot=sidebar]>div:first-child[class*=collapsed]{width:auto!important;margin:0;border-radius:0}",
   "body [data-slot=sidebar] .hHd-Xa_root{flex-direction:row;align-items:center;gap:6px;height:48px;padding:0 8px 0 10px}",
