@@ -309,6 +309,10 @@ window.__ModuleLoader__.load({
     座位顶上方 120px/窄屏 150px,z-index:-1 在内容背后)承担底部渐隐:消息
     穿行被纱吞、座位小字全清晰;仅 [data-phase=active] 启用(空态 hero 不染),
     scrollBody mask 回归仅顶部。
+    修订 IX(同日,用户报「底部渐影与侧栏卡阴影打架」):frame 绘制序 sidebarCol
+    在 centerCol 之前,渐影纱把侧栏卡 44px 阴影右尾盖掉。sidebarCol 提
+    z-index:15(position:relative)—— 卡与阴影压到渐影纱之上;官方
+    overlayLayer(z20)弹层仍在更上层,resize 手柄(z2)在卡外不被遮。
 
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
@@ -828,6 +832,11 @@ const CSS1 = [
      分割线/半透明底板。放开列裁切让阴影完整铺过主区(主区链已验证全透明);
      卡片自身 overflow:hidden 管住内容,列级放开无溢出源 */
   "body [data-slot=root]>div>div:first-child{background:transparent;border-right:none;padding:12px 4px 12px 12px;box-sizing:border-box;overflow:visible}",
+  /* 修订 IX(用户报「底部渐影与侧栏卡阴影打架」):frame 绘制序 sidebarCol →
+     centerCol(含 composerSeat 渐影纱),纱在后把卡阴影右尾盖掉。提列 z=15:
+     高于 centerCol(auto),低于官方 overlayLayer(z20,弹层/吐司仍在上);
+     列背景透明,resize 手柄(z2,x276-284)在卡外不受遮 */
+  "body .pI_x6G_sidebarCol{position:relative;z-index:15}",
   /* P8c 折叠细条:轨道 68 = 12 留白 + 56 卡(原型 .app.no-sb margin 12 + width 56)。
      覆写与官方内联同形(px/minmax/px),0.3s grid 过渡可正常插值;仅折叠态生效,
      展开轨宽(用户拖拽值)不受影响 —— 折叠轨本就是常量 56,无动态可跟 */
