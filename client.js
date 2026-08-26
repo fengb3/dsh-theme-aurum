@@ -292,6 +292,16 @@ window.__ModuleLoader__.load({
     残留自绘仅 au-ws-ibtn 的 view/folderplus(自建功能钮,官方无对应原语,保留)。
     回归 gate/p8c/proto-diff 全绿。
 
+    ── P15 前修订 VII · header 渐变纱 → mask 渐隐(2026-08-24,用户指定)──────
+    目的:header 背景全透明(字面 background:none)。渐隐职责转移:
+    滚动区加 mask-image(180deg,transparent 0 → #000 70px),内容滚入顶部
+    70px 真透明,透出 body 点阵画布 —— 视觉与原渐变纱同效,但遮罩挂在内容侧
+    而非 header 侧;窄屏两行头档(≤820px)mask 延至 100px(padding-top:130)。
+    连带考古:官方 DOM 已升级,滚动区 Md3f7G_scroll → wSkVaW_scrollBody
+    (root 直接子级,y=0 全高),旧让位链 wSkVaW_viewArea padding-top +
+    Md3f7G_root 负 margin(主档 86/窄屏 130)选择器全空挂,本次一并改靶/删除。
+    纯 CSS,双主题自动兼容(透出各自画布)。
+
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
     turn-tail tx 行高 1.34 校准(对齐原型 14px 行高,proto-diff failures 归零);
@@ -916,22 +926,27 @@ const CSS1 = [
      渐变纱 = 底色 92% → 透明(原型形态,消息透出 8%);单行 flex:
      [crumb …… tabs …… actions/utilities] 同一水平线 */
   "body .wSkVaW_root{position:relative}",
-  "body .wSkVaW_header{position:absolute;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:14px;height:70px;box-sizing:border-box;padding:24px 22px 0 20px;background:linear-gradient(180deg,color-mix(in oklab,var(--bg) 92%,transparent) 52%,transparent)}",
+  "body .wSkVaW_header{position:absolute;top:0;left:0;right:0;z-index:30;display:flex;align-items:center;gap:14px;height:70px;box-sizing:border-box;padding:24px 22px 0 20px;background:none}",
   "body .wSkVaW_titleRow{display:contents}",
   "body .wSkVaW_titleCluster{flex:1;min-width:0;min-height:0}",
   "body .wSkVaW_headerActions{order:3;margin-left:0}",
   "body .wSkVaW_headerUtilities{order:2}",
   "body .wSkVaW_tabs{order:1;display:flex;gap:2px;margin:0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
   /* 滚动区顶部让位浮头(70 纱高 + 16 原留白),消息初始态在纱下方完整可见 */
-  "body .Md3f7G_scroll{padding-top:86px}",
+  /* P15 前修订 VI:渐隐由 mask 承担 —— 滚动视口顶部 70px 内容真透明(透出画布),
+     header 自身 background:none。mask 打在滚动视口上,随视口坐标系固定不随内容滚动;
+     浅色主题透出浅色画布,自动兼容;70 = 浮头高,86 = 70 渐隐区 + 16 原留白。
+     追补:官方 DOM 升级后滚动区 Md3f7G_scroll → wSkVaW_scrollBody(root 直接
+     子级,y=0 全高),旧让位链(viewArea/Md3f7G_root)整体失效,一并改靶 */
+  "body .wSkVaW_scrollBody{padding-top:86px;mask-image:linear-gradient(180deg,transparent 0px,#000 70px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 70px)}",
    /* 非 chat view(轨迹/数据库/未来插件 view)让位浮头(用户报:切 tab 后内容顶屏幕顶,
       被渐变纱遮挡)。viewArea 与各 view 根之间隔着官方 display:contents 的 provider
       wrapper(无类名,padding 无法穿透),故让位做在 viewArea 自身(真实 flex 盒);
       chat 在 Md3f7G_root 负 margin 拉回 y=0 + Md3f7G_scroll 的 padding-top:86 让位
       (消息从纱下穿行渐隐,设计意图不变);flex:auto 下负 margin 参与 flex 分配,
       chat 总高恰填满 viewArea 内容盒再上探 padding 区,底部不溢出 */
-   "body .wSkVaW_viewArea{padding-top:86px}",
-   "body .Md3f7G_root{margin-top:-86px}",
+   /* 旧让位链(viewArea padding-top + Md3f7G_root 负 margin)随官方 DOM 升级失效,
+      已删;现结构 scrollBody 即唯一主视图滚动区,让位+渐隐都由其 padding/mask 承担 */
   /* tab 选中态去横杠(官方 :after 2px 底线),选中仅以胶囊金底呈现(原型 .tab.on) */
   "body .wSkVaW_tab:after{display:none}",
   "body .wSkVaW_tab{padding:5px 15px;border-radius:999px;font-size:12.5px;color:var(--muted);transition:.18s;white-space:nowrap}",
@@ -1512,9 +1527,8 @@ const CSS3 = [
   "body .wSkVaW_headerUtilities{order:2}",
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
-  "body .Md3f7G_scroll{padding-top:130px}",
-   "body .wSkVaW_viewArea{padding-top:130px}",
-   "body .Md3f7G_root{margin-top:-130px}",
+  "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px)}",
+  /* 窄屏档:旧 viewArea/Md3f7G_root 让位已随官方 DOM 升级删除(同主档追补) */
   /* P15 追补 IX:追补 VI 的 @media(max-width:820px) 在此闭合 —— 原先漏了配对 "}",
      一路吞到追补 V 抽屉块自己的 "}"(只闭了内层),外层被 EOF 静默闭合;导致
      P11 .kid 子调用样式、P10 todo-bar 宽度适配、全局 reduced-motion 全部只对

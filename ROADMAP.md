@@ -67,7 +67,7 @@
 | **P18** | **§5 残差** | **think 展开并入工具卡非线性收合(grid 0fr⇄1fr + 内容淡入)** | **机构同构(壳仍独立)** | **✅** |
 | **P20** | **§4 增强** | **分组会话列表截断:默认前 5 行 + 「显示全部/收起」切换(用户报面板过长)** | **AuBrowserWide 渲染截断** | **✅** |
 | **P21** | **§6 增强** | **todo 清单条可折叠:头部行常显 + 胶囊区 grid 收合,默认折叠(用户指定)** | **AuTodoBar 重构 + CSS** | **✅** |
-| **P22** | **§5 增强** | **非 chat view(轨迹/数据库等)让位 70px 浮头渐变纱(用户报遮挡)** | **viewArea padding + chat 负 margin** | **✅** |
+| **P22** | **§5 增强** | **非 chat view(轨迹/数据库等)让位 70px 浮头渐变纱(用户报遮挡)** | **viewArea padding + chat 负 margin(修订 VII 起随官方 DOM 升级改靶 wSkVaW_scrollBody 单点让位)** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -138,6 +138,12 @@
   同一水平线;同轴 delta=0(字标中心 47 ≡ 标题中心 47,padding-top 24 校准);
   tab 选中横杠(:after 底线)移除;主题切换文案去「鎏金」= 深色/浅色主题。
   此前形态(双行带、两列 grid)被本方案取代。
+- ✅ 修订 VII(P15 前收尾,2026-08-26,用户指定):撤渐变纱,header 背景
+  background:none 全透明;渐隐职责转移至滚动区 mask-image(180deg,
+  transparent 0 → #000 70px),内容滚入顶部真透明透出画布。连带考古:官方
+  DOM 升级后滚动区类名 Md3f7G_scroll → wSkVaW_scrollBody(root 直接子级),
+  P22 的 viewArea padding + Md3f7G_root 负 margin 让位链选择器已空挂,
+  一并改靶/删除(窄屏 ≤820px 档 mask 延至 100px / padding-top 130)。
 - ✅ assistant 节:reasoning 折叠段 → P16 全面接管(遮蔽 assistant-step:AuThinkCard
   原型 .reasoning 类;运行态折叠壳内单行实时流,行号 key 换行 remount 重播入场
   au-think-in 淡入+上浮+轻模糊,图标金色呼吸;结束自动收拢,摘要=firstLine;
