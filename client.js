@@ -301,6 +301,9 @@ window.__ModuleLoader__.load({
     (root 直接子级,y=0 全高),旧让位链 wSkVaW_viewArea padding-top +
     Md3f7G_root 负 margin(主档 86/窄屏 130)选择器全空挂,本次一并改靶/删除。
     纯 CSS,双主题自动兼容(透出各自画布)。
+    修订 VIII(2026-08-26,用户指定):底部同款渐隐且更宽 —— 顶 70 / 底 120
+    (窄屏 100/150),双 mask linear-gradient + mask-composite:intersect;
+    实测 Chrome 双向 mask 生效,底部消息滚入输入卡下方渐次没入画布。
 
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
@@ -937,8 +940,11 @@ const CSS1 = [
      header 自身 background:none。mask 打在滚动视口上,随视口坐标系固定不随内容滚动;
      浅色主题透出浅色画布,自动兼容;70 = 浮头高,86 = 70 渐隐区 + 16 原留白。
      追补:官方 DOM 升级后滚动区 Md3f7G_scroll → wSkVaW_scrollBody(root 直接
-     子级,y=0 全高),旧让位链(viewArea/Md3f7G_root)整体失效,一并改靶 */
-  "body .wSkVaW_scrollBody{padding-top:86px;mask-image:linear-gradient(180deg,transparent 0px,#000 70px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 70px)}",
+     子级,y=0 全高),旧让位链(viewArea/Md3f7G_root)整体失效,一并改靶。
+     修订 VIII(用户指定):底部同款渐隐,且更宽(120px > 顶 70)—— 双向 mask
+     用两条 linear-gradient + mask-composite:intersect 叠加(单条无法同时覆盖
+     两端);底部渐隐 = 消息滚入输入卡下方渐次没入画布 */
+  "body .wSkVaW_scrollBody{padding-top:86px;mask-image:linear-gradient(180deg,transparent 0px,#000 70px),linear-gradient(0deg,transparent 0px,#000 120px);mask-composite:intersect;-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 70px),linear-gradient(0deg,transparent 0px,#000 120px);-webkit-mask-composite:source-in}",
    /* 非 chat view(轨迹/数据库/未来插件 view)让位浮头(用户报:切 tab 后内容顶屏幕顶,
       被渐变纱遮挡)。viewArea 与各 view 根之间隔着官方 display:contents 的 provider
       wrapper(无类名,padding 无法穿透),故让位做在 viewArea 自身(真实 flex 盒);
@@ -1527,7 +1533,7 @@ const CSS3 = [
   "body .wSkVaW_headerUtilities{order:2}",
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
-  "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px)}",
+  "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px),linear-gradient(0deg,transparent 0px,#000 150px);mask-composite:intersect;-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px),linear-gradient(0deg,transparent 0px,#000 150px);-webkit-mask-composite:source-in}",
   /* 窄屏档:旧 viewArea/Md3f7G_root 让位已随官方 DOM 升级删除(同主档追补) */
   /* P15 追补 IX:追补 VI 的 @media(max-width:820px) 在此闭合 —— 原先漏了配对 "}",
      一路吞到追补 V 抽屉块自己的 "}"(只闭了内层),外层被 EOF 静默闭合;导致
