@@ -313,6 +313,14 @@ window.__ModuleLoader__.load({
     在 centerCol 之前,渐影纱把侧栏卡 44px 阴影右尾盖掉。sidebarCol 提
     z-index:15(position:relative)—— 卡与阴影压到渐影纱之上;官方
     overlayLayer(z20)弹层仍在更上层,resize 手柄(z2)在卡外不被遮。
+    修订 X(同日,用户报「渐隐带盖掉背景点阵」+「再窄一点」):纱宽 120→80
+    (窄屏 150→100);纱涂底色连 body 点阵一起盖没 → composerSeat::after 在纱上
+    重铺同款点阵(radial 1px/24px,background-attachment:fixed 对齐视口坐标,
+    与 body 画布逐点重合),视觉=点阵穿透渐隐带、只有消息流被渐隐。
+    修订 XI(2026-08-27,用户指定):浅色主题背景明度下调 2% —— bg 家族整体
+    平移(bg 96.5→94.5 / bg-deep 94.5→92.5 / rail-1 94.5→92.5 / rail-2
+    96.5→94.5 / surface 98.5→96.5),保持卡片(略深于画布)与浮面(高于画布)
+    的相对阶梯不变;底部渐隐纱色随 var(--bg) 自动跟随。
 
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
@@ -722,7 +730,7 @@ const DARK_TOKENS = {
 };
 
 const LIGHT_TOKENS = {
-  "--dsw-alias-bg-base": "oklch(96.5% 0.012 82)",
+  "--dsw-alias-bg-base": "oklch(94.5% 0.012 82)",
   "--dsw-alias-bg-layer-1": "oklch(98.5% 0.008 82)",
   "--dsw-alias-bg-layer-2": "oklch(92% 0.016 84)",
   "--dsw-alias-bg-layer-3": "oklch(90.5% 0.018 84)",
@@ -820,7 +828,7 @@ const AURUM_LIGHT = { id: "aurum-light", colorScheme: "light", tokens: Object.as
 const CSS1 = [
   "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');",
   "body[data-ds-dark-theme]{--aurum-gold:oklch(83% .115 88);--aurum-gold-strong:oklch(79% .13 84);--aurum-gold-dim:oklch(70% .10 85);--aurum-dot:oklch(83% .115 88 / .08);--aurum-sheen-top:oklch(83% .115 88 / .07);--aurum-sheen-rose:oklch(77% .095 350 / .05);--aurum-rail-1:oklch(19% .015 329);--aurum-rail-2:oklch(21.5% .016 329);--aurum-rail-shadow:0 18px 56px oklch(8% .02 330 / .45);--aurum-ring:oklch(79% .13 84 / .22);--aurum-ring-glow:oklch(79% .13 84 / .12);--aurum-focus:oklch(83% .115 88 / .55);--aurum-selection:oklch(79% .13 84 / .35);--aurum-sweep:oklch(83% .115 88 / .18)}",
-  "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(94.5% .014 82);--aurum-rail-2:oklch(96.5% .012 82);--aurum-rail-shadow:0 18px 52px oklch(30% .05 330 / .16);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
+  "body:not([data-ds-dark-theme]){--aurum-gold:oklch(55% .115 80);--aurum-gold-strong:oklch(50% .12 78);--aurum-gold-dim:oklch(66% .11 82);--aurum-dot:oklch(28% .05 330 / .13);--aurum-sheen-top:oklch(60% .11 80 / .06);--aurum-sheen-rose:transparent;--aurum-rail-1:oklch(92.5% .014 82);--aurum-rail-2:oklch(94.5% .012 82);--aurum-rail-shadow:0 18px 52px oklch(30% .05 330 / .16);--aurum-ring:oklch(55% .115 80 / .2);--aurum-ring-glow:oklch(55% .115 80 / .1);--aurum-focus:oklch(55% .115 80 / .6);--aurum-selection:oklch(55% .115 80 / .3);--aurum-sweep:oklch(55% .115 80 / .2)}",
   /* 背景画布(2026-08-24 用户决策:去晕染):只留底色 + 点阵,不再叠金辉/玫粉 radial ——
      此前两片晕染横向压在主区(50%/-12% 与 88%/112%),侧栏区没有,造成左右分界、主区浑浊 */
   "body{background-color:var(--dsw-alias-bg-base);background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px}",
@@ -966,7 +974,12 @@ const CSS1 = [
   /* 底部渐隐纱(修订 VIIIb):挂 composerSeat 而非 scrollBody mask —— 座位
      sticky 贴底,mask 会连座位小字一起渐隐且无法子级豁免;纱在座位内容
      背后(z-index:-1,sticky 自成层叠上下文),只吞穿行消息 */
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 120px);z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent 0px,var(--bg) 120px)}",
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 80px);z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent 0px,var(--bg) 80px)}",
+  /* 修订 X(用户报「点阵被纱盖掉」):纱涂底色会把背景点阵一并盖没 —— ::after
+     在纱上重铺同款点阵,background-attachment:fixed 对齐视口坐标,与 body
+     画布点阵逐点重合(同 --aurum-dot/24px),视觉=点阵穿透渐隐带;只作用于
+     中间消息流(纱在座位内容背后),侧栏卡 z15 仍在纱上 */
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::after{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 80px);z-index:-1;pointer-events:none;background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px;background-attachment:fixed}",
    /* 非 chat view(轨迹/数据库/未来插件 view)让位浮头(用户报:切 tab 后内容顶屏幕顶,
       被渐变纱遮挡)。viewArea 与各 view 根之间隔着官方 display:contents 的 provider
       wrapper(无类名,padding 无法穿透),故让位做在 viewArea 自身(真实 flex 盒);
@@ -1415,7 +1428,7 @@ const CSS2 = [
    自建组件从这里起直接消费原型类名与变量,不再翻译成 au-* 体系。 */
 const CSS3 = [
   "body[data-ds-dark-theme]{--bg:oklch(16% .014 330);--bg-deep:oklch(13.5% .012 330);--surface:oklch(21% .016 328);--surface-2:oklch(25.5% .018 326);--rail-1:oklch(19% .015 329);--rail-2:oklch(21.5% .016 329);--rail-raised:oklch(23.5% .018 328);--fg:oklch(93% .015 85);--muted:oklch(74% .022 328);--faint:oklch(56% .022 330);--border:transparent;--border-soft:transparent;--gold:oklch(83% .115 88);--gold-strong:oklch(79% .13 84);--gold-dim:oklch(70% .10 85);--gold-ink:oklch(21% .03 60);--rose:oklch(77% .095 350);--rose-strong:oklch(73% .115 350);--success:oklch(78% .10 155);--danger:oklch(68% .16 15);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
-  "body:not([data-ds-dark-theme]){--bg:oklch(96.5% .012 82);--bg-deep:oklch(94.5% .014 82);--surface:oklch(98.5% .008 82);--surface-2:oklch(92% .016 84);--rail-1:oklch(94.5% .014 82);--rail-2:oklch(96.5% .012 82);--rail-raised:oklch(98.5% .008 82);--fg:oklch(28% .05 330);--muted:oklch(46% .035 330);--faint:oklch(62% .03 330);--border:transparent;--border-soft:transparent;--gold:oklch(55% .115 80);--gold-strong:oklch(50% .12 78);--gold-dim:oklch(66% .11 82);--gold-ink:oklch(99% .005 85);--rose:oklch(58% .14 350);--rose-strong:oklch(53% .15 350);--success:oklch(52% .11 155);--danger:oklch(52% .16 18);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
+  "body:not([data-ds-dark-theme]){--bg:oklch(94.5% .012 82);--bg-deep:oklch(92.5% .014 82);--surface:oklch(96.5% .008 82);--surface-2:oklch(92% .016 84);--rail-1:oklch(92.5% .014 82);--rail-2:oklch(94.5% .012 82);--rail-raised:oklch(98.5% .008 82);--fg:oklch(28% .05 330);--muted:oklch(46% .035 330);--faint:oklch(62% .03 330);--border:transparent;--border-soft:transparent;--gold:oklch(55% .115 80);--gold-strong:oklch(50% .12 78);--gold-dim:oklch(66% .11 82);--gold-ink:oklch(99% .005 85);--rose:oklch(58% .14 350);--rose-strong:oklch(53% .15 350);--success:oklch(52% .11 155);--danger:oklch(52% .16 18);--font-display:" + DISPLAY + ";--font-serif:" + SERIF + ";--font-ui:" + UI + ";--font-mono:" + MONO + "}",
   /* ── §5 尾部节点(整段拷贝)── */
   ".compress-head{display:flex;align-items:center;gap:8px;width:100%;padding:8px 4px;font-family:var(--font-mono);font-size:11.5px;color:var(--faint);letter-spacing:.04em;text-align:left;background:none;border:none;cursor:pointer}",
   ".compress-head:hover{color:var(--muted)}",
@@ -1556,7 +1569,8 @@ const CSS3 = [
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
   "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px)}",
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{height:calc(100% + 150px);background:linear-gradient(180deg,transparent 0px,var(--bg) 150px)}",
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{height:calc(100% + 100px);background:linear-gradient(180deg,transparent 0px,var(--bg) 100px)}",
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::after{height:calc(100% + 100px)}",
   /* 窄屏档:旧 viewArea/Md3f7G_root 让位已随官方 DOM 升级删除(同主档追补) */
   /* P15 追补 IX:追补 VI 的 @media(max-width:820px) 在此闭合 —— 原先漏了配对 "}",
      一路吞到追补 V 抽屉块自己的 "}"(只闭了内层),外层被 EOF 静默闭合;导致
