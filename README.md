@@ -59,7 +59,7 @@ ROADMAP.md         逐步构建路线图(阶段表 + 原型逐节差异盘点 + 
 
 ```sh
 npm install                # 首次:playwright-core + pngjs
-node verify-run.mjs verify-gate.js verify-p8b.js verify-p8c.js verify-proto-diff.js
+node verify-run.mjs verify/verify-gate.js verify/verify-p8b.js verify/verify-p8c.js verify/verify-proto-diff.js
 ```
 
 ## License

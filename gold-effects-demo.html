@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>鎏金效果对比 Demo — dsh-theme-aurum</title>
+<style>
+  /* ── aurum-dark 同款色板(prototype §1) ─────────────────── */
+  :root{
+    --bg:oklch(16% .014 330);
+    --bg-deep:oklch(13.5% .012 330);
+    --surface:oklch(21% .016 328);
+    --surface-2:oklch(25.5% .018 326);
+    --fg:oklch(93% .015 85);
+    --muted:oklch(74% .022 328);
+    --gold:oklch(83% .115 88);
+    --gold-strong:oklch(79% .13 84);
+    --gold-dim:oklch(70% .10 85);
+    --gold-ink:oklch(21% .03 60);
+    --gold-hi:oklch(93% .045 95);   /* 新增:高光档,低彩度高亮度,不是纯白 */
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--fg);
+    font-family:Georgia,"Noto Serif SC","Songti SC",serif;
+    padding:40px 28px 80px;
+    min-height:100vh;
+  }
+  .wrap{max-width:960px;margin:0 auto}
+  h1{font-size:26px;letter-spacing:.08em;margin-bottom:6px;color:var(--gold)}
+  .sub{font-family:ui-monospace,Consolas,monospace;font-size:11.5px;color:var(--muted);margin-bottom:36px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+  .card{
+    background:var(--surface);
+    border-radius:14px;
+    padding:26px 22px 20px;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .tag{
+    font-family:ui-monospace,Consolas,monospace;
+    font-size:10px;letter-spacing:.18em;
+    color:var(--gold-strong);
+    text-transform:uppercase;
+  }
+  .desc{font-size:12.5px;line-height:1.7;color:var(--muted);font-family:system-ui,sans-serif}
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:86px}
+  .sample{font-size:34px;font-weight:600;letter-spacing:.04em}
+
+  /* ── 0 基线:现状(纯色 token + 双色渐变按钮) ───────────── */
+  .now-text{color:var(--gold)}
+  .now-btn{
+    background:linear-gradient(135deg,var(--gold),var(--gold-strong));
+    color:var(--gold-ink);
+    border:none;border-radius:12px;padding:10px 26px;
+    font-family:inherit;font-size:15px;cursor:pointer;
+    box-shadow:0 4px 14px oklch(79% .13 84 / .25);
+  }
+
+  /* ── 1 多 stop 金属渐变字(background-clip:text) ───────────
+     金属感的关键:暗→亮→高光→暗 的多 stop 折返,单一双色渐变像塑料 */
+  .metal-text{
+    background:linear-gradient(100deg,
+      var(--gold-dim) 0%,
+      var(--gold) 28%,
+      var(--gold-hi) 50%,
+      var(--gold) 72%,
+      var(--gold-dim) 100%);
+    -webkit-background-clip:text;background-clip:text;
+    color:transparent;
+  }
+
+  /* ── 2 shimmer 流光:渐变宽度放大后平移,高光周期性扫过 ──── */
+  .shimmer-text{
+    background:linear-gradient(100deg,
+      var(--gold) 30%,var(--gold-hi) 50%,var(--gold) 70%);
+    background-size:220% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    color:transparent;
+    animation:gold-shimmer 3.2s linear infinite;
+  }
+  @keyframes gold-shimmer{
+    0%{background-position:120% center}
+    100%{background-position:-120% center}
+  }
+
+  /* ── 3 浮雕 text-shadow:高光压顶 + 暖黑沉底,衬线金字最配 ── */
+  .emboss-text{
+    color:var(--gold);
+    text-shadow:
+      0 1px 0 oklch(97% .03 95 / .38),
+      0 -1px 0 oklch(28% .05 60 / .85),
+      0 5px 16px oklch(60% .08 85 / .3);
+  }
+
+  /* ── 4 conic 金属环:@property 注册角度后可平滑旋转 ───────── */
+  @property --ga{syntax:'<angle>';initial-value:0deg;inherits:false}
+  .gold-ring{
+    width:74px;height:74px;border-radius:50%;
+    background:conic-gradient(from var(--ga),
+      var(--gold-dim),var(--gold-hi),var(--gold-dim),
+      var(--gold),var(--gold-dim),var(--gold-hi),var(--gold-dim));
+    -webkit-mask:radial-gradient(closest-side,transparent 68%,#000 70%);
+    mask:radial-gradient(closest-side,transparent 68%,#000 70%);
+    animation:gold-spin 5s linear infinite;
+  }
+  @keyframes gold-spin{to{--ga:360deg}}
+
+  /* ── 5 金属按钮:垂直明暗折线 + inset 高光/暗缝 + hover 扫光 ── */
+  .metal-btn{
+    position:relative;overflow:hidden;
+    background:linear-gradient(180deg,
+      oklch(87% .105 90) 0%,
+      var(--gold) 44%,
+      oklch(74% .115 84) 56%,
+      oklch(80% .12 86) 100%);
+    color:var(--gold-ink);
+    border:none;border-radius:12px;padding:10px 26px;
+    font-family:inherit;font-size:15px;cursor:pointer;
+    box-shadow:
+      inset 0 1px 0 oklch(97% .03 95 / .55),
+      inset 0 -1px 0 oklch(40% .06 60 / .45),
+      0 4px 14px oklch(79% .13 84 / .3);
+  }
+  .metal-btn::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(105deg,
+      transparent 40%,oklch(99% .01 95 / .5) 50%,transparent 60%);
+    transform:translateX(-130%);
+    transition:transform .55s ease;
+  }
+  .metal-btn:hover::after{transform:translateX(130%)}
+
+  /* ── 浅色节(主题双色都要过):仅放最推荐的 1 / 4 两种 ────── */
+  .light{
+    --bg:oklch(96.5% .012 82);
+    --surface:oklch(98.5% .008 82);
+    --fg:oklch(28% .05 330);
+    --muted:oklch(46% .035 330);
+    --gold:oklch(55% .115 80);
+    --gold-strong:oklch(50% .12 78);
+    --gold-dim:oklch(66% .11 82);
+    --gold-ink:oklch(99% .005 85);
+    --gold-hi:oklch(80% .09 88);
+    background:var(--bg);color:var(--fg);
+    border-radius:14px;padding:26px 22px 20px;
+    display:flex;flex-direction:column;gap:14px;
+    margin-top:18px;
+  }
+  .light .desc{color:var(--muted)}
+
+  h2{font-size:14px;letter-spacing:.14em;margin:44px 0 14px;color:var(--gold-strong)}
+
+  /* 动效尊重系统偏好 */
+  @media (prefers-reduced-motion:reduce){
+    .shimmer-text,.gold-ring,.metal-btn::after{animation:none;transition:none}
+    .shimmer-text{background-position:center}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>鎏金效果对比 Demo</h1>
+  <div class="sub">aurum-dark 色板 · 浏览器直接打开即可 · 每卡片一种候选方案</div>
+
+  <h2>深色</h2>
+  <div class="grid">
+
+    <div class="card">
+      <div class="tag">0 · 基线(现状)</div>
+      <div class="stage"><span class="sample now-text">鎏金 Aurum</span></div>
+      <div class="stage" style="min-height:auto"><button class="now-btn">双色渐变按钮</button></div>
+      <div class="desc">纯色 token + 135° 双色渐变。干净,但没有金属的明暗折返,偏"米黄塑料"。</div>
+    </div>
+
+    <div class="card">
+      <div class="tag">1 · 多 stop 金属渐变字</div>
+      <div class="stage"><span class="sample metal-text">鎏金 Aurum</span></div>
+      <div class="desc">background-clip:text + 暗→亮→高光→暗 5 个 stop。静态金属感的标准做法,零动画成本。</div>
+    </div>
+
+    <div class="card">
+      <div class="tag">2 · shimmer 流光</div>
+      <div class="stage"><span class="sample shimmer-text">鎏金 Aurum</span></div>
+      <div class="desc">渐变 width 放大到 220% 后平移 background-position,高光周期性扫过。适合 thinking/loading 状态字。</div>
+    </div>
+
+    <div class="card">
+      <div class="tag">3 · 浮雕 text-shadow</div>
+      <div class="stage"><span class="sample emboss-text">鎏金 Aurum</span></div>
+      <div class="desc">顶部一线高光 + 底部暖黑沉底。衬线大字最搭,完全不影响选中文本,可访问性最好。</div>
+    </div>
+
+    <div class="card">
+      <div class="tag">4 · conic 金属环</div>
+      <div class="stage"><div class="gold-ring"></div></div>
+      <div class="desc">conic-gradient 多 stop + mask 挖空 + @property 角度旋转。适合上下文环(JObwrW 那个)和徽章描边。</div>
+    </div>
+
+    <div class="card">
+      <div class="tag">5 · 金属按钮</div>
+      <div class="stage" style="min-height:auto"><button class="metal-btn">主按钮 · hover 扫光</button></div>
+      <div class="desc">垂直 44%→56% 明暗折线 + inset 顶部高光/底部暗缝 + hover 时高光带扫过。对应现状 .c-btn / .uV2eYG_primary 的升级位。</div>
+    </div>
+
+  </div>
+
+  <h2>浅色(aurum-light)</h2>
+  <div class="grid">
+    <div class="light">
+      <div class="tag">1 · 多 stop 金属渐变字(浅色)</div>
+      <div class="stage"><span class="sample metal-text">鎏金 Aurum</span></div>
+      <div class="desc">浅色下高光档降为 oklch(80% .09 88),stop 幅度收窄,避免文字发灰;玫辉 sheen 一律保持关闭。</div>
+    </div>
+    <div class="light" style="max-width:280px">
+      <div class="tag">5 · 金属按钮(浅色)</div>
+      <div class="stage" style="min-height:auto"><button class="metal-btn">浅色金属按钮</button></div>
+      <div class="desc">浅色折线幅度同样收窄,inset 高光 alpha 降到 .4。</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

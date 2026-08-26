@@ -19,9 +19,9 @@
 2. **不与内联样式拔河,要顺势**:官方宽度/状态由 React 内联样式驱动(grid-template-columns、
    width)。需要覆盖时用 `width:auto!important` 让内容「填充」而非「固定」,拖拽调宽即自动跟随。
    优先 `width:auto`,避免写死像素。
-3. **每阶段收尾跑「几何门禁」**(playwright-cli,脚本已备):
-   - `verify-gate.js` — 展开/折叠两态:卡片 rect 对原型(±1px)、递归零溢出;
-   - `verify-p8b.js` — 无描边审计:伪元素加号唯一 + 子树可见边框数为 0;
+3. **每阶段收尾跑「几何门禁」**(playwright-cli;脚本 2026-08-25 起集中 `verify/` 目录):
+   - `verify/verify-gate.js` — 展开/折叠两态:卡片 rect 对原型(±1px)、递归零溢出;
+   - `verify/verify-p8b.js` — 无描边审计:伪元素加号唯一 + 子树可见边框数为 0;
    - 容器 `scrollWidth == clientWidth`(无横向滚动);拖拽调宽手动补测一次。
 4. **部署同步**:`client.js` 在 `C:\Users\fengb\.dsh\profiles\web\node_modules\dsh-theme-aurum\`
    是硬链接,但**每次编辑都会断链**。编辑后必须执行 `./sync-deploy.ps1`,再 reload 页面验证。
@@ -62,6 +62,12 @@
 | P13 | §9 | hero 新会话居中态、菜单/Toast/scrim 金色化、设置弹窗左导航双栏 | CSS + settings 槽位 | ✅ |
 | P14 | §10 | 响应式:≤1024 抽屉侧栏、≤820/≤640/≤480 降档 | @media | ✅ |
 | P15 | 验收 | 全量截图 vs 原型逐节 diff + 三态几何门禁全绿,发版 1.1.0 | 验收 | ✅ |
+| **P16** | **§5 残差** | **think 卡接管:思考中折叠 + 单行文字错峰入场 + 结束自动收拢** | **遮蔽 assistant-step + htm 恒等映射** | **✅** |
+| **P17** | **§5 残差** | **三卡图标瓦片对齐(think 并入 au-ico 家族)+ 压缩卡接管(compaction/manual-compaction 双键)** | **CSS 家族归一 + 双键遮蔽** | **✅** |
+| **P18** | **§5 残差** | **think 展开并入工具卡非线性收合(grid 0fr⇄1fr + 内容淡入)** | **机构同构(壳仍独立)** | **✅** |
+| **P20** | **§4 增强** | **分组会话列表截断:默认前 5 行 + 「显示全部/收起」切换(用户报面板过长)** | **AuBrowserWide 渲染截断** | **✅** |
+| **P21** | **§6 增强** | **todo 清单条可折叠:头部行常显 + 胶囊区 grid 收合,默认折叠(用户指定)** | **AuTodoBar 重构 + CSS** | **✅** |
+| **P22** | **§5 增强** | **非 chat view(轨迹/数据库等)让位 70px 浮头渐变纱(用户报遮挡)** | **viewArea padding + chat 负 margin** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -132,11 +138,13 @@
   同一水平线;同轴 delta=0(字标中心 47 ≡ 标题中心 47,padding-top 24 校准);
   tab 选中横杠(:after 底线)移除;主题切换文案去「鎏金」= 深色/浅色主题。
   此前形态(双行带、两列 grid)被本方案取代。
-- ✅ assistant 节:鲸鱼头像(P9 纯 CSS mask)+ reasoning 折叠段(2026-08-24,官方
-  ReasoningRow QWLzlG_* CSS 换皮:surface 卡 r12 + mono 头 + serif italic 体 + 虚线分隔 +
-  金扫光;官方 disclosure 交互原样保留)+ a-actions 悬停操作(P9 turn-tail 内)。
+- ✅ assistant 节:reasoning 折叠段 → P16 全面接管(遮蔽 assistant-step:AuThinkCard
+  原型 .reasoning 类;运行态折叠壳内单行实时流,行号 key 换行 remount 重播入场
+  au-think-in 淡入+上浮+轻模糊,图标金色呼吸;结束自动收拢,摘要=firstLine;
+  text 块委托官方 MarkdownText,image 块 AuImg,正文视觉不变;鲸鱼头像已于 P15
+  追补 III 移除)+ a-actions 悬停操作(P9 turn-tail 内)。
 - ✅ md 装饰(P9):衬线正文、li ◆ 金点、code 金 pill、ul/ol 去官方 padding。
-- ✅ compress/row-err/row-retry/turn-tail(P9);typing 三金点→记「不适用」
+- ✅ compress→P17 并入 au-tool 卡壳(compaction/manual-compaction 双键);row-err/row-retry/turn-tail(P9);typing 三金点→记「不适用」
   (官方无独立 typing 行,运行态由 ReasoningRow/工具卡扫光承载)。
 - ✅ 入场节奏(P9):逐节点阶梯 rise。
 
@@ -349,3 +357,257 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
   __auFocusSearch 握手。实测 390×844:顶栏 390×48、抽屉 63 行/7 组、三种
   关闭全过、无横滚、桌面不变。注:mobile CSS 必须放 CSS3 末(数组拼接顺序,
   CSS1/2 基础规则会后到覆盖)。verify-mobile.js 门禁 + gate/p8c/p14 回归绿。
+- **追补 VI · 窄屏 header 上下两行(同日,修标题被挤)**:仅记于 client.js
+  CSS 段注释(上标题、下 tabs+按钮),此处补记编号占位。
+- **追补 VII · 上下文注入卡展开无内容(同日,用户报)**:根因 = 通用
+  `.au-in{opacity:0;translateY(-6px)}` 是工具卡"展开淡入"设计,恢复规则
+  只写了 `.au-tool.au-open .au-in`,追补 III 的 ◈ ctx 卡壳类名
+  `.au-ctx-card` 漏配 → 展开后高度正常撑开(294px)、全文在 DOM,但内容
+  永远透明。修复:补 `.au-ctx-card.au-open .au-in{opacity:1;transform:none}`
+  (淡入曲线与工具卡一致)。实测:computed opacity 0→1、transform→none,
+  深色 vision 复核卡内全文清晰;浅色分支同样 opacity 1/高 278px —— 纯状态
+  恢复规则与主题无关。gate/p8b/proto-diff 回归绿。
+- **追补 VIII · md 表格可读性重制(2026-08-25,用户报分割线看不到)**:横竖
+  分隔线 fg alpha 分档(22%/16%)、表头鎏金底线 gold 45%、偶数行斑马、无 thead
+  表首行按表头处理;实测:深色真实 md 表格 11/11 断言绿(横 0.22/竖 0.16 alpha、
+  金底线 0.45、斑马 tint、md 对齐保留、712px 零横向溢出)、浅色探针 11/11
+  (assistant-step 容器内临时探针表格,移除 data-ds-dark-theme 近似,token 级联
+  一致);collapse 模式下 1.5px 表头底线被浏览器吸附为 1px 设备像素(视觉区分
+  靠金色,alpha 断言过)。回归 gate/p8b/proto-diff 全绿。根因与决策详见
+  client.js 头注释「P15 追补 VIII」段。
+- **追补 IX · TODO 面板拉满整行(同日,用户报"应与输入框等宽")**:根因 =
+  追补 VI 插入的 `@media(max-width:820px){` 漏配对 `"}"`,块吞到抽屉媒体
+  自己的 `"}"`(只闭内层)、外层 EOF 静默闭合 —— P10 todo-bar 宽度适配、
+  P11 .kid 全家、全局 reduced-motion 被吞进 ≤820,桌面端全灭;todo-bar 回落
+  `flex:1` 在 composerStack 拉满 1150px(输入卡 780px,左右各溢 185px)。
+  修复:VI header 规则后补 `"}"`。实测:todo-bar 1122→748px、flex 0 0 auto、
+  对输入卡左右各让 16px(官方 TodoDock 同款面板几何)。新增
+  **verify-css-nesting.js** 门禁(断言 todo/kid/reduced-motion 规则不嵌宽度
+  媒体块,防漏括号复发);p10/p11/p14/mheader/mobile/p8b/proto-diff 全绿。
+  另:gate 存在跑序依赖(p14 还原视口后首拍读过渡中间帧 52px/r0 假阳性)
+  → gate 起手加 800ms settle,任意顺序跑绿。
+
+### P16 · think 卡接管(§5 残差,用户指定)✅ 2026-08-25
+- **需求**:think 卡思考中折叠;内容改「每行文字错峰入场」;思考结束自动收拢。
+  官方 ReasoningRow 摘要/正文均为单文本节点,纯 CSS 无法拆行 —— 走 P11 同法
+  遮蔽 conversation.chat.node key=assistant-step(priority:-1 + locale
+  "conversation" 复用官方词条),AuAssistantStep/AuAssistantMarkdown 复刻官方
+  逻辑:text 块直调官方 MarkdownText(primitives 通道)、image 块走 AuImg、
+  unknown 走 JsonBlock(AU_PI 缺席 pre 兜底)、tool-call 跳过(独立节点)、
+  interrupted 徽章保留、根/正文容器沿用官方 Sxvs8a_*(几何一致)。
+- **AuThinkCard**(原型 .reasoning/.reasoning-head/.reasoning-body 类名,几何沿用
+  P15 追补 III 用户指定形态 r14/pad 10 13/hover 面):运行态折叠壳内单行实时流 =
+  latestLine,行号作 key —— 同行流式追加不重播,换行 remount 重播入场
+  (au-think-in);图标金色呼吸(au-think-pulse);官方横滚 ticker+金扫光退役;
+  结束 running→false 自动 setOpen(false)(点开的也收),摘要=firstLine;
+  aria-expanded + au-sr 运行中字幕;reduced-motion 动画全关。
+- **修订(2026-08-25,用户三处)**:① 不随单行文本量横向滚动 —— follow-end
+  scrollLeft 撤除,长行原地裁切(起点恒左对齐),入场动画固定同一可视位置;
+  ② 入场透明度 = 全透明→不透明(叠加模糊消散 blur 2.5→0;初版方向系口误,
+  当日修订 II 纠正);③ 时长 .38s→.76s(慢一倍)。
+- **修订 II(同日,用户两处)**:① 透明度方向纠正回全透明→不透明;
+  ② 思考中卡壳补「执行中」背景辉光 = 工具卡 au-tool 同款 105° 金 15% 光带 +
+  au-sweep 1.9s 横扫。坑记:辉光规则必须带 body:not(#aurum-boost) 前缀 ——
+  [data-state=running]::after 一揽子 90° 通用覆盖含 ID 特异性,裸类规则会被盖
+  成宽光带(页内探针实测 parity=false 后修正);reduced-motion 与工具卡同
+  display:none。verify-think.js 增页内离屏探针断言 think 卡 ::after 与工具卡
+  .au-main::after computed 逐字一致(sweepParityWithTool)。
+- **修订 III(同日,用户报 icon/Think 与右侧实时行未对齐)**:稳态错位 3.59px
+  —— .r-live-wrap 原为 display:block,继承头部行 16/28 strut,12/19.2 的
+  inline-block 文本按基线挂上 28px 行框,半行距不对称压低文本;修:wrap 改
+  display:flex + align-items:center(strut 消失,文本中心=wrap 中心)。
+  探针实测:修前 live 中心 +3.59,修后 icon/Think/wrap/live/chev 五元素中心
+  全等(delta 0);verify-think.js 固化 headAlign 稳态断言(≤1.2px,等当前行
+  入场动画播完采样)。
+- **修订 IV(同日,用户指定)**:正文 = 运行态同款透明模糊错峰级联 —— reasoning
+  正文按 `\n` 拆行渲染(.r-line,key=行号),与单行同一入场动画(au-think-in
+  透明→不透明+模糊消散 .76s);行仅展开时挂载 → 收拢再展开整段重播,流式
+  期间新行单独入场(行内追加不重播);空行 nbsp 保行高;reduced-motion 关。
+  断言口径同步:正文行仅展开时挂载,收拢态 body.textContent 为空 →
+  sumIsFirstLine 改在展开后由行重构全文比对。
+- **修订 V(同日,用户报"没有每行单独入场")**:初版 delay 第 9 行封顶
+  (min(i,8)×50ms)→ 长思考(49 行)第 9 行起全部同时入场糊成一块,错峰感
+  消失;改递减步长 min(i,10)×40+(i-10)×15ms:每行独立 delay、波纹全程
+  可见,100 行约 1.75s 不拖沓。门禁新增 strictlyDistinct / flatRuns(=0)断言。
+  实测(86 行思考):strictlyDistinct=true、flatRuns=0、末行 delay 1525ms
+  与公式吻合、delayStep2=40ms、sumIsFirstLine=true。
+- **修订 VII(同日,用户澄清「正文」= 模型输出的 markdown,非 thinking)**:
+  thinking 展开体撤全部行级动画(.r-line/修订 IV-VI 作废,还原普通 pre-wrap
+  文本);错峰级联移到 assistant 正文 —— 官方 MarkdownText 根
+  `div[class*=_markdown_]` 的块级子元素(p/ul/pre/table…)统一 au-think-in
+  1.2s(透明→不透明+模糊消散),delay 阶梯 nth-child 1-12 ×70ms
+  (AU_MD_STAGGER 生成)、12+ 恒 .77s:历史挂载整段波纹展开,流式新段落
+  单独入场(React 按位 reconcile,老段落不重播);标签限定不误伤 think 卡。
+  实测:3 块 firstDelays [0,.07,.14]s 单调、animAllSame=true、
+  thinkBodyAnim=none、.r-line=0;回归 gate/p8b/cards3/proto-diff 全绿。
+- **修订 VI(同日,用户报"太快了看不出来")**:行时长 .76s→1.2s、步长加至
+  前 12 行 ×70ms + 之后 ×30ms —— 相邻行相位差从 40/760≈5% 放大到 70/1200,
+  叠加更长行时长肉眼可辨;运行态单行保持 .76s(用户既定参数);86 行思考
+  约 3s 扫完 + 1.2s 收尾。实测(46 行):lineDur=1.2s、delayStep2=70ms、
+  strictlyDistinct=true、flatRuns=0、末行 1830ms 与公式 12×70+33×30 吻合。
+- **实测**(verify-think.js,新会话真实触发思考回合):lineReplay=true(换行后
+  动画 currentTime 回落 = key remount 重播实锤)、duration 760ms、keyframes
+  opacity 0→1、sweep=105deg + au-sweep、sweepParityWithTool=true、
+  headAlign 三 delta 全 0(icon/Think/live/chev 稳态同轴)、
+  maxScrollLeft=0(全程零横向滚动)、bodyHidden /
+  expandedWhileRunning / done.autoCollapsed / sumIsFirstLine / liveGone /
+  textBlockRendered / officialGone(QWLzlG 全程 0)全 ✓;回归 gate(三态零溢出)/
+  p8b(无描边)/ cards3(r14 pad 10 13、button 头、bodyDisplay none)/ darkskin
+  (light 面色 oklab .985/.55 + JetBrains Mono)/ proto-diff(failures=0)全绿,
+  双主题过。
+- 记档:旧 QWLzlG_* 换皮规则保留为死代码(遮蔽期不渲染,零成本防御,停插件
+  即还原官方渲染且主题 CSS 一并卸载);Ic 补 think 映射(官方 IconThinkOutline14,
+  兜底思绪灯泡自绘);verify-cards3/darkskin 选择器随接管更新;截图
+  aurum-think-running.png / aurum-think-done.png 过程产物(2026-08-25 起集中
+  screenshots/ 并 git-ignore,verify 脚本落点同步改写)。
+- **修订 VIII(2026-08-25,用户报"输出完成后又从头重播一遍")**:回合结算
+  streaming 翻 false → 官方 MarkdownText 流式⇄成稿切换整树重挂载,级联动画
+  整段重播。根治:级联规则限定 `.Sxvs8a_root[data-streaming]`(仅流式期在册)
+  —— 动画只属于正在生成的内容,结算/历史挂载一律静态。verify-think 门禁重构:
+  ④a 思考结束后采流式级联(think ok ≠ 正文完)、④½ 等整节点结算(data-streaming
+  全摘除)、⑤ markdown 根带重试(换树一瞬查空,稳态必在 —— tmp 探针实测)。
+  实测:streamingCascade=au-think-in/delays 单调 ✓、settledStatic 8 块
+  animAllNone=true + anyStreamingAttr=false(结算零重播实锤)✓。
+- **修订 IX(同日,用户指定两条)**:① 聊天流所有卡片统一「模糊透明入场」
+  —— aurum-rise 升级为 au-think-in 同款签名(全透明→不透明 + blur 2.5→0
+  消散,1.2s 同曲线),挂官方 flowItem 行全覆盖;不带 translateY(P15 追补 IV
+  教训:位移顶起刚滚到底的视口);fill backwards(动画结束 filter 不残留,
+  含 filter 元素是 fixed 后代 containing block,常驻有险)。② 流内间距紧凑化:
+  flowItem margin-bottom 12→4 + Md3f7G_column gap 8→4 + .reasoning/
+  .au-user-row margin 2→1 → 相邻卡实际缝 20→8px。verify-cards3 增 flowTight
+  断言。实测:entranceAnim=aurum-rise 1.2s backwards、colGap/marginBottom=4px、
+  minItemSeamPx=8;回归 gate/p8b/proto-diff/darkskin 全绿。
+- **事故记档(同日)**:一次 pwsh -replace 运算符优先级笔误把仓库 client.js
+  写成 0 字节 —— 从部署副本(最后 IN-SYNC 态,实体拷贝非链接)完整恢复后
+  重做本轮四处改动;教训:脚本化写盘前必须先断言替换结果非空。
+
+### P17 · 三卡图标瓦片对齐 + 压缩卡接管(用户两报)✅ 2026-08-25
+
+- **需求 ①(用户报「think 卡与其他工具卡的图片水平方向没有对齐」)**:think 头
+  .r-ico 裸图标(起点 x=13)与工具卡/上下文卡 .au-ico 27×27 金瓦片(瓦片 x=13、
+  glyph 居中 x=19.5)视觉错位。修:think 头改挂 `au-ico r-ico` 双类 —— 瓦片几何/
+  金 tint 由 .au-ico 统一承担,.r-ico 仅留运行态钩子(呼吸动画移到 svg,瓦片
+  底色不闪);chev 11→13px 对齐 au-chev;浅色补 reasoning 底色 80% 分层(深浅
+  同构 au-tool,此前浅色仍是 55% 深色值)。实测:think/tool/compact 三卡 padL=13、
+  瓦片 27×27、标题列 x=51 全等(allEqual=true),headAlign 三 delta 仍全 0。
+- **需求 ②(用户报「上下文压缩 compact 没有做进卡片的样式」)**:compaction 原为
+  P9 原型 .compress 平推行;manual-compaction(手动 /compact)官方渲染此前完全
+  裸奔(_Xvjua_/gdEzaW_)。P17 双键遮蔽,统一 au-tool 卡壳家族:
+  - auCompactCard 内核:au-ico 瓦片 + au-name/au-sum + 可选胶囊(运行 au-run/
+    错误 au-err)+ expandable 时 chevron + AuBody grid 收合,正文走官方
+    MarkdownText(AU_PI 通道,pre 兜底);不可展开态(au-noexp)去手型与悬停底色;
+  - AuCompress(compaction):摘要口径复刻官方 CompactionItem —— items/tokens
+    插值优先(auT 扩参对齐 t(key,params))→ expand/unavailable 兜底链;
+  - AuCompactCmd(manual-compaction):复刻官方 CompactionCommandCard 三分支 —
+    compaction 落地→标记卡(fallback=outcome 文本);仅 outcome→错误/完成卡;
+    全空→运行态(105° 金辉光扫 + 运行中胶囊 + 正在压缩…);
+  - Ic 补 compact 映射(官方 IconApiOutline14,兜底层叠菱形);旧 .compress CSS
+    留作死代码防御;proto-diff 清单撤 compress-head 行(平推行与卡壳不可比)。
+- **实测**(verify-compact.js):离屏三卡几何全等 allEqual=true;真实 /compact
+  本环境 compact 插件不可用 → error 分支落地(err 胶囊 + outcome 文本,语义正确),
+  官方 gdEzaW_/_Xvjua_ DOM 全程 0;离屏机构探针:运行辉光与工具卡 computed 逐字
+  parity(sweepParity=true)、展开 grid 1fr(解算 23px)+ 内容 opacity 恢复 + chev
+  90° 旋转、noexp 手型 default。回归 think/gate/p8b/cards3/proto-diff/darkskin
+  全绿。
+- **顺带修门禁 bug**:verify-darkskin 旧版盲切一次主题 —— 起始为 dark 时量的
+  是 light 值(reasoning 底色双主题分化后暴露,历史输出 mode:"light" 即此误);
+  改按起始模式定向切换,现输出 dark 55% / light 80% 两组实测值并还原起始模式。
+
+### P18 · think 展开并入工具卡非线性收合(用户问)✅ 2026-08-25
+
+- **背景(用户问「现在 think 卡片是单独的实现吗?让它的展开也带有其他工具
+  调用展开的非线性动画」)**:think 卡确为独立实现 —— 遮蔽 assistant-step、
+  原型 .reasoning 类名体系(AuThinkCard),不在 .au-tool 家族;其展开原为
+  display:none⇄block 瞬切,与工具卡 .au-x 的 grid 0fr⇄1fr 非线性插值不同构。
+- **归一(壳独立、机构同构)**:.reasoning-body 改 grid 0fr⇄1fr 壳 ——
+  transition 与 .au-x 逐字同参(展开 .5s/收合 .34s,cubic-bezier(.45,0,.55,1)
+  两头慢中间快);内包 .r-bclip(overflow:hidden 裁切)+ .r-bin(承接原 body
+  全部正文样式:serif italic/1.9 行距/虚线顶边/pre-wrap,加 opacity+translateY
+  淡入 —— 曲线同 .au-in:收合 .18s/.24s 快隐,展开 .4s 延迟 .06s/.5s 延迟
+  .04s)。reduced-motion 下容器与内容 transition none(au-tool 同款豁免)。
+  P16 修订 VII 决策不变:所撤为行级文字级联(au-think-in),容器高度过渡与
+  家族同款内容整体淡入不在其列。
+- **实测**(verify-think.js):expParity=true(与离屏 .au-x transition 三元组
+  逐字相等);展开瞬间插值采样 h=88.5px/rows=12.19px(0fr→1fr 进行中),
+  终态 rows 解算 765.6px + binOpacity 1;结算自动收拢归 0px、autoCollapsed
+  true;Chrome 将 0fr/1fr 解算为 0px/Npx(computed),断言按 parseFloat 口径
+  (首跑 bodyFolded/autoCollapsed 误按字符串 '0fr' 比对,已修正 —— 行为本身
+  一直正确,settledStatic.thinkBodyRows=0px 为证)。回归 cards3(reasoning
+  bodyRows 0px、flowTight 缝 8px)/gate/p8b/proto-diff(failures 0)/darkskin
+  (深 55%/浅 80%,还原)全绿。
+
+### P19 · 添加工作区改走系统目录选择框(用户指定)✅ 2026-08-25
+
+- **背景(用户:「左侧添加新工作区按钮,点击后改为弹出一个 file picker,
+  选择目录后打开,用浏览器自带的就可以」)**:原交互为点击展开手动路径
+  输入行(au-ws-addrow,↵ 添加 / Esc 取消)。
+- **方案决策**:浏览器自带 picker(showDirectoryPicker / webkitdirectory)
+  经评估不可行 —— 浏览器安全沙箱不暴露所选目录的绝对路径(仅目录名),而
+  host `workspace.create` 需 realpath 可解析的真实绝对路径(`fs.realpath`
+  校验,相对路径按 host 进程 cwd 解析必错位)。用户确认改用**系统原生
+  目录选择框**:官方 `workspacesSvc.pickDirectory()`(host native
+  capability;本机 127.0.0.1 + Windows = 用户眼前弹出的文件夹选择对话框,
+  返回绝对路径)。
+- **改动**(纯行为,零几何):auActions 增 `pickWorkspaceDirectory`(透传
+  service `pickDirectory(): Promise<path|null>`,null=取消);按钮 onClick 改
+  `addViaPicker` —— 选中即以绝对路径 create(选完即开),取消静默;picker
+  不可用(SSH/远程场景 capability 退 browse,报 directory-picker-unavailable)
+  或服务缺失时回退展开原手动输入行,输入流原样保留。
+- **实测**:node --check 过;按钮 title=添加工作区在册、默认无 .au-ws-addrow
+  (旧交互为点击即展开);回归 gate/p8b/proto-diff 全绿。系统对话框链路需
+  用户桌面手动点验(headless 下原生框无法自动断言)。
+
+### P20 · 分组会话列表截断:默认前 5 + 显示全部(用户报)✅ 2026-08-25
+
+- **背景(用户:「左侧历史会话浏览,每一个折叠面板里面的会话过多,需要有
+  一个显示最新的 5 个会话 + 一个按钮可以显示全部」)**:分组(工作区)面板
+  此前全量渲染,长列表把侧栏撑得过长。
+- **方案决策(用户三项拍板)**:取「列表前 5 条」(当前排序序 —— manual 序
+  即手动置顶优先,非按 updatedAt 挑选);展开后按钮转「收起」可切回;
+  more 状态内存态不持久化(刷新复位,行为可预期)。
+- **改动**:AuBrowserWide 增 moreSt state;分组分支(groups.map)按
+  more[key] 截取 shown = sessions.slice(0,5),>5 条的组在 .au-slist-in 尾部
+  渲染 .au-s-more 按钮(「显示全部 N 条」⇄「收起」,aria-expanded 同步);
+  CSS 新增 .au-s-more 三条(mono 11px tertiary,hover 金,focus 金环,无描边)。
+  搜索/平铺视图走 results/flatAll 分支,天然不受截断影响。
+- **实测(verify/verify-sbmore.js)**:dsh-theme-aurum 组 53 条 → 默认 5 行;
+  点开 53 行 + 按钮转「收起」;收起复位 5 行;平铺 88 行全量、0 截断钮。
+  回归 verify-gate 三态 264×876 / 56×876 零溢出全绿;深浅双色目检过
+  (verify-sbmore-light.js:token 双色自适应,浅色约 4.5:1 可读)。
+
+### P21 · todo 清单条可折叠(用户指定:聊天栏上部 TODO 清单)✅ 2026-08-25
+
+- **背景(用户:「底部(聊天栏上部)的 TODO 清单变成可折叠的!」)**:P10 起
+  AuTodoBar 恒等映射原型 §6,胶囊列表永远全量平铺;官方 TodoDock 本就带折叠
+  列表,此番补回折叠能力。
+- **方案决策(用户拍板:默认折叠)**:头部行(清单 n/m + goal-track 进度条 +
+  .todo-fold 折叠钮)常显;todo-items 胶囊区移入 .todo-foldwrap>.todo-foldin,
+  grid-rows 0fr⇄1fr + 淡隐收合(与侧栏 .au-slist 同机构);chevdown 收起
+  转 -90° 指右(与分组头 chev2 同语言);aria-expanded 同步;内存态不持久化。
+- **踩坑实录**:折叠后的 .todo-foldwrap(flex-basis:100% 空行)仍吃 .todo-bar
+  的 11px flex 行距,折叠态 49px 超出 min-height:38 —— 修法为 row-gap 归零、
+  展开间距改由 .todo-foldwrap margin-top 过渡承担,折叠态精确回到 38px。
+- **实测(verify/verify-todofold.js)**:6 项 todo 折叠 38px / 胶囊区 0px /
+  aria false,展开 133px / 胶囊区 84px / aria true,收起复位;gate/p10/
+  sbmore 回归全绿;深浅双色目检过(verify-todofold-light.js)。
+
+### P22 · 非 chat view 让位浮头(用户报:切 tab 后内容顶屏幕顶)✅ 2026-08-26
+
+- **背景(用户:「除了主聊天界面以外,顶部 tab 栏切换页面后,内容都顶着屏幕顶部,
+  被顶栏渐变遮挡」)**:P15 修订 V 把 `wSkVaW_header` 改成 absolute 浮头
+  (70px,底色 92% → 透明渐变纱),但顶部让位只做在 chat 的滚动容器
+  `Md3f7G_scroll`(padding-top:86)。顶部 tabs(对话/轨迹/数据库,由
+  `conversation.view` 槽位注册者提供)切到非 chat view 时,内容 y=0 直接
+  顶屏幕顶,首行被纱遮住。
+- **方案**:`wSkVaW_viewArea` 自身 `padding-top:86px` 统一让位 —— 未来插件
+  注册新 view 自动覆盖,不逐类名点名;chat 例外,`Md3f7G_root` 加
+  `margin-top:-86px` 拉回:`[data-conversation-scroll]` 模式下真正的滚动容器
+  是外层 `wSkVaW_scrollBody`(viewArea 在滚动流内),padding 与负 margin
+  净效果为零,「消息从纱下穿行渐隐」的原设计语义原样保留。移动端(≤820)
+  同步 130px(header 两行,与 Md3f7G_scroll 让位同值)。
+- **废案实录**:先试 `wSkVaW_viewArea > :not(.Md3f7G_root)` 把 padding 打在
+  view 根上 —— viewArea 与各 view 根之间隔着官方 React provider wrapper
+  (无类名,`display:contents`),padding 无法穿透布局,改打 viewArea 自身。
+- **实测(verify/verify-viewyield.js)**:轨迹(qBU-ya_root)/数据库(dbb-view)
+  首元素 y 0 → 86(> 纱底 70);chat 顶滚后首内容 y=86 不变 + margin/pad
+  三值断言;深浅双色全绿;verify-gate/p8b/proto-diff 回归无回归。

@@ -18,7 +18,7 @@ ROADMAP.md 阶段表(P1–P8b ✅,P9 ◐,P8c/P10–P15 ⬜)。
 | 部署副本 | `~\.dsh\profiles\web\node_modules\dsh-theme-aurum\client.js`(`dsh plugin --profile web add <仓库路径>` 安装生成) |
 | 验证页面 | `http://127.0.0.1:3080`(现有 `dsh web`,**禁止另起服务器**) |
 | 官方内部快照(逆向参考) | `runtime-snapshot.js` / `ui-conversation.js` / `bundle-snapshot.js` |
-| 浏览器验证 | playwright-cli;eval 脚本即仓库内 `verify-*.js` |
+| 浏览器验证 | playwright-cli;eval 脚本即仓库内 `verify/verify-*.js`(runner 为根目录 `verify-run.mjs`) |
 
 部署副本两种形态:**link: 安装**(`dsh plugin --profile web add <仓库路径>`)时副本是
 仓库的符号链接 —— 编辑即生效,`sync-deploy.ps1` 检测同文件直接报 LINKED,**绝不可**
@@ -80,6 +80,8 @@ Copy-Item 自拷贝(会截断文件);**拷贝安装**(旧机器形态)时编辑�
   - 原型类名落地前查与官方全局类冲突(官方为 hHd-Xa_ 前缀,预期无冲突;真撞了套
     `.au-root` 容器作用域);
   - 数据驱动的列表逻辑(会话行、工具卡展开态)照写组件,htm 只消灭结构翻译。
+- **原型侧前置契约**:新主题原型(任意风格)按 `PROTOTYPE-SPEC.md` 产出 ——
+  锚点写法/双主题/状态钩子/selector 稳定/PORT-NOTE 等约束在那边集中维护。
 
 ## 6 · 验证体系(playwright-cli eval,`async page => {}` 格式)
 
@@ -90,11 +92,11 @@ Copy-Item 自拷贝(会截断文件);**拷贝安装**(旧机器形态)时编辑�
 | `verify-proto-diff.js` | 双页恒等 diff:w/h/字号 ±1.5px 自动断言;颜色并排人工复核;x/y 只输出不断言 |
 
 新阶段把该阶段 selector 填进 `verify-proto-diff.js` 的 SELECTORS 再跑。截图
-(`aurum-*.png`)是过程产物,留在仓库当对照,不算验收凭据。
+(`screenshots/`)是过程产物,已 git-ignore,重拍即弃,不算验收凭据。
 
 **运行方式(本机无 playwright-cli,用 Node runner)**:
 ```
-node verify-run.mjs verify-gate.js verify-p8b.js verify-proto-diff.js
+node verify-run.mjs verify/verify-gate.js verify/verify-p8b.js verify/verify-proto-diff.js
 ```
 runner(`verify-run.mjs`)用仓库 devDependency `playwright-core` + 本机 Chrome(headless),
 打开 3080、注入 `window.__AU_PROTO_URL__`(原型的 file:// URL)后执行同款
@@ -108,13 +110,14 @@ index.js           宿主半:no-op(仅为组合行加载存在)
 package.json       dsh.bundle.patch + dsh.client.inject 声明(platform: web)
 cordis.patch.yml   bundle 层声明
 vendor/htm.js      htm@3.1.1 mini UMD 源(P9 起内联进 client.js 头部)
-verify-*.js        playwright 门禁脚本(见 §6)
+verify/             verify-*.js 门禁脚本集中目录(见 §6)
 verify-run.mjs     门禁 Node runner(playwright-core + 本机 Chrome,见 §6)
 sync-deploy.ps1    部署副本同步(MD5 校验)
 ROADMAP.md         阶段路线 + 原型逐节差异盘点 + 各阶段验收标准
 README.md          面向使用者的说明(安装/功能/结构)
+PROTOTYPE-SPEC.md  原型侧设计契约(设计师交付版,产出 prototype/*.html 前必读)
 *-snapshot.js      官方运行时/UI 内部快照,逆向 props 契约用 —— 只读参考,不部署
-aurum-*.png        历次验证截图(过程产物)
+screenshots/       验证截图(过程产物,已 ignore;verify 脚本新拍也落此目录)
 .playwright-cli/   playwright-cli 会话残留,可忽略
 ```
 

@@ -1,7 +1,7 @@
 /**
  * verify-run.mjs — 门禁 runner(playwright-cli 缺席时的 Node 替代)。
  *
- * 用法:node verify-run.mjs <verify-*.js> [更多脚本…]
+ * 用法:node verify-run.mjs <verify/verify-*.js> [更多脚本…]
  *   - 从仓库 node_modules(devDependency)解析 playwright-core;
  *   - 浏览器用本机 Chrome(channel:"chrome"),失败回退 Edge(channel:"msedge"),
  *     再失败回退 PLAYWRIGHT_EXECUTABLE 环境变量指定的可执行文件;
@@ -30,7 +30,7 @@ try {
 
 const scripts = process.argv.slice(2).filter(a => a !== '--shot' && !a.endsWith('.png'));
 if (!scripts.length) {
-  console.error('用法: node verify-run.mjs <verify-*.js> [更多脚本…]');
+  console.error('用法: node verify-run.mjs <verify/verify-*.js> [更多脚本…]');
   process.exit(1);
 }
 const LIVE_URL = process.env.LIVE_URL || 'http://127.0.0.1:3080';

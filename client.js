@@ -28,8 +28,8 @@ window.__ModuleLoader__.load({
 			folder: "IconFolderClose16", folderopen: "IconFolderOpen16",
 			search: "IconSearchOutline16", read: "IconBrowseOutline16", edit: "IconEditOutline16",
 			todo: "IconChecklistOutline14", globe: "IconGlobeOutline14", terminal: "IconApiOutline14",
-			stars: "IconSparkle16", question: "IconQuestionOutline14",
-			chevdown: "IconChevronDownOutline14", plus: "IconPlusOutline16"
+			stars: "IconSparkle16",
+			chevdown: "IconChevronDownOutline14", plus: "IconPlusOutline16", think: "IconThinkOutline14", compact: "IconApiOutline14"
 		};
 /* ═══ Aurum 鎏金主题 — P7 = P5 + 左侧历史会话栏整体重写(原型级) ═══
    按 dsh-agent-workspace.html 原型重写左侧会话栏:
@@ -348,8 +348,226 @@ window.__ModuleLoader__.load({
        规则会以后到者覆盖 media 内的同特异性规则 —— 实测踩坑)。
     实测(verify-mobile.js,390×844):顶栏 390×48@0,0、rail 同行、抽屉 320×824
     63 行/7 组、closeOnSelect/Esc/Scrim 全 true、无横滚、桌面还原正常;
-    vision 复核关闭态无竖侧栏/聊天满宽。回归 gate/p8c/p14 全绿。 */
+    vision 复核关闭态无竖侧栏/聊天满宽。回归 gate/p8c/p14 全绿。
 
+    ── P15 追补 VII · 上下文注入卡展开无内容(2026-08-24,用户报)─────────
+    根因:通用 .au-in 规则带 opacity:0 + translateY(-6px)(工具卡"展开淡入"
+    设计),恢复规则只写了 .au-tool.au-open .au-in —— 追补 III 的 ◈ 上下文卡
+    壳类名是 .au-ctx-card,专属规则只覆盖了 padding,漏配淡入恢复 → 展开后
+    grid 高度正常撑开(实测 294px)、5979 字符全文都在 DOM,但内容永远透明。
+    修复:补 .au-ctx-card.au-open .au-in{opacity:1;transform:none},淡入曲线
+    与工具卡完全一致(opacity .4s .06s + transform .5s .04s ease-in-out)。
+    实测:展开后 computed opacity 0→1、transform matrix(…,-6)→none,深色
+    vision 复核卡内 <system-reminder> 全文清晰可见;浅色分支(移除
+    data-ds-dark-theme 近似)opacity 同为 1、内容高 278px、文字对比正常 ——
+    纯状态恢复规则,与主题 token 无关。回归 gate/p8b/proto-diff 全绿。
+    (编号注记:VI 为窄屏 header 两行修复,见 CSS 段注释,未单列头注释段。)
+
+    ── P15 追补 VIII · md 表格可读性重制(2026-08-25,用户报分割线看不到)──
+    取证(tmp-table-debug.js 无头实测 3080):P15 微调 v1 规则全部正常命中
+    (祖先链 data-chat-flow-kind=assistant-step ✓,computed border 1px solid
+    oklab(fg/0.12) ✓)—— 问题纯在对比度:fg 12% tint 在深底仅提亮约 9 个
+    百分点(L0.21→0.30),1px 线肉眼不可见。另测出两处次生问题:① v1 的
+    tr:first-child td 误伤普通表格首行数据(首行数据格吃到表头 surface-2 底);
+    ② v1 table 级 font-size:13px 恒输 —— 官方 --dsw-font-markdown-table
+    (14.5px/25px serif)以 font shorthand 直落单元格,shorthand 胜继承,
+    实测 td 14.5px。修复:横线 fg 22% / 竖线 fg 16% 分档,表头底线鎏金
+    gold 45% 1.5px,偶数行 surface-2 45% 斑马,误伤选择器收窄为
+    table>tbody:first-child>tr:first-child(仅无 thead 表首行按表头处理),
+    撤无效 13px 字号。实测:td 横线 alpha 0.22 / 竖线 0.16,表头底线
+    oklch 金 0.45,首行数据格无表头底色,td 字号 14.5px(token 驱动)。 */
+
+/* ── P15 追补 IX · TODO 面板拉满整行(2026-08-25,用户报"应与输入框等宽")──
+   根因:追补 VI 在 CSS3 插入 "@media (max-width:820px){"(窄屏 header 两行)
+   后漏了配对 "}" —— 块一路吞到追补 V 抽屉媒体自己的 "}"(只闭合内层),外层
+   被 EOF 静默闭合。被吞规则:@media 640/480 降档(嵌套语义等价,幸免)、
+   P11 .kid/.tool-kids 全家、P10 .todo-bar 宽度适配、全局 reduced-motion ——
+   后三者只在 ≤820 生效,桌面端全灭。表象:.todo-bar 回落原型拷贝的 flex:1,
+   在 wSkVaW_composerStack(行向 flex)里拉满整行(实测 1150px vs 输入卡
+   780px,左右各溢 185px),即用户报"横向占据整个容器"。
+   修复:VI 的 8 条 header 规则后补 "}" 闭合(CSS 数组字符串拼接无语法检查,
+   漏括号完全无声 —— 新增 verify-css-nesting.js 门禁断言 todo/kid/reduced-motion
+   规则不再嵌在宽度媒体块下,防复发)。
+   实测:todo-bar computed flex 1 1 0%→0 0 auto、width 1122px→748px、
+   max-width none→748px、margin 0 auto;对输入卡左右各让 16px(官方 TodoDock
+   lXshSW/_7yHdaG 同款面板几何,居中同族)。verify-css-nesting(断言 0 吞)、
+   p10(748×185 零溢出)/p11/p14/mheader/mobile/p8b/proto-diff 回归全绿;
+   gate 单跑绿;另发现并加固 gate 跑序依赖(p14 还原视口后首拍立即测量读到
+   过渡中间帧 52px/r0 假阳性 → gate 起手加 800ms settle,顺序跑亦绿)。
+
+   ── P16 · think 卡接管:运行态单行错峰入场 + 结束自动收拢(2026-08-25,用户指定)──
+   需求:think 卡思考中保持折叠;内容改「每行文字错峰入场」;思考完自动收拢。
+   官方 ReasoningRow 的摘要/正文都是单文本节点,纯 CSS 无法拆行做逐行入场 ——
+   与 P11 工具树同法,遮蔽 conversation.chat.node key=assistant-step(priority:-1,
+   官方注册保留,停插件即还原;注册补 locale:"conversation" 复用官方词条注入):
+   1. AuAssistantStep/AuAssistantMarkdown 复刻官方 AssistantNodeView 逻辑:
+      text 块直调官方 MarkdownText(primitives 通道)、image 块走既有 AuImg、
+      unknown 走 JsonBlock(AU_PI 缺席时 pre 兜底)、tool-call 跳过(独立节点)、
+      interrupted 徽章保留;根/正文容器沿用官方 Sxvs8a_*(全局样式在册,几何一致)。
+   2. AuThinkCard(原型 .reasoning/.reasoning-head/.reasoning-body 类名;几何沿用
+      P15 追补 III 用户指定形态 r14/pad 10 13/hover 面,偏离原型 r12/pad 8 13 属
+      既定决策;margin 2px 0 沿用 P11 间距制):
+      - 运行态:折叠壳内单行实时流 = latestLine,行号作 key —— 同行流式追加不重播,
+        换行才 remount 重播入场(au-think-in:不透明→透明+上浮 7px+blur 2.5→0,
+        .76s cubic-bezier(.22,.75,.3,1),both 填充播完保持透明 —— 行如思绪闪现
+        后消散);图标金色呼吸(au-think-pulse 1.6s);官方横滚 ticker+金扫光退役;
+        不随单行文本量横向滚动(长行原地裁切,起点恒左对齐);
+      - 结束:running true→false 时 setOpen(false) 自动收拢(点开的也收);
+        摘要 = firstLine(.r-sum ellipsis);aria-expanded/au-sr 运行中字幕;
+      - reduced-motion:入场/呼吸动画全关;md 装饰/表格规则 scoped 到
+        assistant-step 不受影响(md 装饰瞄的是 flowItem 祖先,遮蔽不改外层)。
+   3. Ic 补 think 映射(官方 IconThinkOutline14,兜底思绪灯泡自绘);
+      旧 QWLzlG_* 换皮规则原样保留(遮蔽期成死代码,零成本防御)。
+   修订(2026-08-25,用户三处):① 不随单行文本量横向滚动 —— follow-end
+   scrollLeft 撤除,长行原地裁切,入场动画固定同一可视位置完整可赏;
+   ② 入场透明度 = 全透明→不透明(叠加已有模糊消散 blur 2.5→0;初版方向
+   系口误,当日纠正);③ 时长 .38s→.76s(慢一倍)。
+   修订 II(同日,用户两处):① 透明度方向纠正回全透明→不透明(上一轮说反);
+   ② 思考中卡壳补「执行中」背景辉光 = 工具卡 au-tool 同款 105° 金 15% 光带 +
+   au-sweep 1.9s 横扫。坑:辉光规则必须带 body:not(#aurum-boost) 前缀 ——
+   [data-state=running]::after 一揽子 90° 通用覆盖含 ID 特异性,裸类规则会被
+   盖成宽光带(探针实测 parity=false 后修正,与工具卡规则同款防御)。
+   修订 III(同日,用户报未对齐):运行态头部行 icon/Think 与右侧实时行稳态
+   错位 3.59px(r-live-wrap display:block 继承 16/28 strut,inline-block 基线
+   挂 28px 行框半行距不对称)→ wrap 改 flex + align-items:center;修后五元素
+   中心全等 delta 0,verify-think.js 固化 headAlign 断言。
+   实测(verify-think.js,新会话真实触发思考回合):runningSeen/bodyHidden ✓、
+   animName=au-think-in 0.76s(duration 760ms)✓、keyframes opacity 0→1 ✓、
+   sweep=105deg + au-sweep ✓、sweepParityWithTool=true(页内离屏探针,
+   think 卡 ::after 与工具卡 .au-main::after computed 逐字一致)✓、
+   iconAnim=au-think-pulse ✓、lineReplay=true
+   (换行后动画 currentTime 回落=key remount 重播实测)✓、maxScrollLeft=0
+   (全程零横向滚动)✓、运行中可展开 ✓、
+   done 后 autoCollapsed=true + .r-sum=firstLine + .r-live 移除 ✓、
+   Sxvs8a 正文块在册 ✓、QWLzlG_root 全程 0(接管彻底)✓;
+   回归 gate(三态零溢出)/p8b(无描边)/cards3(r14 pad10 13 button 头/双主题
+   面色 light .55)/darkskin(light bg oklab .985/.55 + JetBrains Mono)/
+    proto-diff(failures=0)全绿。
+    ── P16 修订 VIII–IX · 结算零重播 + 流卡片统一入场与紧凑化(2026-08-25)──
+    修订 VIII(用户报"输出完成后又从头重播一遍"):回合结算 streaming 翻 false,
+    官方 MarkdownText 流式⇄成稿切换整树重挂载 → 级联动画整段重播。根治:级联
+    规则限定 .Sxvs8a_root[data-streaming](我们渲染的根,仅流式期在册)——
+    动画只属于正在生成的内容;结算/历史挂载一律静态。verify-think 门禁同步
+    重构:④a 思考结束后采流式级联(think ok ≠ 正文完)、④½ 等整节点结算、
+    ⑤ markdown 根带重试(换树一瞬查空,稳态必在 —— tmp-settled-dump 实测)。
+    实测:streamingCascade(au-think-in/delays 单调)✓、settledStatic 8 块
+    animAllNone=true + anyStreamingAttr=false(结算零重播实锤)✓。
+    修订 IX(用户指定两条):① 聊天流所有卡片统一「模糊透明入场」= aurum-rise
+    升级为 au-think-in 同款签名(全透明→不透明 + blur 2.5→0 消散,1.2s 同曲线),
+    挂官方 flowItem 行全覆盖(用户气泡/上下文卡/工具卡/think 卡/正文/尾部);
+    不带 translateY(P15 追补 IV 教训:位移顶起刚滚到底的视口);fill backwards
+    —— 动画结束 filter 不残留(含 filter 元素是 fixed 后代的 containing block)。
+    ② 流内间距紧凑化:flowItem margin-bottom 12→4 + 列 Md3f7G_column gap 8→4
+    + .reasoning/.au-user-row 自身 margin 2→1 → 相邻卡实际缝 20→8px
+    (verify-cards3 flowTight:minItemSeamPx=8)。
+    事故记档(同日):一次 pwsh -replace 运算符优先级笔误把仓库 client.js 写成
+    0 字节 —— 从部署副本(最后 IN-SYNC 态,实体拷贝非链接)完整恢复后重做本轮
+    四处改动;教训:脚本化写盘前必须先断言替换结果非空。
+    实测:flowTight(entranceAnim=aurum-rise 1.2s backwards/colGap 4/marginBottom 4/
+    minSeam 8)✓;回归 gate/p8b/cards3/proto-diff/darkskin 全绿。 */
+    /* ── P17 · 三卡图标瓦片对齐 + 压缩卡接管(2026-08-25,用户两报)──
+       ① think 图标并入工具卡家族:.r-ico 裸图标(x=13)与 .au-ico 27x27 金瓦片
+          视觉错位 —— think 头改挂 au-ico+r-ico 双类(几何/金 tint 由 .au-ico 统一
+          承担,.r-ico 仅留运行态钩子);呼吸动画移到 svg(瓦片底色不闪);chev
+          11→13px 对齐 au-chev;浅色补 reasoning 底色 80% 分层(深浅同构 au-tool)。
+       ② 压缩卡双键接管:compaction(P9 旧 .compress 平推行退役)+ manual-compaction
+          (官方此前裸奔)统一 au-tool 卡壳 —— auCompactCard 内核(瓦片/au-name/
+          au-sum/胶囊/expandable 时 AuBody grid 收合 + 官方 MarkdownText 正文);
+          AuCompress 摘要复刻官方 CompactionItem 口径;AuCompactCmd 复刻官方
+          CompactionCommandCard 三分支(标记落地/仅 outcome/运行态辉光);双键
+          locale:"conversation" 注入官方词条,auT 扩插值参数对齐 t(key,params);
+          au-noexp 不可展开态去手型;Ic 补 compact 映射(官方 IconApiOutline14,
+          兜底层叠菱形);旧 .compress CSS 留作死代码防御,proto-diff 撤该行。
+       实测(verify-compact.js):离屏三卡 padL=13/瓦片 27x27/标题列 x=51 全等
+          (allEqual);真实 /compact 本环境插件不可用→error 分支落地(err 胶囊+
+          outcome 文本,语义正确),官方 gdEzaW_/_Xvjua_ 全程 0;机构探针:运行
+          辉光与工具卡逐字 parity、展开 grid 1fr+opacity 恢复+chev 90°、noexp
+          手型 default。回归 think/gate/p8b/cards3/proto-diff/darkskin 全绿
+          (darkskin 顺带修盲切测错主题旧 bug:按起始模式定向切换,dark 55%/
+          light 80% 两组实测值,量毕还原)。 */
+    /* ── P18 · think 展开并入工具卡非线性收合(2026-08-25,用户问)──
+       现状确认:think 卡确为独立实现(遮蔽 assistant-step,原型 .reasoning
+       类名体系,不在 .au-tool 家族);其展开原为 display:none⇄block 瞬切。
+       本阶段归一机构(壳仍独立):
+       - .reasoning-body 改 grid 0fr⇄1fr 壳,transition 与 .au-x 逐字同参
+         (展开 .5s/收合 .34s cubic-bezier(.45,0,.55,1));内包 .r-bclip
+         (overflow hidden 裁切)+ .r-bin(承接原 body 全部正文样式:serif
+         italic/1.9 行距/虚线顶边/pre-wrap,加 opacity+translateY 淡入,曲线
+         同 .au-in:收合 .18s/.24s 快隐,展开 .4s .06s/.5s .04s);
+       - reduced-motion:容器与内容层 transition none(au-tool 同款豁免);
+       - P16 修订 VII 决策不变:所撤为行级文字级联(au-think-in),容器高度
+         过渡与家族同款内容整体淡入不在其列。
+       实测(verify-think.js):expParity=true(transition 三元组与离屏 .au-x
+       逐字相等);插值中采样 h=88.5px/rows=12.19px(0fr→1fr 进行时),终态
+       rows 解算 765.6px + binOpacity 1;结算收拢归 0px、autoCollapsed=true;
+       Chrome 将 0fr/1fr 解算为 0px/Npx,断言按 parseFloat 口径(首跑两断言
+       误按字符串 0fr 比对已修)。回归 cards3(bodyRows 0px/flowTight 8px 缝)
+       /gate/p8b/proto-diff(0)/darkskin(深 55%/浅 80%)全绿。 */
+
+
+     /* ── 评审扫尾 · Minor 卫生清扫(2026-08-25,双评审收口)──
+        1. 铁律 6 第四次同源收尾:settingsArea 后代规则(hover/svg/折叠态
+           button/span)全部收紧到 button.VOzbGW_trigger。探针实测闭合态
+           settingsArea 仅含 trigger + 1 svg + 1 span(无 [role=button]),
+           P15 前修订 II 只收紧了几何行,这三行泛匹配一直泄漏进设置弹窗
+           (弹窗内 svg 曾被压 15px、折叠态 span 会被误隐藏);
+        2. Ic() 死分支清除:target/stop/list/image/spark/question 六个兜底
+           图标分支 + AU_ICON_OFFICIAL.question 映射(grep 全文件零调用点);
+        3. CSS1 冗余:scrollBody scroll-behavior:smooth 连写两遍,去一;
+        4. 主题激活重断言 timers 随 dispose 清理(aurumTimers 数组,停插件
+           后不再于 1.2s 内 setTheme 争夺);
+        5. renderFmenu 定位魔数(14+n*37 / 186 / 194)补 .mi/.menu 耦合注释。
+        实测:node --check 语法过;门禁 gate(展开 264×876 / 折叠 56×876 三态
+        零溢出、回展无损)/p8b(加号唯一 + 零可见边框)/css-nesting(0 吞)/
+        icons(官方图标全在册,残留仅 au-ws-ibtn 两处已知自绘)/p13(设置弹窗
+        802 r18、close 28×28 无损)/proto-diff(failures=0)全绿;探针复核
+        收紧前后触发行逐项一致(248×38 / svg 15px tertiary / 13px/20 / r10)。 */
+     /* ── P19 · 添加工作区改走系统目录选择框(2026-08-25,用户指定)──
+        「添加工作区」按钮(au-ws-ibtn folderplus)不再展开手动输入行,直接调
+        workspacesSvc.pickDirectory(host 原生文件夹选择框,本机 127.0.0.1+Windows
+        即在用户眼前弹出)—— 选中即以绝对路径 create(选完即开),取消(null)
+        静默无操作;picker 不可用(SSH/远程场景 capability 退 browse 报
+        directory-picker-unavailable)或服务缺失时回退展开原有手动输入行
+        (↵ 添加 / Esc 取消输入流原样保留)。
+        决策注:浏览器自带 picker(showDirectoryPicker/webkitdirectory)经评估
+        不可行 —— 浏览器安全沙箱不暴露所选目录的绝对路径(仅目录名),而 host
+        create 需 realpath 可解析的真实绝对路径(fs.realpath 校验,相对路径按
+        host 进程 cwd 解析必错位);用户确认采用系统原生选择框。 */
+    /* ── P20 · 分组会话列表截断:默认前 5 + 显示全部(2026-08-25,用户报面板过长)──
+       AuBrowserWide 分组视图每组默认只显前 5 行(取当前排序序 —— manual 序即
+       手动置顶优先),尾部追加 .au-s-more「显示全部 N 条」钮(mono 11px
+       tertiary,hover 金,focus 金环,无描边);点击展开全量、按钮转「收起」
+       可切回,aria-expanded 同步;more 状态为内存态不持久化(刷新复位)。
+       搜索/平铺视图走 results/flatAll 分支,天然不受截断影响。
+       实测(verify-sbmore.js):dsh-theme-aurum 组 53 条 → 默认 5 行,点开
+       53 行 + 按钮转「收起」,收起复位 5 行;平铺 88 行全量、0 截断钮;
+       verify-gate 三态 264×876 / 56×876 零溢出无回归;深浅双色目检过
+       (verify-sbmore-light.js,token 双色自适应,浅色 4.5:1 可读)。 */
+     /* ── P21 · todo 清单条可折叠(2026-08-25,用户指定:聊天栏上部 TODO 清单)──
+        AuTodoBar 重构:头部行(清单 n/m + goal-track 进度条 + .todo-fold 折叠
+        钮)常显;todo-items 胶囊区移入 .todo-foldwrap>.todo-foldin,grid-rows
+        0fr⇄1fr + 淡隐收合(与侧栏 .au-slist 同机构)。默认折叠(用户拍板),
+        内存态不持久化;chevdown 收起转 -90° 指右(与分组头 chev2 同语言);
+        aria-expanded 同步。空行陷阱:.todo-bar row-gap 归零 + 展开间距走
+        .todo-foldwrap margin-top 过渡 —— 折叠后的空行不再吃 11px 行距
+        (实测 49px→38px 精确命中 min-height)。reduced-motion 档补丁同步。
+        实测(verify-todofold.js):6 项 todo 折叠 38px/胶囊区 0px/aria false,
+        展开 133px/胶囊区 84px/aria true,收起复位;gate/p10/sbmore 回归
+        全绿;深浅双色目检过(verify-todofold-light.js)。 */
+      /* ── P22 · 非 chat view 让位浮头(2026-08-26,用户报:切 tab 后内容顶屏幕顶)──
+         现象:header 已改 absolute 浮头(70px 渐变纱),但让位只做在 chat 的
+         Md3f7G_scroll(padding-top:86)—— 轨迹(qBU-ya_*)/数据库(dbb-*)等
+         conversation.view 注册者 y=0 直接顶屏幕顶,首行被纱遮住。
+         方案:viewArea 自身 padding-top:86 统一让位(未来插件新 view 自动覆盖,
+         不逐类名点名);chat 例外 —— Md3f7G_root margin-top:-86 拉回,
+         [data-conversation-scroll] 模式下滚动容器是外层 wSkVaW_scrollBody,
+         viewArea 在滚动流内,padding 与负 margin 净效果为零,穿纱渐隐语义
+         原样保留。曾试 viewArea>:not(.Md3f7G_root) 打在 view 根 —— 中间隔着
+         官方 display:contents 的 provider wrapper(无类名),padding 穿不透,废案。
+         移动端(≤820)同步 130px(header 两行)。
+         实测(verify-viewyield.js):轨迹/数据库首元素 y 0→86(>纱底 70),chat
+         顶滚后首内容 y=86 不变,margin/pad 三值断言过;深浅双色全绿;
+         gate/p8b/proto-diff 回归无回归。 */
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
 const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -634,9 +852,12 @@ const CSS1 = [
      button(close/navCell/actions)全被拉成 100%×38(叉 28×28 → 498×38)。
      收紧到真正的目标:侧栏设置触发钮 */
   "body [data-slot=sidebar] button.VOzbGW_trigger{display:flex;align-items:center;gap:10px;width:100%;height:38px;margin:0;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
-  "body [data-slot=sidebar] [class*=settingsArea] button:hover,body [data-slot=sidebar] [class*=settingsArea] [role=button]:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
-  "body [data-slot=sidebar] [class*=settingsArea] svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
-  "body [data-slot=sidebar] [class*=settingsArea] :hover>svg,body [data-slot=sidebar] [class*=settingsArea] button:hover svg{color:var(--aurum-gold)}",
+  /* 评审扫尾(2026-08-25):hover/svg/折叠态三行同步收紧 —— 探针实测闭合态
+      settingsArea 仅含 button.VOzbGW_trigger + 1 svg + 1 span(无 [role=button]),
+      泛匹配后代规则会泄漏进设置弹窗(svg 曾被压 15px) */
+  "body [data-slot=sidebar] button.VOzbGW_trigger:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
+  "body [data-slot=sidebar] button.VOzbGW_trigger svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
+  "body [data-slot=sidebar] button.VOzbGW_trigger:hover svg{color:var(--aurum-gold)}",
   /* P8c 折叠细条:顶部 logo/新建/搜索由 AuBrowserRail 自建(原型 .sb-rail),
      由 AuBrowserRail 自建(原型 .sb-rail),官方 logoRow/newSession 隐藏;底部设置/主题钮保留 */
   "body [data-slot=sidebar] [class*=collapsed] [class*=logoRow]{display:none}",
@@ -645,18 +866,21 @@ const CSS1 = [
   "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
   "body [data-slot=sidebar] [class*=collapsed] .aurum-footRow span{display:none}",
   "body [data-slot=sidebar] [class*=collapsed] [class*=footerActions],body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea]{align-items:center}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] button,body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] [role=button]{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
-  "body [data-slot=sidebar] [class*=collapsed] [class*=settingsArea] span{display:none}",
+  "body [data-slot=sidebar] [class*=collapsed] button.VOzbGW_trigger{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
+  "body [data-slot=sidebar] [class*=collapsed] button.VOzbGW_trigger span{display:none}",
   /* P9:逐节点入场(原型 .node rise)——挂在官方 flowItem 行上;列 gap16+行距12=原型 .node 28px 节奏 */
   /* P15 追补 IV:消息流滚动缓动(用户报新节点出现时"跳一下")—— 官方滚动容器
      wSkVaW_scrollBody 为 scroll-behavior:auto,每条新消息/工具调用出现时以
      scrollTop 直赋瞬跳到底。smooth 覆盖后 JS 直赋也被 CSS 平滑接管(规格行为)。 */
   "body .wSkVaW_scrollBody{scroll-behavior:smooth}",
-  "body [data-chat-anchor-key]{margin-bottom:12px;animation:aurum-rise .6s cubic-bezier(.22,.8,.26,1) both}",
-  /* 追补 IV 续:rise 的 translateY(12px) 会让刚被滚到底的视口再被顶起一下,
-     新节点改纯淡入(原地),滚动交给上面的 smooth;时长略缩(0.6→0.42)更利落 */
-  "@keyframes aurum-rise{from{opacity:0}}",
-  "body [data-chat-anchor-key]{animation-duration:.42s}",
+  /* P16 修订 IX(用户指定):聊天流所有卡片统一「模糊透明入场」= au-think-in 同款
+     签名(全透明→不透明 + blur 2.5→0 消散,1.2s 同曲线)—— 挂官方 flowItem 行,
+     用户气泡/上下文卡/工具卡/think 卡/正文/尾部节点全覆盖;不带 translateY
+     (P15 追补 IV 教训:位移会顶起刚滚到底的视口,保持原地入场);fill backwards
+     —— 动画结束后 filter 不残留(含 filter 元素是 fixed 后代的 containing
+     block,常驻有险)。margin-bottom 12→4 + 列 gap 8→4 = 流内间距 20→8px。 */
+  "body [data-chat-anchor-key]{margin-bottom:4px;animation:aurum-rise 1.2s cubic-bezier(.22,.75,.3,1) backwards}",
+  "@keyframes aurum-rise{from{opacity:0;filter:blur(2.5px)}to{opacity:1;filter:blur(0)}}",
   /* ── P9 残留 · sh-head 主区头部(官方 DOM 瞄准 wSkVaW_*,原型 §5 sh-head/tabs)──
      官方=76px 双行带(标题行32+tabs行27),原型=单行浮头(高70);不重排 DOM,只换皮:
      mono 弱化 chips、tabs 胶囊右置金 on。(渐隐底纱 2026-08-24 撤:用户不要主区任何背景色) */
@@ -700,6 +924,14 @@ const CSS1 = [
   "body .wSkVaW_tabs{order:1;display:flex;gap:2px;margin:0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
   /* 滚动区顶部让位浮头(70 纱高 + 16 原留白),消息初始态在纱下方完整可见 */
   "body .Md3f7G_scroll{padding-top:86px}",
+   /* 非 chat view(轨迹/数据库/未来插件 view)让位浮头(用户报:切 tab 后内容顶屏幕顶,
+      被渐变纱遮挡)。viewArea 与各 view 根之间隔着官方 display:contents 的 provider
+      wrapper(无类名,padding 无法穿透),故让位做在 viewArea 自身(真实 flex 盒);
+      chat 在 Md3f7G_root 负 margin 拉回 y=0 + Md3f7G_scroll 的 padding-top:86 让位
+      (消息从纱下穿行渐隐,设计意图不变);flex:auto 下负 margin 参与 flex 分配,
+      chat 总高恰填满 viewArea 内容盒再上探 padding 区,底部不溢出 */
+   "body .wSkVaW_viewArea{padding-top:86px}",
+   "body .Md3f7G_root{margin-top:-86px}",
   /* tab 选中态去横杠(官方 :after 2px 底线),选中仅以胶囊金底呈现(原型 .tab.on) */
   "body .wSkVaW_tab:after{display:none}",
   "body .wSkVaW_tab{padding:5px 15px;border-radius:999px;font-size:12.5px;color:var(--muted);transition:.18s;white-space:nowrap}",
@@ -720,6 +952,92 @@ const CSS1 = [
   "body .QWLzlG_root .QWLzlG_chevron{transform:rotate(90deg)}",
   "body .QWLzlG_thinkBody{font-family:var(--font-serif);font-style:italic;font-size:13px;line-height:1.9;color:var(--muted);padding:11px 15px 13px;margin:0 13px;border-top:1px dashed color-mix(in oklab,var(--muted) 25%,transparent)}",
   "body .QWLzlG_root[data-state=running] .QWLzlG_row:after{background:linear-gradient(90deg,transparent 0%,color-mix(in oklab,var(--gold) 16%,transparent) 55%,transparent 100%)}",
+  /* ── P16 · think 卡接管(遮蔽 assistant-step;AuThinkCard 原型 .reasoning 类名)──
+     完成态几何沿用 P15 追补 III 用户指定形态(r14 卡壳/pad 10 13/hover 面/chevron 旋转,
+     偏离原型 r12/pad 8 13 属既定用户决策);运行态 = 单行实时流:行号 key 变化驱动
+     remount,每换一行重播入场;官方横滚 ticker + 金扫光退役;图标金色呼吸;
+     思考结束自动收拢(组件 effect);正文 serif italic 与原 thinkBody 一致;
+     margin 2px 0 沿用 P11 修订间距制(原型 mb14 已被间距制取代)。
+     P16 修订(2026-08-25,用户三处):① 不随单行文本量横向滚动 —— follow-end
+     scrollLeft 撤除,长行原地裁切(r-live-wrap overflow hidden,起点恒左对齐),
+     入场动画固定在同一可视位置完整可赏;② 入场透明度 = 全透明→不透明
+     (叠加已有模糊消散 blur 2.5→0;初版方向系口误,当日纠正);
+     ③ 时长 .38s→.76s(慢一倍)。
+     P16 修订 II(同日,用户两处):① 透明度方向纠正回全透明→不透明(上一轮
+     说反);② 思考中卡壳补「执行中」背景辉光 = 工具卡 au-tool 同款光带
+     (105° 金 15%)+ au-sweep 1.9s 横扫,扫过整张卡(reduced-motion 关)。
+     P16 修订 III(同日,用户报未对齐):运行态头部行稳态错位 —— .r-live-wrap
+     原为 display:block,继承头部行 16/28 strut,12/19.2 的 inline-block 文本
+     按基线挂上 28px 行框,半行距不对称压低文本 3.59px;修:wrap 改
+     display:flex + align-items:center(strut 消失,文本中心=wrap 中心)。
+     探针实测:修前 live 中心 +3.59,修后 icon/Think/wrap/live/chev 五元素
+     中心全等(delta 0);verify-think.js 固化 headAlign 断言(≤1.2px)。
+     P16 修订 IV(同日,用户指定):正文 = 运行态同款透明模糊错峰级联 —— 按 \n
+     拆行(.r-line,key=行号),展开时整段重播,流式新行单独入场,空行 nbsp
+     保行高;断言口径同步(sumIsFirstLine 改在展开后由行重构全文比对)。
+     修订 V/VI(同日,用户两报):V = 初版 min(i,8)*50 封顶致 9+ 行同时入场
+     成块 → 递减步长;VI = 行时长 .76→1.2s、步长 70/30ms(相位差放大肉眼
+     可辨,运行态单行保持 .76s);公式 min(i,12)*70+(i-12)*30,每行独立
+     delay,strictlyDistinct/flatRuns 断言在册。
+     修订 VII(同日,用户澄清):「正文」= 模型输出的 markdown,非 thinking
+     展开体 —— .r-line 行级级联全撤(thinking 展开还原普通文本,无动画);
+     错峰级联移到 assistant 正文:官方 MarkdownText 根 div[class*=_markdown_]
+     的块级子元素(p/ul/pre/table…)统一 au-think-in 1.2s,delay 阶梯
+     nth-child 1-12 ×70ms(AU_MD_STAGGER 生成)、12+ 恒 .77s;历史挂载整段
+     波纹,流式新段落单独入场(React 按位 reconcile 老段落不重播);标签限定
+     div[class*=_markdown_] 不误伤 think 卡(铁律 6)。实测:3 块 firstDelays
+     [0,.07,.14]s 单调、animAllSame、thinkBodyAnim=none、.r-line=0;回归
+     gate/p8b/cards3/proto-diff 全绿。 */
+  "body [data-chat-flow-kind=assistant-step] .reasoning{border:1px solid transparent;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);border-radius:14px;margin:1px 0;overflow:hidden}",
+   /* P17:浅色下 reasoning 底色对齐 au-tool 家族(80% 不透明度,深浅同构) */
+   "body:not([data-ds-dark-theme]) [data-chat-flow-kind=assistant-step] .reasoning{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
+  /* P16 修订 II:思考中卡壳同款「执行中」辉光 —— 与 au-tool .au-main::after 同构:
+     105° 金 15% 光带 + au-sweep 1.9s 横扫,扫过整张卡;规则必须带
+     body:not(#aurum-boost) 前缀(ID 特异性压过 [data-state=running]::after 一揽子
+     90° 通用覆盖,与工具卡规则同款防御 —— 探针实测不带前缀会被盖成 90° 宽光带);
+     verify-think.js 页内探针断言 computed parity;reduced-motion 与工具卡同
+     display:none */
+  "body [data-chat-flow-kind=assistant-step] .reasoning[data-state=running]{position:relative}",
+  "body:not(#aurum-boost) [data-chat-flow-kind=assistant-step] .reasoning[data-state=running]::after{content:\"\";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 42%,color-mix(in oklab,var(--aurum-gold-strong) 15%,transparent) 50%,transparent 58%);animation:au-sweep 1.9s linear infinite}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning-head{display:flex;align-items:center;gap:11px;width:100%;padding:10px 13px;border:none;background:transparent;cursor:pointer;user-select:none;text-align:left;font:inherit;transition:background .15s}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning-head:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
+   /* P17:think 图标并入 .au-ico 27x27 金瓦片家族(与工具卡/上下文卡水平对齐:
+      瓦片 x=13 / glyph x=19.5 / 标题列 x=51 三卡全等;几何与配色由 .au-ico 承担,
+      .r-ico 仅留作运行态钩子 —— 呼吸动画移到 svg,瓦片底色不闪烁) */
+  "body [data-chat-flow-kind=assistant-step] .reasoning[data-state=running] .r-ico svg{animation:au-think-pulse 1.6s ease-in-out infinite}",
+  "body [data-chat-flow-kind=assistant-step] .r-title{flex:none;font-family:var(--font-mono);font-weight:400;font-size:12.5px;letter-spacing:.04em;color:var(--dsw-alias-label-primary)}",
+  "body [data-chat-flow-kind=assistant-step] .r-live-wrap{flex:1;min-width:0;display:flex;align-items:center;overflow:hidden;white-space:nowrap}",
+  "body [data-chat-flow-kind=assistant-step] .r-sum{display:block;overflow:hidden;text-overflow:ellipsis;font-family:var(--ds-font-family-code);font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary)}",
+  "body [data-chat-flow-kind=assistant-step] .r-live{display:inline-block;font-family:var(--ds-font-family-code);font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary);animation:au-think-in .76s cubic-bezier(.22,.75,.3,1) both}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning-head .chev{display:inline-flex;flex:none;width:13px;height:13px;color:var(--dsw-alias-label-tertiary);transition:transform .25s}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning-head .chev svg{width:13px;height:13px}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning.open .chev{transform:rotate(90deg)}",
+   "body [data-chat-flow-kind=assistant-step] .reasoning-body{display:grid;grid-template-rows:0fr;margin:0 13px;transition:grid-template-rows .34s cubic-bezier(.45,0,.55,1)}",
+   "body [data-chat-flow-kind=assistant-step] .reasoning.open .reasoning-body{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
+    /* P18:think 展开并入 au-tool 非线性收合 —— .reasoning-body 变 grid 0fr⇄1fr 壳
+       (同 .au-x 曲线:展开 .5s/收合 .34s cubic-bezier(.45,0,.55,1));.r-bclip 裁切;
+       .r-bin 承载正文样式 + opacity/translateY 淡入(同 .au-in 逐字曲线)。 */
+   "body [data-chat-flow-kind=assistant-step] .r-bclip{overflow:hidden;min-height:0}",
+   "body [data-chat-flow-kind=assistant-step] .r-bin{padding:11px 15px 13px;border-top:1px dashed color-mix(in oklab,var(--muted) 25%,transparent);font-family:var(--font-serif);font-size:13px;line-height:1.9;color:var(--muted);font-style:italic;white-space:pre-wrap;word-break:break-word;opacity:0;transform:translateY(-6px);transition:opacity .18s ease,transform .24s cubic-bezier(.45,0,.55,1)}",
+   "body [data-chat-flow-kind=assistant-step] .reasoning.open .r-bin{opacity:1;transform:none;transition:opacity .4s .06s ease,transform .5s .04s cubic-bezier(.45,0,.55,1)}",
+  /* P16 修订 VII/VIII(用户澄清:「正文」= 模型输出的 markdown,非 thinking 展开):
+     thinking 展开体撤动画(还原普通 pre-wrap 文本);错峰级联移到 assistant 正文
+     —— 官方 MarkdownText 根(div[class*=_markdown_])的块级子元素
+     (p/ul/pre/table…)同款 au-think-in(透明→不透明+模糊消散 1.2s)。
+     修订 VIII(用户报"输出完成后又从头重播一遍"):根因 = 回合结算 streaming 翻
+     false,官方 MarkdownText 流式⇄成稿切换整树重挂载,全部块都是新 DOM,CSS
+     无法区分初次挂载与结算重挂载 → 动画整段重播。根治:规则限定
+     .Sxvs8a_root[data-streaming](我们渲染的根,仅流式期在册)—— 动画只属于
+     正在生成的内容:流式块照常错峰;结算瞬间属性摘除,重挂载块直接静态呈现;
+     历史会话挂载亦静态(不重播)。delay 阶梯 nth-child 1-12 ×70ms
+     (AU_MD_STAGGER 生成),12+ 恒 770ms;标签限定不误伤 think 卡(铁律 6) */
+  "body [data-chat-flow-kind=assistant-step] .Sxvs8a_root[data-streaming] div[class*=_markdown_]>*{animation:au-think-in 1.2s cubic-bezier(.22,.75,.3,1) both;animation-delay:.77s}",
+  "body [data-chat-flow-kind=assistant-step] .au-imgs{display:flex;flex-wrap:wrap;gap:10px;margin:2px 0}",
+  "body [data-chat-flow-kind=assistant-step] .au-md-fallback{white-space:pre-wrap;font-size:16px;line-height:28px;color:var(--dsw-alias-label-primary)}",
+  "body [data-chat-flow-kind=assistant-step] .au-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}",
+  "@keyframes au-think-in{from{opacity:0;transform:translateY(7px);filter:blur(2.5px)}to{opacity:1;transform:translateY(0);filter:blur(0)}}",
+  "@keyframes au-think-pulse{50%{opacity:.45}}",
+  "@media (prefers-reduced-motion:reduce){body [data-chat-flow-kind=assistant-step] .r-live,body [data-chat-flow-kind=assistant-step] .Sxvs8a_root[data-streaming] div[class*=_markdown_]>*{animation:none}body [data-chat-flow-kind=assistant-step] .reasoning[data-state=running] .r-ico svg{animation:none}body [data-chat-flow-kind=assistant-step] .reasoning[data-state=running]::after{display:none}body [data-chat-flow-kind=assistant-step] .reasoning-body,body [data-chat-flow-kind=assistant-step] .r-bin{transition:none!important}}",
   /* ── P15 追补 III · 运行态状态行 = 原型三点跳动(用户指定,替换 Deep diving 滚字)──
      官方 Md3f7G_turnStatus(shimmer 文字+时钟)整体改造:元素=点1,::before/::after=
      点2/3(5px 金点,bob 1.2s,delay 0/.15/.3 —— 原型 .t-dots 逐字参数);文字/
@@ -843,7 +1161,7 @@ const CSS1 = [
 ];
 
 const CSS2 = [
-  ".au-user-row{display:flex;justify-content:flex-end;margin:2px 0}",
+  ".au-user-row{display:flex;justify-content:flex-end;margin:1px 0}",
   ".au-bubble{max-width:min(525px,82%);border-radius:22px;padding:13px 19px;background:linear-gradient(135deg,color-mix(in oklab,var(--aurum-gold-strong) 16%,transparent),color-mix(in oklab,var(--aurum-gold-strong) 7%,transparent));font-family:var(--dsw-font-markdown-base-font-family);font-size:15px;line-height:1.85;color:var(--dsw-alias-label-primary);white-space:pre-wrap;word-break:break-word}",
   ".au-img{max-width:100%;border-radius:14px;display:block;margin-top:8px}",
   /* P15 追补 III:◈ 上下文注入 = au-tool 同款卡壳(用户指定,替换追补 II 悬停方案)——
@@ -864,12 +1182,18 @@ const CSS2 = [
   ".au-ctx-card.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
   ".au-ctx-card .au-clip{overflow:hidden;min-height:0}",
   ".au-ctx-card .au-in{padding:2px 15px 13px 51px}",
+  /* P15 追补 VII:通用 .au-in 带 opacity:0 淡入,恢复规则只写了 .au-tool.au-open,
+     ctx 卡漏配 → 展开后高度撑开但内容永远透明(用户报"展开无内容")。补齐同曲线恢复 */
+  ".au-ctx-card.au-open .au-in{opacity:1;transform:none;transition:opacity .4s .06s ease,transform .5s .04s cubic-bezier(.45,0,.55,1)}",
   ".au-ctx-full{font-family:var(--ds-font-family-code);font-size:11px;line-height:1.8;color:var(--dsw-alias-label-secondary);white-space:pre-wrap;word-break:break-all;max-height:260px;overflow:auto;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 40%,transparent);border-radius:8px;padding:9px 12px}",
   "@media (prefers-reduced-motion:reduce){.au-ctx-card .au-x,.au-ctx-card .au-chev{transition:none!important}}",
   ".au-callrow{margin:0}",
   ".au-fstat{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-right:auto}",
   ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
   "body:not([data-ds-dark-theme]) .au-tool{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
+   /* P17:压缩卡(au-comp)复用 au-tool 卡壳 —— 不可展开态(noexp)去手型与悬停底色 */
+   ".au-tool.au-noexp .au-main{cursor:default}",
+   ".au-tool.au-noexp .au-main:hover{background:transparent}",
   ".au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none}",
   ".au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
   ".au-ico{width:27px;height:27px;border-radius:8px;flex:none;display:grid;place-items:center;background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);color:var(--aurum-gold-strong)}",
@@ -1020,6 +1344,10 @@ const CSS2 = [
   ".au-s-abtn{height:26px;padding:0 10px;border:none;border-radius:8px;background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 60%,transparent);color:var(--dsw-alias-label-secondary);font:400 11.5px/1 var(--dsw-font-family);cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:color .15s,background .15s}",
   ".au-s-abtn:hover{color:var(--aurum-gold-strong);background:color-mix(in oklab,var(--aurum-gold) 12%,transparent)}",
   ".au-s-abtn.au-danger:hover{color:var(--dsw-alias-state-error-primary);background:var(--dsw-alias-interactive-bg-hover-danger)}",
+  /* 分组截断「显示全部/收起」钮:mono 小字 tertiary,hover 金(无描边,随主题 token 双色自适应) */
+  ".au-s-more{display:flex;align-items:center;justify-content:center;height:24px;margin:2px 0 3px;padding:0 8px;border:none;border-radius:8px;background:transparent;color:var(--dsw-alias-label-tertiary);font:400 11px/1 var(--ds-font-family-code);letter-spacing:.03em;cursor:pointer;transition:color .15s,background .15s}",
+  ".au-s-more:hover{color:var(--aurum-gold-strong);background:var(--dsw-alias-interactive-bg-hover-solid)}",
+  ".au-s-more:focus-visible{outline:none;box-shadow:0 0 0 2.5px color-mix(in oklab,var(--aurum-gold) 28%,transparent)}",
   ".au-ws-empty{padding:18px 16px;font-size:12px;color:var(--dsw-alias-label-tertiary);text-align:center}",
   /* P8c:细条容器=原型 .sb-rail 几何(padding 9 0 12,logo 中心线 12+9+20=41 与主区标题同轴);
      淡入 delay .18s 等面板先收窄(原型 sb-rail .26s .18s 交叉淡切的挂载近似) */
@@ -1076,7 +1404,7 @@ const CSS3 = [
   /* ── P11 修订:卡片间距收窄(用户要求)── 官方会话流列 gap16 是大头,
      叠加各卡自身 margin 后相邻工具卡实际隔 ~24px;gap 降 8 + 卡 margin 收拢
      → 相邻卡 ~10px。列 gap 同时管用户气泡/正文/尾节间距,整体一并收紧 */
-  "body .Md3f7G_column{gap:8px}",
+  "body .Md3f7G_column{gap:4px}",
   /* ── md 装饰(scoped 到 assistant-step 节点,不伤工具卡/上下文行)── */
   /* 列宽对齐原型 .flow 内容宽 712:官方在 viewArea→root→scroll 多层重定义 token,
      就近继承压不过 —— 挂 [data-conversation-scroll] 结构锚并对全部后代逐元素定义
@@ -1089,12 +1417,21 @@ const CSS3 = [
   "[data-chat-flow-kind=assistant-step] li::before{content:\"◆\";position:absolute;left:0;top:0;font-size:8px;color:var(--gold-dim);line-height:2.6}",
   "[data-chat-flow-kind=assistant-step] li b{color:var(--fg);font-weight:500}",
   "body [data-chat-flow-kind=assistant-step] :not(pre)>code{font-family:var(--font-mono);font-size:12.5px!important;line-height:1.36;color:var(--gold);background:var(--surface-2);border-radius:6px;padding:1px 6px}",
-  /* P15 微调:表格分隔线修复 —— 无描边原则把 --dsw-alias-border-* 全设 transparent,
-     官方 md 表格 td/th 分隔线正消费这些 token → 网格消失。scoped 到 assistant-step
-     逐元素直写恢复:fg tint 分隔线(与 .menu-sep 同族)+ 表头 surface-2 底 + 行距 */
-  "body [data-chat-flow-kind=assistant-step] table{border-collapse:collapse;margin:8px 0 14px;font-size:13px;line-height:1.75}",
-  "body [data-chat-flow-kind=assistant-step] th,body [data-chat-flow-kind=assistant-step] td{border:1px solid color-mix(in oklab, var(--fg) 12%, transparent);padding:6px 12px;text-align:left}",
-  "body [data-chat-flow-kind=assistant-step] thead th,body [data-chat-flow-kind=assistant-step] tr:first-child td{background:color-mix(in oklab, var(--surface-2) 70%, transparent);color:var(--fg);font-weight:500;border-bottom-width:1.5px}",
+  /* P15 追补 VIII:表格可读性重制(2026-08-25,用户报分割线看不到)──
+     P15 微调 v1 根因判断无误(--dsw-alias-border-* 被无描边原则置空,官方 md
+     表格 td/th 消费之),但 fg 12% tint 在深底(L0.21)仅提亮约 9 个百分点,
+     1px 线肉眼不可见。本次:横线 fg 22% / 竖线 fg 16% 分档(border-color 双值),
+     表头底线鎏金化(gold 45% 1.5px),偶数行 surface-2 45% 斑马 tint;
+     修 v1 选择器误伤 —— tr:first-child td 同时命中普通表格首行数据
+     (实测首行数据格吃到表头底色),收窄为 table>tbody:first-child>tr:first-child
+     (仅无 thead 的表把首行按表头处理);撤 table 级 13px 字号 —— 官方
+     --dsw-font-markdown-table(14.5px/25px serif)以 font shorthand 直落
+     单元格,恒胜继承,实测 td 14.5px,留着误导 */
+  "body [data-chat-flow-kind=assistant-step] table{border-collapse:collapse;margin:8px 0 14px}",
+  "body [data-chat-flow-kind=assistant-step] th,body [data-chat-flow-kind=assistant-step] td{padding:6px 12px;text-align:left;border-style:solid;border-width:1px;border-color:color-mix(in oklab, var(--fg) 22%, transparent) color-mix(in oklab, var(--fg) 16%, transparent)}",
+  "body [data-chat-flow-kind=assistant-step] thead th{background:color-mix(in oklab, var(--surface-2) 70%, transparent);color:var(--fg);font-weight:500;border-bottom:1.5px solid color-mix(in oklab, var(--gold) 45%, transparent)}",
+  "body [data-chat-flow-kind=assistant-step] table>tbody:first-child>tr:first-child td{background:color-mix(in oklab, var(--surface-2) 70%, transparent);color:var(--fg);font-weight:500;border-bottom:1.5px solid color-mix(in oklab, var(--gold) 45%, transparent)}",
+  "body [data-chat-flow-kind=assistant-step] tbody tr:nth-child(even) td{background:color-mix(in oklab, var(--surface-2) 45%, transparent)}",
   /* ── 滚动条几何(原型 §2)── */
   "body ::-webkit-scrollbar{width:10px;height:10px}",
   "body ::-webkit-scrollbar-thumb{background:color-mix(in oklab, var(--muted) 26%, transparent);border-radius:8px;border:3px solid transparent;background-clip:content-box}",
@@ -1150,6 +1487,20 @@ const CSS3 = [
   ".todo-it.now .td{background:var(--gold-strong);animation:au-pulse 1.2s infinite}",
   ".goal-track{width:130px;height:4px;border-radius:99px;background:var(--surface-2);overflow:hidden;flex:none}",
   ".goal-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--gold-dim),var(--gold) 55%,var(--rose));transition:width .8s cubic-bezier(.22,.8,.26,1)}",
+  /* ── P21 · todo-bar 折叠(用户指定):头部行常显(清单 n/m + 进度条 + 折叠钮),
+     胶囊区收进 .todo-foldwrap grid 0fr⇄1fr(与侧栏 .au-slist 同机构);折叠钮
+     chevdown 收起转 -90° 指右(与分组头 chev2 同语言);flex-basis:100% 独占
+     换行,折叠后高度 0(min-height:38 头部行兜底)── */
+  ".todo-fold{margin-left:auto;flex:none;width:22px;height:22px;border:none;border-radius:7px;display:grid;place-items:center;background:transparent;color:var(--muted);cursor:pointer;transition:color .15s,background .15s;padding:0}",
+  ".todo-fold:hover{color:var(--gold-strong);background:color-mix(in oklab, var(--gold) 13%, var(--surface-2))}",
+  ".todo-fold:focus-visible{outline:none;box-shadow:0 0 0 2.5px color-mix(in oklab, var(--gold) 28%, transparent)}",
+  ".todo-fold svg{width:13px;height:13px;transition:transform .26s cubic-bezier(.22,.8,.26,1)}",
+  ".todo-bar.au-tdclosed .todo-fold svg{transform:rotate(-90deg)}",
+  ".todo-bar{row-gap:0}",
+  ".todo-foldwrap{flex-basis:100%;min-width:0;display:grid;grid-template-rows:1fr;margin-top:11px;transition:grid-template-rows .32s cubic-bezier(.22,.8,.26,1),margin-top .32s cubic-bezier(.22,.8,.26,1)}",
+  ".todo-bar.au-tdclosed .todo-foldwrap{grid-template-rows:0fr;margin-top:0}",
+  ".todo-foldin{min-height:0;overflow:hidden;opacity:1;transition:opacity .2s ease .05s}",
+  ".todo-bar.au-tdclosed .todo-foldin{opacity:0;transition:opacity .14s ease}",
   /* ── P14 · 响应式降档(原型 §10;抽屉不适用:官方 ≤900 自动 68px 折叠轨,
      无抽屉 DOM —— 跟随官方折叠行为,只做逐档降密度)── */,
   /* P15 追补 VI:窄屏 header 上下两行 —— 上行标题,下行 tabs+按钮(修标题被挤) */
@@ -1162,6 +1513,14 @@ const CSS3 = [
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
   "body .Md3f7G_scroll{padding-top:130px}",
+   "body .wSkVaW_viewArea{padding-top:130px}",
+   "body .Md3f7G_root{margin-top:-130px}",
+  /* P15 追补 IX:追补 VI 的 @media(max-width:820px) 在此闭合 —— 原先漏了配对 "}",
+     一路吞到追补 V 抽屉块自己的 "}"(只闭了内层),外层被 EOF 静默闭合;导致
+     P11 .kid 子调用样式、P10 todo-bar 宽度适配、全局 reduced-motion 全部只对
+     ≤820 生效,桌面端失效 —— todo 面板 flex:1 在 composerStack 行向 flex 里
+     拉满整行(实测 1150px vs 输入卡 780px),即用户报"横向占据整个容器" */
+  "}",
   "@media (max-width:640px){body .wSkVaW_tab{padding:4px 11px;font-size:12px}body .au-bubble{font-size:14.5px;max-width:90%}body .goal-track{width:64px}body .FJxK0a_sep{margin:0 6px}body .FJxK0a_root{font-size:9.5px}}",
   "@media (max-width:480px){body .todo-bar{min-width:100%}body .au-name em{display:none}body .turn-tail .tx{font-size:9.5px;letter-spacing:.02em}body .todo-it{font-size:10.5px}body .au-srow .au-s-title{font-size:11.5px}}",
   /* ── P11 · §7 子调用(整段拷贝;AuToolCallTree 消费)── */
@@ -1175,7 +1534,7 @@ const CSS3 = [
      官方 input.dock 是卡上方的 column-flex 区 —— flex:1 会变纵向拔高;
      改按官方 TodoDock(lXshSW_root)同形几何:与输入卡对齐、居中、不拔高 */
   ".todo-bar{flex:none;box-sizing:border-box;width:calc(100% - var(--dsh-composer-side-clearance)*2 - var(--dsh-composer-dock-inset)*4);max-width:calc(var(--dsh-composer-card-max-width) - var(--dsh-composer-dock-inset)*4);margin:0 auto}",
-  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}.au-slist,.au-slist-in,.au-ws-ic svg{transition:none!important}.au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:none!important}}",
+  "@media (prefers-reduced-motion:reduce){[data-chat-anchor-key]{animation:none}.compress-head .chev{transition:none}.a-actions{transition:none}.au-ws-rail,.au-ws.au-ws-wide,.menu.open{animation:none!important}.goal-fill{transition:none}.au-slist,.au-slist-in,.au-ws-ic svg{transition:none!important}.todo-foldwrap,.todo-foldin,.todo-fold svg{transition:none!important}.au-wsg:not(.au-closed) .au-slist-in .au-srow{animation:none!important}}",
   /* ── P15 追补 V · 移动端(≤820)顶栏 + 抽屉(用户指定):官方 ≤900 自动折叠
      68px 竖轨占屏;窄屏改为 grid 两行 —— 侧栏列 = 48px 顶栏(rail 横排钮组,
      rail-logo 即抽屉开关),完整浏览器自左侧抽屉滑入(遮罩/Esc/选中关闭)── */
@@ -1205,7 +1564,15 @@ const CSS3 = [
 
 ];
 
-const CSS = CSS1.concat(CSS2, CSS3).join("\n");
+/* P16 修订 VII/VIII:assistant 正文错峰阶梯 —— MarkdownText 块级子元素
+   nth-child 1-12 ×70ms(12+ 由基规则恒 .77s);限定 [data-streaming](流式期,
+   结算/历史挂载不重播);生成后随 CSS 数组拼接,避免手写 12 条 */
+const AU_MD_STAGGER = [];
+for (let i = 1; i <= 12; i++) {
+  AU_MD_STAGGER.push("body [data-chat-flow-kind=assistant-step] .Sxvs8a_root[data-streaming] div[class*=_markdown_]>*:nth-child(" + i + "){animation-delay:" + ((i - 1) * 70) + "ms}");
+}
+
+const CSS = CSS1.concat(CSS2, CSS3, AU_MD_STAGGER).join("\n");
 
 const h = React.createElement;
 
@@ -1282,17 +1649,14 @@ function Ic(kind, cls) {
   if (kind === "branch") return h("svg", a, h("circle", { cx: 6, cy: 6, r: 2.5 }), h("circle", { cx: 6, cy: 18, r: 2.5 }), h("circle", { cx: 18, cy: 8, r: 2.5 }), h("path", { d: "M6 8.5v7M6 13c6 0 6-3 10.5-3.5" }));
   if (kind === "retry") return h("svg", a, h("path", { d: "M21 12a9 9 0 1 1-2.6-6.3M21 4v5h-5" }));
   if (kind === "error") return h("svg", Object.assign({}, a, { strokeWidth: 1.9 }), h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M12 8v4.5M12 16h.01" }));
-  /* P11:兜底/新工具类型图标 */
-  if (kind === "target") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 8.6 }), h("circle", { cx: 12, cy: 12, r: 4 }), h("circle", Object.assign({}, a, { fill: "currentColor", stroke: "none", cx: 12, cy: 12, r: 1.4 })));
-  if (kind === "stop") return h("svg", Object.assign({}, a, { strokeWidth: 2 }), h("rect", { x: 6, y: 6, width: 12, height: 12, rx: 3 }));
-  if (kind === "list") return h("svg", a, h("path", { d: "M9 6h11M9 12h11M9 18h11" }), h("path", { d: "M4.5 6h.01M4.5 12h.01M4.5 18h.01", "stroke-linecap": "round", "stroke-width": 2.4 }));
-  if (kind === "image") return h("svg", a, h("rect", { x: 4, y: 5, width: 16, height: 14, rx: 2.5 }), h("circle", { cx: 9, cy: 10, r: 1.6 }), h("path", { d: "m6 17 4.2-4.2a1.5 1.5 0 0 1 2.1 0L20 20" }));
-  if (kind === "spark") return h("svg", a, h("path", { d: "M13 2 4.5 13.5H11l-1.2 8.5L18.5 10.5H12L13 2Z" }));
   /* P11 修订:兜底工具图标 = 双四角星(用户指定)—— 大星左下 + 小星右上 */
   if (kind === "stars") return h("svg", Object.assign({}, a, { fill: "currentColor", stroke: "none" }),
     h("path", { d: "M10 5C10.9 10.3 13.7 13.1 19 13 13.7 13.9 10.9 16.7 10 22 9.1 16.7 6.3 13.9 2 13 6.3 13.1 9.1 10.3 10 5Z" }),
     h("path", { d: "M19 2C19.4 4.5 20 5.1 22.5 5.5 20 5.9 19.4 6.5 19 9 18.6 6.5 18 5.9 15.5 5.5 18 5.1 18.6 4.5 19 2Z" }));
-  if (kind === "question") return h("svg", a, h("circle", { cx: 12, cy: 12, r: 9 }), h("path", { d: "M9.5 9a2.5 2.5 0 1 1 3.4 2.3c-.8.3-.9 1-.9 1.7M12 17h.01" }));
+  /* P16:think 卡兜底图标(官方 IconThinkOutline14 缺席时)—— 思绪灯泡 */
+  if (kind === "think") return h("svg", a, h("path", { d: "M9.5 18h5M10.5 21h3M12 3a6 6 0 0 1 3.9 10.6c-.6.5-.9 1.4-.9 2.4h-6c0-1-.3-1.9-.9-2.4A6 6 0 0 1 12 3Z" }));
+  /* P17:压缩卡图标(官方 IconApiOutline14 缺席时兜底)—— 层叠菱形(上下文归档语义) */
+  if (kind === "compact") return h("svg", a, h("path", { d: "M12 3 3 7.5l9 4.5 9-4.5L12 3Z" }), h("path", { d: "m3 12 9 4.5L21 12" }), h("path", { d: "m3 16.5 9 4.5 9-4.5" }));
   return null;
 }
 function AuPill(props) {
@@ -1678,6 +2042,8 @@ function AuBrowserWide(props) {
   const overSt = React.useState(null);
   const hoverSt = React.useState(null);
   const sortSt = React.useState("manual");
+  /* 分组会话截断:默认每组只显前 5 行;more[key] 记录已展开全部的分组(不持久化) */
+  const moreSt = React.useState({});
   const inputRef = React.useRef(null);
   const searchOpen = searchOpenSt[0], setSearchOpen = searchOpenSt[1];
   const query = querySt[0], setQuery = querySt[1];
@@ -1694,6 +2060,7 @@ function AuBrowserWide(props) {
   const over = overSt[0], setOver = overSt[1];
   const hoverId = hoverSt[0], setHoverId = hoverSt[1];
   const sort = sortSt[0], setSort = sortSt[1];
+  const more = moreSt[0], setMore = moreSt[1];
 
   React.useEffect(function () {
     if (searchOpen && inputRef.current && inputRef.current.focus) inputRef.current.focus();
@@ -1806,6 +2173,20 @@ function AuBrowserWide(props) {
     Promise.resolve(au.createWorkspace(p)).catch(function (e) { console.error("aurum: createWorkspace failed", e); });
   };
 
+  /* P19 · 添加工作区一键目录选择:优先 host pickDirectory(系统原生文件夹选择框,
+     本机 127.0.0.1+Windows 即用户眼前弹出),选中即以绝对路径 create(选完即开);
+     取消(null)静默无操作;picker 不可用或服务缺失时回退展开手动输入行 */
+  const addViaPicker = function () {
+    if (typeof au.pickWorkspaceDirectory !== "function") { setAddOpen(!addOpen); return; }
+    Promise.resolve(au.pickWorkspaceDirectory()).then(function (p) {
+      if (p === null || p === undefined || p === "") return;
+      Promise.resolve(au.createWorkspace(p)).catch(function (e) { console.error("aurum: createWorkspace failed", e); });
+    }).catch(function (e) {
+      console.error("aurum: pickDirectory failed", e);
+      setAddOpen(true);
+    });
+  };
+
   /* P8c · 拖拽提交:insertSessionBefore(workspaceId, sessionId, beforeId) 持久化;
      after 目标 = before 目标的下一个兄弟(DOM-insertBefore 语义),末位 append */
   const onDragState = function (id, isOn) {
@@ -1836,6 +2217,9 @@ function AuBrowserWide(props) {
   const auSep = function (key) { return h("div", { className: "menu-sep", key: key }); };
   const renderFmenu = function (pos, items) {
     const live = items.filter(Boolean);
+    /* 定位经验式,与 .mi/.menu CSS 几何隐式耦合:37 ≈ 单菜单项高(padding 8×2 +
+       行高 + 呼吸),186 = .menu min-width,194 = 186 + 右侧 8px 余量 ——
+       改 .mi/.menu 几何时需同步此两式(评审扫尾补注) */
     const H = 14 + live.length * 37;
     let top = pos.y;
     if (top + H > window.innerHeight - 8) top = Math.max(8, pos.anchorBottom - H - 4);
@@ -1898,6 +2282,12 @@ function AuBrowserWide(props) {
     : (flat
       ? (flatAll.length > 0 ? flatAll.map(function (entry) { return renderRow(entry, null, false); }) : [h("div", { key: "empty", className: "au-ws-empty" }, "暂无会话")])
       : groups.map(function (g) {
+        /* 分组截断(用户需求):默认每组只显前 5 行,尾部「显示全部 N 条」/
+           「收起」按钮切换;搜索/平铺视图不截断(分支隔离);不持久化 */
+        const gAll = more[g.key] === true;
+        const shown = gAll ? g.sessions : g.sessions.slice(0, 5);
+        const rows = shown.map(function (s) { return renderRow({ s: s, wsLabel: null }, g, true); });
+        if (g.sessions.length > 5) rows.push(h("button", { key: "__more__", type: "button", className: "au-s-more", "aria-expanded": gAll ? "true" : "false", onClick: function () { setMore(function (m) { const n = Object.assign({}, m); if (n[g.key]) delete n[g.key]; else n[g.key] = true; return n; }); } }, gAll ? "收起" : "显示全部 " + g.sessions.length + " 条"));
         return h(AuGroup, {
           key: g.key, g: g, au: au, closed: closed[g.key] === true, containsCurrent: g.containsCurrent,
           menuSlot: h("button", { type: "button", className: "au-wsg-act", title: "目录操作", "aria-label": "目录操作", onClick: function (e) { e.stopPropagation(); const r = e.currentTarget.getBoundingClientRect(); setMenu({ kind: "ws", id: g.key, x: r.right, y: r.bottom + 4, anchorBottom: r.top }); } }, Ic("dots")),
@@ -1905,7 +2295,7 @@ function AuBrowserWide(props) {
           renaming: ren !== null && ren.kind === "ws" && ren.id === g.key, renameValue: renVal,
           onRenameStart: function () { startRename("ws", g.key, g.label); },
           onRenameValue: setRenVal, onRenameCommit: commitRename, onRenameCancel: function () { setRen(null); }
-        }, g.sessions.map(function (s) { return renderRow({ s: s, wsLabel: null }, g, true); }));
+        }, rows);
       }));
 
   return h("div", { className: "au-ws au-ws-wide" },
@@ -1916,7 +2306,7 @@ function AuBrowserWide(props) {
         h("input", { ref: inputRef, className: "au-ws-input", value: query, placeholder: "搜索会话…", type: "text", autoComplete: "off", onChange: function (e) { setQuery(e.target.value); }, onKeyDown: function (e) { if (e.key === "Escape") { setQuery(""); setSearchOpen(false); } if (e.key === "Enter" && results !== null && results.length > 0) au.open(results[0].s.id); } })),
       h("div", { className: "au-ws-acts" },
         h("button", { type: "button", className: "au-ws-ibtn" + (flat ? " au-on" : ""), title: "视图选项", "aria-label": "视图选项", onClick: function (e) { const r = e.currentTarget.getBoundingClientRect(); setHeadMenu({ x: r.right, y: r.bottom + 4, anchorBottom: r.top }); } }, Ic("view")),
-        h("button", { type: "button", className: "au-ws-ibtn", title: "添加工作区", "aria-label": "添加工作区", onClick: function () { setAddOpen(!addOpen); } }, Ic("folderplus")))),
+        h("button", { type: "button", className: "au-ws-ibtn", title: "添加工作区", "aria-label": "添加工作区", onClick: addViaPicker }, Ic("folderplus")))),
     addOpen ? h("div", { className: "au-ws-addrow" }, Ic("folder"),
       h("input", { value: addPath, placeholder: "输入路径，如 ~/repos/项目名", type: "text", spellCheck: false, autoComplete: "off", autoFocus: true, onChange: function (e) { setAddPath(e.target.value); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); commitAdd(); } if (e.key === "Escape") { setAddOpen(false); setAddPath(""); } } }),
       h("span", { className: "au-ws-addhint" }, "↵ 添加 · Esc 取消")) : null,
@@ -2046,6 +2436,112 @@ function AuContext(props) {
     h("div", { className: "au-x" }, h("div", { className: "au-clip" }, h("div", { className: "au-in" }, h("div", { className: "au-ctx-full" }, txt)))));
 }
 
+/* ═══ P16 · think 卡接管(遮蔽 assistant-step;AuThinkCard 原型 .reasoning 类名)═══
+   数据契约(逆向自官方 AssistantNodeView/AssistantMarkdown/ReasoningRow 快照):
+   - assistant-step: node.data = { blocks:[{kind:"text"|"reasoning"|"image"|"tool-call",…}],
+                     status:"running"|"interrupted"|…, finalNode? };node.location.turn
+   - reasoning 块:   text = 完整/流式推理文本;running = streaming 且为最后一个块
+   行为(用户指定 2026-08-25 修订):
+   - 运行态:卡片保持折叠壳;单行实时流 = latestLine,行号作 key —— 每换一行 remount
+     重播入场动画(不透明→透明 叠加模糊消散)=「每行文字错峰入场」;图标金色呼吸;
+     不随单行文本量横向滚动(长行原地裁切,起点恒左对齐);
+   - 思考结束:自动收拢(点开的展开态也收起),摘要 = firstLine;
+   - 正文(P16 修订 VII 定案):thinking 展开体 = 普通 pre-wrap 文本,无动画
+     (修订 IV/V/VI 的 .r-line 行级级联全撤 —— 用户澄清「正文」指模型输出
+     的 markdown,非 thinking 内容;错峰级联移至 AuAssistantMarkdown 渲染的
+     MarkdownText 块级子元素,CSS 阶梯见 CSS1 P16 修订 VII 段);
+   - text 块委托官方 MarkdownText(primitives 通道)、image 块走 AuImg,视觉不变 */
+/* P17:auT 增补可选插值参数(对齐官方 t(key, params) 调用,如 compaction.completed) */
+function auT(t, key, zh, params) {
+  try { const v = typeof t === "function" ? t(key, params || undefined) : undefined; return typeof v === "string" && v ? v : zh; } catch (e) { return zh; }
+}
+function AuThinkCard(props) {
+  const text = typeof props.text === "string" ? props.text : "";
+  const running = props.running === true;
+  const st = React.useState(false);
+  const open = st[0], setOpen = st[1];
+  const prevRun = React.useRef(running);
+  React.useEffect(function () {
+    if (prevRun.current && !running) setOpen(false); /* P16:思考结束自动收拢 */
+    prevRun.current = running;
+  }, [running]);
+  const visible = text.trimEnd();
+  const nl = visible.lastIndexOf("\n");
+  const summary = running ? (nl === -1 ? visible : visible.slice(nl + 1)) : auFirstLine(text);
+  const lineIdx = visible.split("\n").length; /* 行号 key:同行流式追加不重播,换行才 remount */
+  return html`<div className=${"reasoning" + (open ? " open" : "")} data-state=${running ? "running" : "ok"}>
+    <button type="button" className="reasoning-head" aria-expanded=${open ? "true" : "false"} onClick=${function () { setOpen(!open); }}>
+      <span className="au-ico r-ico">${Ic("think")}</span>
+      <span className="r-title">Think</span>
+      ${running ? html`<span className="au-sr">${auT(props.t, "row.running", "运行中")}</span>` : null}
+      <span className="r-live-wrap">${running
+        ? html`<span className="r-live" key=${"L" + lineIdx}>${summary}</span>`
+        : html`<span className="r-sum">${summary}</span>`}</span>
+      <span className="chev">${Ic("chevron")}</span>
+    </button>
+    <div className="reasoning-body"><div className="r-bclip"><div className="r-bin">${text}</div></div></div>
+  </div>`;
+}
+function AuAssistantMarkdown(props) {
+  const blocks = Array.isArray(props.blocks) ? props.blocks : [];
+  const streaming = props.streaming === true;
+  if (!(streaming || props.interrupted === true || blocks.some(function (b) { return !!b && b.kind !== "tool-call"; }))) return null;
+  const t = props.t;
+  const MT = AU_PI && AU_PI.MarkdownText;
+  const JB = AU_PI && AU_PI.JsonBlock;
+  const codeLabels = { copyLabel: auT(t, "copy", "复制"), copiedLabel: auT(t, "copied", "已复制") };
+  const last = blocks.length - 1;
+  const rendered = [];
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (!b) continue;
+    if (b.kind === "text") {
+      rendered.push(MT
+        ? h(MT, { key: i, text: b.text, streaming: streaming, codeLabels: codeLabels, fileMentions: props.mentions })
+        : h("div", { key: i, className: "au-md-fallback" }, b.text));
+    } else if (b.kind === "reasoning") {
+      rendered.push(h(AuThinkCard, { key: i, text: b.text, running: streaming && i === last, t: t }));
+    } else if (b.kind === "image") {
+      const start = i;
+      const group = [b];
+      while (i + 1 < blocks.length) {
+        const nx = blocks[i + 1];
+        if (!nx || nx.kind !== "image") break;
+        group.push(nx);
+        i += 1;
+      }
+      rendered.push(h("div", { key: start, className: "au-imgs" }, group.map(function (g, j) { return h(AuImg, { key: j, attachment: g.attachment || g, loadImage: props.loadImage }); })));
+    } else if (b.kind === "tool-call") {
+      continue; /* 工具调用是独立 chat 节点(tool-call),官方同款跳过 */
+    } else {
+      rendered.push(JB
+        ? h(JB, { key: i, label: auT(t, "message.unknownBlock", "未知内容块"), payload: b.block, truncatedLabel: function (n) { return auT(t, "json.truncated", "已截断") + " " + n; } })
+        : h("pre", { key: i, className: "au-md-fallback" }, JSON.stringify(b.block, null, 2)));
+    }
+  }
+  /* 根/正文容器沿用官方 Sxvs8a_*(全局样式表在册,几何/中断徽章与官方一致) */
+  return h("div", { className: "Sxvs8a_root", "data-streaming": streaming || undefined },
+    h("div", { className: "Sxvs8a_body" }, rendered, props.interrupted === true
+      ? h("span", { className: "Sxvs8a_stopped" }, auT(t, "message.stopped", "已停止")) : null));
+}
+function AuAssistantStep(props) {
+  const node = props.node || {};
+  const data = node.data || {};
+  const turn = node.location && (node.location.kind === "turn" || node.location.kind === "step") ? node.location.turn : undefined;
+  const tail = typeof props.useTurnData === "function" ? props.useTurnData("turn-tail") : undefined;
+  const finalNode = data.finalNode;
+  const owner = React.useMemo(function () {
+    if (turn === undefined || turn === null || turn.status !== "closed" || finalNode === undefined) return undefined;
+    if (!tail || !tail.closing || !tail.closing.finalNode || tail.closing.finalNode.seq !== finalNode.seq) return undefined;
+    return { turn: turn, seq: finalNode.seq, openFile: props.openFile };
+  }, [finalNode, props.openFile, tail, turn]);
+  const mentions = React.useMemo(function () {
+    if (owner === undefined || typeof props.fileMentions !== "function") return undefined;
+    try { return props.fileMentions(owner); } catch (e) { return undefined; }
+  }, [props.fileMentions, owner]);
+  return h(AuAssistantMarkdown, { blocks: data.blocks, streaming: data.status === "running", interrupted: data.status === "interrupted", loadImage: props.loadImage, mentions: mentions, t: props.t });
+}
+
 /* ═══ P9 · 会话流尾部节点(htm + 原型类名,恒等映射)═══
    数据契约(逆向自官方 register-node-renderers):
    - turn-tail:      node.data = { turn, seq, closing:{finalNode:{seq,messageId},blocks,time}|null,
@@ -2110,22 +2606,73 @@ function AuTurnTail(props) {
   <//>`;
 }
 
-function AuCompress(props) {
-  const node = (props.node && props.node.data) || {};
+/* ═══ P17 · 压缩卡接管(compaction / manual-compaction 双键遮蔽,au-tool 同款卡壳)═══
+   官方契约(逆向 CompactionItem / CompactionCommandCard / GenericCommandCard):
+   - compaction:        node.data = { summary:string|null, shadowedItemCount, shadowedTokenCount }
+   - manual-compaction: node.data = { command:{name,outcome:null|{kind,text}}, compaction:null|同上 }
+   行为:完成态 = 卡壳 + au-ico 瓦片 + 标题/摘要(官方文案,locale 注入 t 插值);
+   手动运行态(compaction 未落地)= data-state=running 金辉光扫 + au-run 胶囊;
+   outcome.error = err 胶囊;可展开时 chevron + AuBody grid 收合,正文走官方 MarkdownText。
+   P9 旧 .compress 原型平推行退役,CSS 留作死代码防御(同 QWLzlG 惯例) */
+function auCompactCard(o) {
   const st = React.useState(false);
   const open = st[0], setOpen = st[1];
+  const expandable = o.expandable === true;
+  const MT = AU_PI && AU_PI.MarkdownText;
+  const pill = o.running === true
+    ? h(AuPill, { state: "run", text: auT(o.t, "row.running", "运行中") })
+    : o.err === true ? h(AuPill, { state: "err", text: auT(o.t, "command.failed", "失败") }) : null;
+  return h("div", { className: "au-tool au-comp" + (open ? " au-open" : "") + (expandable ? "" : " au-noexp"), "data-state": o.running === true ? "running" : o.err === true ? "error" : "ok", "data-compaction": "1" },
+    h("div", { className: "au-main", onClick: expandable ? function () { setOpen(!open); } : undefined, "aria-expanded": expandable ? String(open) : undefined },
+      h("span", { className: "au-ico" }, Ic("compact")),
+      h("span", { className: "au-txt" },
+        h("span", { className: "au-name" }, o.title),
+        o.summary ? h("span", { className: "au-sum" }, o.summary) : null),
+      pill,
+      expandable ? h("span", { className: "au-chev" }, Ic("chevron")) : null),
+    expandable ? h(AuBody, { open: open }, MT
+      ? h(MT, { text: o.bodyText, streaming: false, codeLabels: { copyLabel: auT(o.t, "copy", "复制"), copiedLabel: auT(o.t, "copied", "已复制") } })
+      : h("pre", { className: "au-term" }, o.bodyText)) : null);
+}
+function AuCompress(props) {
+  const node = (props.node && props.node.data) || {};
+  const t = props.t;
   const n = node.shadowedItemCount;
   const tk = node.shadowedTokenCount;
-  const items = n != null ? " · 更早的 " + n + " 条消息已归档" : "";
-  const tok = tk != null ? (tk >= 1000 ? " −" + (tk / 1000).toFixed(1) + "k tokens" : " −" + tk + " tokens") : "";
   const expandable = typeof node.summary === "string" && node.summary !== "";
-  return html`<div className=${"compress" + (open ? " open" : "")}>
-    <button type="button" className="compress-head" onClick=${function () { setOpen(!open); }}>
-      <span className="chev">${Ic("chevron")}</span>
-      <span>◈ 上下文已压缩${items}${tok ? html`<span className="in-tok">${tok}</span>` : null}</span>
-    </button>
-    ${open && expandable ? html`<div className="compress-body">${node.summary}</div>` : null}
-  </div>`;
+  const summary = n != null && tk != null
+    ? auT(t, "message.compaction.completed", "已压缩 " + n + " 条历史记录（约 " + tk + " tokens）", { items: n, tokens: tk })
+    : expandable ? auT(t, "message.compaction.expand", "点击查看压缩摘要") : auT(t, "message.compaction.unavailable", "压缩摘要不可用");
+  return auCompactCard({ title: auT(t, "message.compaction", "上下文已压缩"), summary: summary, expandable: expandable, bodyText: expandable ? node.summary : "", running: false, err: false, t: t });
+}
+function AuCompactCmd(props) {
+  const data = (props.node && props.node.data) || {};
+  const cmd = data.command || {};
+  const t = props.t;
+  const outcome = cmd.outcome === undefined || cmd.outcome === null ? null : cmd.outcome;
+  const title = cmd.name || "compact";
+  const comp = data.compaction || null;
+  if (comp) {
+    /* 官方同款:压缩标记落地后只渲染标记卡(fallbackSummary = outcome 文本) */
+    const n = comp.shadowedItemCount;
+    const tk = comp.shadowedTokenCount;
+    const expandable = typeof comp.summary === "string" && comp.summary !== "";
+    let summary;
+    if (n != null && tk != null) summary = auT(t, "message.compaction.completed", "已压缩 " + n + " 条历史记录（约 " + tk + " tokens）", { items: n, tokens: tk });
+    else {
+      const ot = outcome && typeof outcome.text === "string" && outcome.text !== "" ? outcome.text : null;
+      summary = ot !== null ? ot : expandable ? auT(t, "message.compaction.expand", "点击查看压缩摘要") : auT(t, "message.compaction.unavailable", "压缩摘要不可用");
+    }
+    return auCompactCard({ title: title, summary: summary, expandable: expandable, bodyText: expandable ? comp.summary : "", running: false, err: false, t: t });
+  }
+  if (outcome !== null) {
+    /* 无压缩标记的成稿命令(GenericCommandCard 语义) */
+    const err = outcome.kind === "error";
+    const summary = typeof outcome.text === "string" && outcome.text !== "" ? outcome.text : err ? auT(t, "command.failed", "失败") : auT(t, "command.done", "完成");
+    return auCompactCard({ title: title, summary: summary, expandable: false, bodyText: "", running: false, err: err, t: t });
+  }
+  /* 运行中:金辉光 + 运行中胶囊,摘要行 = 正在压缩… */
+  return auCompactCard({ title: title, summary: auT(t, "message.compaction.running", "正在压缩…"), expandable: false, bodyText: "", running: true, err: false, t: t });
 }
 
 function AuRetry(props) {
@@ -2171,24 +2718,32 @@ function AuTurnMaxTokens() {
    「n 完成 · n 进行」+折叠列表;原型是「清单 n/m + goal-track 金→玫进度条 +
    todo-items 胶囊(done 删除线 / now 金 tint 脉冲点)」。数据同源 useProjection
    ("todos");空清单渲染 null(与官方一致)。data-testid 沿用官方 todo-panel,
-   保下游测试语义。 */
+   保下游测试语义。
+   P21(2026-08-25 用户指定):清单条可折叠 —— 头部行(清单 n/m + 进度条 +
+   折叠钮)常显,todo-items 收进 .todo-foldwrap(grid 0fr⇄1fr,与侧栏 .au-slist
+   同机构);默认折叠,内存态不持久化;hook 须在空清单早退之前(hooks 铁律)。 */
 function AuTodoBar(props) {
   const useProjection = props.useProjection;
+  const openSt = React.useState(false);
+  const open = openSt[0], setOpen = openSt[1];
   const todos = (useProjection ? useProjection("todos") : null) || [];
   if (todos.length === 0) return null;
   var done = 0;
   for (var i = 0; i < todos.length; i++) if (todos[i].status === "completed") done++;
   var pct = Math.round((done / todos.length) * 100);
-  return html`<div className="todo-bar" data-testid="todo-panel">
+  return html`<div className=${"todo-bar" + (open ? "" : " au-tdclosed")} data-testid="todo-panel">
     <span className="todo-label">清单</span>
     <span className="todo-label">${done} / ${todos.length}</span>
     <div className="goal-track"><div className="goal-fill" style=${{ width: pct + "%" }}></div></div>
-    <div className="todo-items">
-      ${todos.map(function (it, i) {
-        var cls = "todo-it" + (it.status === "completed" ? " done" : it.status === "in_progress" ? " now" : "");
-        return html`<span key=${i} className=${cls}><span className="td"></span>${it.content}</span>`;
-      })}
-    </div>
+    <button type="button" className="todo-fold" title=${open ? "收起清单" : "展开清单"} aria-label=${open ? "收起清单" : "展开清单"} aria-expanded=${open ? "true" : "false"} onClick=${function () { setOpen(!open); }}>${Ic("chevdown")}</button>
+    <div className="todo-foldwrap"><div className="todo-foldin">
+      <div className="todo-items">
+        ${todos.map(function (it, i) {
+          var cls = "todo-it" + (it.status === "completed" ? " done" : it.status === "in_progress" ? " now" : "");
+          return html`<span key=${i} className=${cls}><span className="td"></span>${it.content}</span>`;
+        })}
+      </div>
+    </div></div>
   </div>`;
 }
 
@@ -2243,6 +2798,8 @@ return {
       }
     };
 
+    /* 激活重断言 timers(评审扫尾:随 dispose 清理,停插件后不再争夺主题) */
+    const aurumTimers = [];
     if (activeId !== "aurum-dark" && activeId !== "aurum-light") {
       /* 实测:apply 期 setTheme 会被启动后期的主题初始化盖回官方 —— 0ms/1.2s 两次
          延迟重断言(一次性;用户此后手动切官方不再争夺) */
@@ -2254,8 +2811,7 @@ return {
         } catch (err) { console.error("aurum: activate failed", err); }
       };
       assertAurum();
-      setTimeout(assertAurum, 0);
-      setTimeout(assertAurum, 1200);
+      aurumTimers.push(setTimeout(assertAurum, 0), setTimeout(assertAurum, 1200));
     }
 
     slots.inject("sidebar.footer.action", function () {
@@ -2285,6 +2841,10 @@ return {
         Promise.resolve(workspacesSvc.insertSessionBefore(workspaceId, sessionId, beforeSessionId)).catch(function (e) { console.error("aurum: moveSession failed", e); });
       },
       createWorkspace: function (path) { return workspacesSvc.create({ path: path }); },
+      /* P19 · host 原生目录选择(官方 native capability):Promise<path|null>,
+         null = 用户取消;capability 非 native(SSH/远程)时 reject
+         directory-picker-unavailable —— 由调用方回退手动输入行 */
+      pickWorkspaceDirectory: function () { return workspacesSvc.pickDirectory(); },
       renameWorkspace: function (workspaceId, title) { return workspacesSvc.rename(workspaceId, title); },
       deleteWorkspace: function (workspaceId) { return workspacesSvc.delete(workspaceId); }
     };
@@ -2299,16 +2859,22 @@ return {
 
     slots.inject("conversation.chat.node", function () {
       const disps = [];
-      const reg = function (key, comp) {
-        disps.push(slots.register({ name: "conversation.chat.node", key: key, priority: -1, registrant: "aurum" }, function (props) { return h(comp, props); }));
+      const reg = function (key, comp, extra) {
+        disps.push(slots.register(Object.assign({ name: "conversation.chat.node", key: key, priority: -1, registrant: "aurum" }, extra || {}), function (props) { return h(comp, props); }));
       };
       reg("user", AuUserBubble);
       reg("steering", AuUserBubble);
       reg("context", AuContext);
-      reg("compaction", AuCompress);
+      /* P17:压缩卡接管(双键遮蔽,locale 注入官方文案 t);官方注册保留(priority:-1) */
+      reg("compaction", AuCompress, { locale: "conversation" });
+      reg("manual-compaction", AuCompactCmd, { locale: "conversation" });
       reg("model-retry", AuRetry);
       reg("turn-error", AuTurnError);
       reg("turn-max-tokens", AuTurnMaxTokens);
+      /* P16:遮蔽 assistant-step —— think 卡接管(AuThinkCard 运行态单行重播入场 +
+         结束自动收拢);text 块委托官方 MarkdownText,视觉不变;locale 复用官方
+         conversation 命名空间(t 注入);官方注册保留(priority:-1,停插件即还原) */
+      reg("assistant-step", AuAssistantStep, { locale: "conversation" });
       /* P11:遮蔽整棵工具树 —— 未知工具兜底卡 + tool-kids 子调用;
          官方 tool-call 注册保留(priority:-1 遮蔽,停插件即还原) */
       reg("tool-call", AuToolCallTree);
@@ -2335,6 +2901,7 @@ return {
 
     ctx.effect(function () {
       return function () {
+        try { for (let i = 0; i < aurumTimers.length; i++) window.clearTimeout(aurumTimers[i]); } catch (e) {}
         try { if (typeof stopListen === "function") stopListen(); } catch (e) {}
         try { if (typeof disposeCss === "function") disposeCss(); } catch (e) {}
         try { if (typeof disposeDark === "function") disposeDark(); } catch (e) {}
