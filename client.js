@@ -321,6 +321,18 @@ window.__ModuleLoader__.load({
     平移(bg 96.5→94.5 / bg-deep 94.5→92.5 / rail-1 94.5→92.5 / rail-2
     96.5→94.5 / surface 98.5→96.5),保持卡片(略深于画布)与浮面(高于画布)
     的相对阶梯不变;底部渐隐纱色随 var(--bg) 自动跟随。
+    修订 XII(2026-08-27 同日续,用户指定):底部渐隐纱再矮一档 —— 纱高
+    80→56(窄屏 100→70),座位 ::before 渐变纱与 ::after 点阵补层同步改高;
+    顶纱 70/100 不动。纯数值调整,双主题纱色随 var(--bg) 自动跟随。
+    修订 XIII(2026-08-27 同日续,用户指定):底部渐隐收口下沉到整页最底边 ——
+    纱不再外凸到座位顶上方(原 +56/+70px 独立空档撤除),高度收敛为座位自身
+    100%,渐变 transparent→底色铺满整座、恰在视口底边(= 输入坞底)完全收口;
+    座位上方不再有可见渐隐带,消息保持可见直到滑入半透明输入坞之下;::after
+    点阵补层同步收敛;窄屏不再单独覆写(height:100% 随座位高度自适应,原窄屏两条冗余覆写删除)。
+    修订 XIV(2026-08-27 同日续,用户指定):渐隐带再升高 —— 纱顶从座位顶再上探
+    50% 座位高(height:100% → calc(100% + 50%),::before/::after 同步),渐变仍
+    transparent→底色 0→100% 拉满、恰在视口底边收口;视觉 = 座位上方半座高开始
+    渐隐 + 整个输入坞内继续,到底边完全隐没。窄屏随座位高度自适应无需覆写。
 
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
@@ -973,13 +985,19 @@ const CSS1 = [
   "body .wSkVaW_scrollBody{padding-top:86px;mask-image:linear-gradient(180deg,transparent 0px,#000 70px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 70px)}",
   /* 底部渐隐纱(修订 VIIIb):挂 composerSeat 而非 scrollBody mask —— 座位
      sticky 贴底,mask 会连座位小字一起渐隐且无法子级豁免;纱在座位内容
-     背后(z-index:-1,sticky 自成层叠上下文),只吞穿行消息 */
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 80px);z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent 0px,var(--bg) 80px)}",
+     背后(z-index:-1,sticky 自成层叠上下文),只吞穿行消息。
+      修订 XIII(用户指定):纱不再外凸到座位顶上方 —— 高度收敛为座位自身 100%,
+      渐变 transparent→底色铺满整座、恰在视口底边(= 输入坞底)收口;座位上方
+      不再有独立渐隐空档,消息保持可见直到滑进半透明输入坞之下。
+      修订 XIV(用户指定):渐隐带再升高 —— 纱顶从座位顶再上探 50% 座位高
+      (height:calc(100% + 50%)),渐变仍 0→100% 拉满、恰在视口底边收口;
+      视觉 = 座位上方半座高开始渐隐 + 整个输入坞内继续,到底边完全隐没。 */
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 50%);z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent 0px,var(--bg) 100%)}",
   /* 修订 X(用户报「点阵被纱盖掉」):纱涂底色会把背景点阵一并盖没 —— ::after
      在纱上重铺同款点阵,background-attachment:fixed 对齐视口坐标,与 body
      画布点阵逐点重合(同 --aurum-dot/24px),视觉=点阵穿透渐隐带;只作用于
      中间消息流(纱在座位内容背后),侧栏卡 z15 仍在纱上 */
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::after{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 80px);z-index:-1;pointer-events:none;background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px;background-attachment:fixed}",
+  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::after{content:\"\";position:absolute;left:0;right:0;bottom:0;height:calc(100% + 50%);z-index:-1;pointer-events:none;background-image:radial-gradient(circle,var(--aurum-dot) 1px,transparent 1.35px);background-size:24px 24px;background-attachment:fixed}",
    /* 非 chat view(轨迹/数据库/未来插件 view)让位浮头(用户报:切 tab 后内容顶屏幕顶,
       被渐变纱遮挡)。viewArea 与各 view 根之间隔着官方 display:contents 的 provider
       wrapper(无类名,padding 无法穿透),故让位做在 viewArea 自身(真实 flex 盒);
@@ -1569,8 +1587,8 @@ const CSS3 = [
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
   "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px)}",
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::before{height:calc(100% + 100px);background:linear-gradient(180deg,transparent 0px,var(--bg) 100px)}",
-  "body .wSkVaW_root[data-phase=active] .wSkVaW_composerSeat::after{height:calc(100% + 100px)}",
+  /* 底部渐隐纱窄屏覆写已删(修订 XIII 起):主档 height:100% + 0→100% 渐变
+     本就随座位高度自适应,窄屏无需再覆写,避免日后主档调参窄屏悄悄分叉 */
   /* 窄屏档:旧 viewArea/Md3f7G_root 让位已随官方 DOM 升级删除(同主档追补) */
   /* P15 追补 IX:追补 VI 的 @media(max-width:820px) 在此闭合 —— 原先漏了配对 "}",
      一路吞到追补 V 抽屉块自己的 "}"(只闭了内层),外层被 EOF 静默闭合;导致
