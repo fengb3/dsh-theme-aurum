@@ -72,6 +72,7 @@
 | **P24** | **§7 修缮** | **三卡壳去 1px transparent border:工具卡 hover「细边框」消除(用户报 + 用户定位)** | **.au-tool/.au-ctx-card/.reasoning 去 border;verify-p24-hover 门禁** | **✅** |
 | **P25** | **§7 修缮** | **图标瓦片 svg display:block:Mac 上工具卡图标向下偏移修复(用户报+定位)** | **au-ico/au-chev/.chev 五条 svg 规则补 display:block** | **✅** |
 | **P26** | **§4 修缮** | **workspace 组头菜单按钮回归(g.menuSlot→props.menuSlot)+ 按钮图标 strut 偏移 13 条全家族修复(用户报)** | **props 修正 + svg display:block×13;verify-p26-wsmenu 门禁;p24-hover/todofold 扫描加固** | **✅** |
+| **P27** | **§4 修缮** | **承接官方 sidebar.workspaces.row-menu 扩展点:遮蔽官方浏览器后自绘菜单声明+渲染该子槽,dsh-open-in-vscode 等插件的注入行恢复可见(用户报)** | **条件 children 声明(kind=single)+ renderSlot 面线程传递 + 菜单尾接注入行;verify-p27-rowmenu 门禁** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -712,3 +713,56 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
 - **实测(verify/verify-p26-wsmenu.js)**:dots 在册、点击弹「重命名目录/
   删除工作区」、Esc 关闭;'+' 与 dots 4.5/4.5 居中(display:block);
   全套 17 脚本 NODE-EXIT=0 全绿。
+
+### P27 · 承接官方 sidebar.workspaces.row-menu 扩展点(用户报)✅ 2026-08-28
+
+- **背景(用户:装 dsh-open-in-vscode@0.1.6 后,工作区行的 … 溢出菜单里
+  「在 VSCode 中打开」条目不出现)**:诊断确认插件两端都活着(client bundle
+  HTTP 200),缺的是 UI 入口。根因两层:
+  ① aurum 以 priority:-1 遮蔽官方 WorkspaceBrowser 换自绘实现后,自绘工作区
+  菜单从未渲染官方 row-menu 扩展点;
+  ② 现役官方运行时(0.1.1)本身也没声明这个子槽(逆向验证:runtime/
+  ui-workspace bundle 里 "row-menu" 出现 0 次,官方包只声明 directoryFlow)
+  —— 插件 `slots.inject('sidebar.workspaces.row-menu', …)` 的注册回调一直
+  挂起无人触发;其 DOM 兜底适配器虽会安装,但靠官方菜单文案识别菜单,
+  自绘菜单对不上,两头落空。
+- **修复(两侧,详见 client.js P27 注释)**:
+  1. **声明侧**:`sidebar.workspaces` 注册时,`slots.spec('sidebar.workspaces.
+     row-menu') === undefined` 才由 aurum 补声明 children(`{kind:'single',
+     scope:'root'}`)。kind 选 single 是硬约束:现役插件 register 不带
+     id/key,kind=list/keyed 的 SlotCore 注册校验会直接 throw(且 throw 会
+     沿 inject 回调炸掉 aurum 的整个 register)。官方运行时将来自带声明时
+     自动让位(turn-tail 教训:同 child key 二次声明者 throw)。声明提交即
+     触发插件挂起的 inject 回调完成注册,同时插件 reconcile 拆除 DOM 兜底
+     (spec 转 defined),无双行风险;
+  2. **渲染侧**:kit 的 `renderSlot` 面(renderer 只授权本 entry children
+     声明的 key)线程传 AuBrowser→AuBrowserWide/Mobile 抽屉;工作区 …
+     菜单在自有项之后尾接 `renderSlot('sidebar.workspaces.row-menu',
+     {cwd, label, onClose})`(owner share 按官方契约);分隔线+条目块以
+     `entriesOfSlot()>0 && ws.path` 双门控防悬空分隔线;容器 `.au-menu-x`
+     仅 display:contents 不引布局。未分组桶(g.ws 为空)不渲染,与官方
+     「无菜单/无扩展行」语义一致。
+- **回退路径**:停 aurum → children 声明随注册级联卸载 → 插件 spec 转
+  undefined 回装 DOM 兜底,对恢复的官方菜单照常生效;停 dsh-open-in-vscode
+  → 条目数归零,门控把分隔线+条目块整体收掉,aurum 菜单回到原样。
+- **风格归流(用户二审:插件行与菜单其他项风格不同)**:插件行自带官方
+  单元格规格(14px/22 行高/min-h40/16px 图标/label-primary 近黑/官方中性
+  hover),outlet 级通用规则把任意 `role=menuitem` 注入行统一 .mi 几何
+  (12.5px/行高 1.4/高 33.5/padding 8 11/13px 图标/muted 色/金 tint hover/
+  focus 环 aurum-focus;选择器 0,3,1 压过插件自带 0,1,0)。井号即官方
+  IconCodeOutline16 图标本体(实心 fill 造型,较 edit/error 描边系重),
+  非乱码 —— 图标选型属插件侧,aurum 无法替换其 svg 内容。终审用户决策:
+  工作区菜单自有两项(重命名目录/删除工作区)之间不再加分隔线,紧凑排列,
+  分隔线仅用于隔开尾接的扩展注入行。
+- **实测(verify/verify-p27-rowmenu.js,已入 sidebar 域)**:outlet
+  `[data-slot=sidebar.workspaces.row-menu]` 在菜单内且 display:contents、
+  插件行 186×33.5(==.mi 同高)12.5px/17.5 字号一致、图标 13px 同尺寸、
+  文字色同源、分隔线在前、点击关菜单(onClose 通,宿主 remote 端到端
+  拉起编辑器)、深浅双色均过、悬停金 tint oklch(0.79 .13 84/.1) 与
+  .mi:hover 逐字节一致(用户截图所见「圆角矩形包裹」即此 hover 态,
+  截图时鼠标悬停所致;静止态背景全透明,探针 dual-state 实证)、零
+  console 错误;sidebar 域(sbmore/todofold×2)+ p26-wsmenu + core 三门禁
+  (gate/p8b/proto-diff)NODE-EXIT=0。
+- **已知边界**:single kind 下多家 row-menu 插件会互相遮蔽(先注册者胜)
+  —— 这是现役 runtime 对无 id 注册的唯一可表达形态,官方将来定形该扩展点
+  后以其声明为准再对齐。

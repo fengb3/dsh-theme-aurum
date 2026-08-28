@@ -1,6 +1,6 @@
 # dsh-theme-aurum
 
-[DSH(DeepSeek Harness)](https://github.com/deepseek-ai/deepseek-harness) 的**鎏金主题**插件:由 `dsh-agent-workspace.html` 原型(金粉奢华)移植,零构建、纯 loader 格式。**v1.1.0** —— 全界面接管完成。
+[DSH(DeepSeek Harness)](https://github.com/deepseek-ai/deepseek-harness) 的**鎏金主题**插件:由 `dsh-agent-workspace.html` 原型(金粉奢华)移植,零构建、纯 loader 格式。**v1.1.1** —— 全界面接管完成 + 工作区菜单扩展点兼容。
 
 **DSH Web 兼容范围:`>=0.1.0-rc.6`**(在 `0.1.0-rc.6` 官方 client API 线上开发,`0.1.1-rc.2` 实机全量门禁通过)。
 
@@ -24,12 +24,12 @@
 - **全局浮层**:hero 新会话居中态(衬线大字 + 径向金辉)、命令/工作区菜单金色化、设置弹窗(居中双栏 + 左导航 tint)。
 - **响应式**:≤820/≤640/≤480 三档降密度,360–1920 全档零横向滚动(≤900 官方自动收 68px 细条)。
 - **图标**:一律 DSH 官方原版(`@deepseek-ai/dsh-client-ui-primitives` 直取,与官方 ToolRow 同表),零自绘(唯视图/添加工作区两枚自建功能钮除外)。
-- **槽位兼容**:官方注册全部保留(`priority:-1` 遮蔽),插件停止即完整还原官方 UI。
+- **槽位兼容**:官方注册全部保留(`priority:-1` 遮蔽),插件停止即完整还原官方 UI;自绘工作区菜单承接官方 `sidebar.workspaces.row-menu` 扩展点并归流视觉,`dsh-open-in-vscode` 等菜单行插件在 aurum 下照常出现。
 
 ## 安装
 
 ```sh
-# GitHub 安装(推荐;固定到发布 commit,如 v1.1.0)
+# GitHub 安装(推荐;固定到发布 commit,如 v1.1.1)
 dsh plugin --profile web add github:fengb3/dsh-theme-aurum#<commit-sha>
 
 # 本地开发(link 安装,编辑即生效)

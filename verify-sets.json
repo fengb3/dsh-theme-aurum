@@ -18,8 +18,8 @@
       "scripts": ["verify/verify-cards3.js", "verify/verify-compact.js", "verify/verify-ctx-repro.js", "verify/verify-ctx-light.js"]
     },
     "sidebar": {
-      "desc": "侧栏会话列表/todo 折叠",
-      "scripts": ["verify/verify-sbmore.js", "verify/verify-todofold.js", "verify/verify-sbmore-light.js", "verify/verify-todofold-light.js"]
+      "desc": "侧栏会话列表/todo 折叠/工作区菜单扩展点",
+      "scripts": ["verify/verify-sbmore.js", "verify/verify-todofold.js", "verify/verify-sbmore-light.js", "verify/verify-todofold-light.js", "verify/verify-p27-rowmenu.js"]
     },
     "live": {
       "desc": "真实 LLM 调用(发消息等思考流),仅 --set all 时包含",

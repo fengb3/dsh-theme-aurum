@@ -689,6 +689,43 @@ window.__ModuleLoader__.load({
          工作区」菜单、Esc 关闭;'+' 与 dots svg display:block、4.5/4.5
          居中;全套 17 脚本(p23~p26/gate/p8b/proto-diff/darkskin/cards3/
          think/compact/ctx×2/sbmore/todofold×2)NODE-EXIT=0 全绿。 */
+      /* ── P27 · 承接官方 sidebar.workspaces.row-menu 扩展点(2026-08-28,
+         用户报:装 dsh-open-in-vscode@0.1.6 后工作区 … 菜单里「在 VSCode
+         中打开」条目不出现)──
+         根因(两层):① aurum priority:-1 遮蔽官方 WorkspaceBrowser 后,
+         自绘工作区菜单从未渲染该扩展点;② 现役官方运行时(0.1.1)自己也
+         没声明这个子槽 —— 插件经 slots.inject 挂起的注册回调一直没人触发,
+         其 DOM 兜底(spec 缺席时安装)又只认官方菜单 DOM,两头落空。
+         修(两侧):
+         1. 声明侧:注册 sidebar.workspaces 时,spec('sidebar.workspaces.
+            row-menu') 缺席才由 aurum 补声明 children(kind=single —— 现役
+            插件 register 不带 id/key,kind=list/keyed 的注册校验会直接拒;
+            官方运行时将来自带声明则让位,规避 turn-tail 式同 key 二次声明
+            throw 炸注册)。声明提交即触发插件挂起的 inject 回调(注册行),
+            同时其 DOM 兜底随 spec 转 defined 自动拆除,无双行风险;
+         2. 渲染侧:kit.renderSlot 面(随 children 声明而来)线程传
+            AuBrowser→AuBrowserWide(含 Mobile 抽屉),工作区 … 菜单尾接
+            renderSlot('sidebar.workspaces.row-menu',{cwd,label,onClose})
+            (owner share 按官方契约);分隔线+条目块以 entriesOfSlot>0 且
+            ws.path 双门控(防悬空分隔线);容器 .au-menu-x 仅
+            display:contents 不引布局。停 aurum → 声明随注册级联卸载 →
+            插件回退 DOM 兜底对官方菜单生效,回退路径完整;
+          3. 风格归流(用户二审:插件行与菜单其他项风格不同):插件行自带
+             官方单元格规格(14px/22 行高/min-h40/16px 图标/label-primary
+             近黑/官方中性 hover),outlet 级通用规则把任意 role=menuitem
+             注入行统一 .mi 几何(12.5px/行高 1.4/高 33.5/padding 8 11/
+             13px 图标/muted 色/金 tint hover/focus 环 aurum-focus;选择器
+             0,3,1 压过插件自带 0,1,0)。注:井号即官方 IconCodeOutline16
+             图标本体(实心 fill 造型,较 edit/error 描边系重),非乱码;
+          4. 终审微调(用户决策):工作区菜单自有两项(重命名目录/删除工作区)
+             之间不再加分隔线,紧凑排列 —— 分隔线仅用于隔开尾接的扩展注入行。
+          实测(verify-p27-rowmenu.js):outlet[data-slot] 在菜单内(display:
+          contents)、插件行 186×33.5(==.mi 同高)12.5px/17.5 字号一致、图标
+          13px 同尺寸、文字色同源、分隔线在前、点击关菜单(onClose 通,宿主
+          remote 端到端)、深浅双色均过、悬停金 tint oklch(0.79 .13 84/.1)
+          与 .mi:hover 逐字节一致(「圆角矩形包裹」即此 hover 态,截图时鼠标
+          悬停所致)、零 console 错误;sidebar 域(sbmore/todofold×2)+ p26 +
+          core 三门禁(gate/p8b/proto-diff)NODE-EXIT=0。 */
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
 const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -1641,6 +1678,21 @@ const CSS3 = [
   ".mi .mk{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--faint)}",
   ".mi .mk.on{color:var(--gold-strong)}",
   ".menu-sep{height:1px;background:color-mix(in oklab, var(--fg) 8%, transparent);margin:5px 8px}",
+  /* P27:row-menu 扩展条目容器 —— 纯 key 锚/display:contents,插件行自带样式 */
+  ".au-menu-x{display:contents}",
+  /* P27 补 · 注入行归流 .mi 视觉(用户报:插件行与菜单其他项风格不同)——
+     插件行自带官方单元格规格(14px 字/22px 行高/min-h40/16px 图标/
+     label-primary 近黑色/官方中性 hover),混进 .mi 菜单显大显黑显高;
+     outlet 级通用归流:任意注册进 row-menu 的 role=menuitem 按钮统一
+     aurum 菜单项几何与金 hover(选择器 0,3,1 压过插件自带 0,1,0/0,2,0;
+     dsh-open-in-vscode 的 16px 图标 span 同步收 13 对齐图标列);
+     注:官方 code 图标本体即井号造型(IconCodeOutline16),非乱码 */
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]{font-family:var(--font-ui);font-size:12.5px;line-height:1.4;min-height:0;padding:8px 11px;gap:9px;border-radius:8px;color:var(--muted)}",
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:hover{background:oklch(79% 0.13 84 / .1);color:var(--fg)}",
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"] svg{width:13px;height:13px;color:var(--faint);flex:none}",
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:hover svg{color:var(--gold-strong)}",
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:focus-visible{outline-color:var(--aurum-focus)}",
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] .dsh-open-in-vscode-icon{width:13px;height:13px}",
   /* ── P10 · §6 todo-bar(整段拷贝;AuTodoBar 消费)──
      唯一机械替换外的适配:.todo-it.now .td 的 keyframes pulse → au-pulse
      (P8b 已有同名同体 50%{opacity:.25},避免全局 keyframe 名与官方冲突)。
@@ -2413,8 +2465,20 @@ function AuBrowserWide(props) {
     if (!g) return null;
     const out = [auMi("ren", "重命名目录", { icon: Ic("edit"), onClick: function () { startRename("ws", g.key, g.label); } })];
     if (g.ws) {
-      out.push(auSep("w0"));
+      /* P27 终审(用户决策):自有两项(重命名/删除)之间不加分隔线,紧凑排列;
+         分隔线只用于隔开尾接的扩展注入行 */
       out.push(auMi("del", del === g.key ? "确认删除工作区?" : "删除工作区", { icon: Ic("error"), danger: true, onClick: function () { if (del === g.key) { au.deleteWorkspace(g.ws.workspaceId); closeMenu(); } else setDel(g.key); } }));
+      /* P27 · 官方 row-menu 扩展点承接:插件注入行尾接在 aurum 自有菜单项之后。
+         门控:在册条目 >0 且工作区有目录(插件行 cwd 缺失时自渲染 null,提前
+         拦下免得分隔线悬空);owner share 按官方契约 = cwd(绝对路径)/label
+         (显示名)/onClose(点击后关菜单)。renderSlot 面来自 children 声明
+         (见 apply 侧 P27),官方运行时将来自己声明该子槽时 aurum 让位、面缺席
+         则静默跳过。容器 .au-menu-x 仅 display:contents,不引额外布局。 */
+      if (g.ws.path && typeof props.renderSlot === "function" && au.rowMenuCount() > 0) {
+        out.push(auSep("wx"));
+        out.push(h("div", { key: "wx-rows", className: "au-menu-x" },
+          props.renderSlot("sidebar.workspaces.row-menu", { cwd: g.ws.path, label: g.label, onClose: closeMenu })));
+      }
     }
     return out;
   };
@@ -2516,7 +2580,7 @@ function AuBrowserMobile(props) {
     open ? h("div", { className: "au-drawer-scrim", onClick: function () { st[1](false); } }) : null,
     open ? h("div", { className: "au-drawer", onClick: function (e) {
       if (e.target && e.target.closest && e.target.closest(".au-srow")) setTimeout(function () { st[1](false); }, 160);
-    } }, h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: props.au })) : null);
+    } }, h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: props.au, renderSlot: props.renderSlot })) : null);
 }
 function AuBrowser(props) {
   const wide = props.wide !== false;
@@ -2528,7 +2592,9 @@ function AuBrowser(props) {
   if (typeof props.useSessions !== "function" || typeof props.useWorkspaces !== "function") {
     return h("div", { className: "au-ws-empty" }, "…");
   }
-  return h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: au });
+  /* P27:renderSlot 面(kit 由 children 声明带来)线程传给 wide 浏览器,
+     工作区 … 菜单用它渲染 sidebar.workspaces.row-menu 注入行 */
+  return h(AuBrowserWide, { useSessions: props.useSessions, useWorkspaces: props.useWorkspaces, au: au, renderSlot: props.renderSlot });
 }
 
 /* ═══ P8c · 折叠细条(原型 .sb-rail):logo 悬停「鲸鱼⇄展开面板」交叉淡切,点击展开;
@@ -3002,11 +3068,29 @@ return {
          directory-picker-unavailable —— 由调用方回退手动输入行 */
       pickWorkspaceDirectory: function () { return workspacesSvc.pickDirectory(); },
       renameWorkspace: function (workspaceId, title) { return workspacesSvc.rename(workspaceId, title); },
-      deleteWorkspace: function (workspaceId) { return workspacesSvc.delete(workspaceId); }
+      deleteWorkspace: function (workspaceId) { return workspacesSvc.delete(workspaceId); },
+      /* P27 · row-menu 扩展点在册条目数:菜单渲染期快照(注册表读,非响应式),
+         仅作分隔线/条目块的门控 —— 菜单是瞬时浮层,插件装卸间隙足够新;
+         SlotOutlet 自身订阅 slot 版本,菜单开着时插件装卸会实时增删行。 */
+      rowMenuCount: function () {
+        try { return slots.entriesOfSlot("sidebar.workspaces.row-menu").length; } catch (e) { return 0; }
+      }
     };
 
     slots.inject("sidebar.workspaces", function () {
-      return slots.register({ name: "sidebar.workspaces", priority: -1, registrant: "aurum" }, function (props) {
+      /* P27 · 承接官方 sidebar.workspaces.row-menu 扩展点:aurum 遮蔽官方浏览器后,
+         该子槽必须有人声明 + 渲染,插件(dsh-open-in-vscode 等)经 slots.inject 挂起
+         的注册回调才有落点(声明提交即触发,DOM 兜底适配器也随之让位拆除)。
+         声明守则(turn-tail 教训:同一 child key 第二个声明者 throw,会炸掉后来者的
+         整个 register):仅当运行时无人声明该子槽时由 aurum 声明;官方包将来自己
+         声明时(官方 apply 先于本插件加载,children 与父槽同一 register 事务提交,
+         本回调运行时 spec 已在册)自动让位。kind=single:现役插件 register 不带
+         id/key,kind=list/keyed 的注册校验会直接拒之门外。 */
+      const reg = { name: "sidebar.workspaces", priority: -1, registrant: "aurum" };
+      if (slots.spec("sidebar.workspaces.row-menu") === undefined) {
+        reg.children = { "sidebar.workspaces.row-menu": { kind: "single", scope: "root" } };
+      }
+      return slots.register(reg, function (props) {
         const p = Object.assign({}, props);
         p.au = auActions;
         return h(AuBrowser, p);
