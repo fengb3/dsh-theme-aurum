@@ -1,10 +1,18 @@
 # dsh-theme-aurum
 
-[DSH(DeepSeek Harness)](https://github.com/) 的**鎏金主题**插件:由 `dsh-agent-workspace.html` 原型(金粉奢华)移植,零构建、纯 loader 格式。**v1.1.0** —— 全界面接管完成。
+[DSH(DeepSeek Harness)](https://github.com/deepseek-ai/deepseek-harness) 的**鎏金主题**插件:由 `dsh-agent-workspace.html` 原型(金粉奢华)移植,零构建、纯 loader 格式。**v1.1.0** —— 全界面接管完成。
+
+**DSH Web 兼容范围:`>=0.1.0-rc.6`**(在 `0.1.0-rc.6` 官方 client API 线上开发,`0.1.1-rc.2` 实机全量门禁通过)。
+
+![浅色 · 整页外观](screenshots/aurum-think-done-open.png)
+
+![深色 · 设置弹窗与全局金色化](screenshots/diag-appearance-after.png)
+
+> 更多界面细节见 [`screenshots/`](./screenshots/) 目录。
 
 ## 功能总览(P1–P15 全量)
 
-- **主题**:oklch 金粉双主题 `aurum-dark` / `aurum-light`(24px 点阵画布、香槟金、衬线正文),侧栏底部「深色/浅色主题」一键切换;非鎏金主题下加载自动切入。
+- **主题**:oklch 金粉双色层(`theme.overrideTokens` 常驻 {light,dark} 双色,24px 点阵画布、香槟金、衬线正文),侧栏底部「深色/浅色主题」一键切换官方 preference(持久化、可跟随系统)。
 - **浮动卡片布局**:侧栏圆角渐变卡 + 柔影渐变(阴影完整铺过主区,无分割线);折叠态 56px 细条(鲸鱼 logo 悬停淡切展开)。
 - **左侧会话栏**(遮蔽 `sidebar.workspaces`):
   - 目录头:「工作区」标签 + 展开式搜索(金圈聚焦)+ 视图菜单(最近活动/名称/手动序排序 + 平铺)+ 添加工作区;
@@ -23,10 +31,19 @@
 ## 安装
 
 ```sh
+# GitHub 安装(推荐;固定到发布 commit,如 v1.1.0)
+dsh plugin --profile web add github:fengb3/dsh-theme-aurum#<commit-sha>
+
+# 本地开发(link 安装,编辑即生效)
 dsh plugin --profile web add <本仓库路径>
 ```
 
 重启 `dsh web` 生效(所有页面自动加载,无需手动激活)。
+
+## 兼容性
+
+- **DSH Web:`>=0.1.0-rc.6`** —— 基于 `0.1.0-rc.6` 官方 client API(`theme.overrideTokens` / `slots.register`)开发,`0.1.1-rc.2` 实机全量门禁通过
+- **平台**:web(能力全部在浏览器半,零构建、无宿主进程开销)
 
 ## 卸载
 
@@ -64,4 +81,4 @@ node verify-run.mjs verify/verify-gate.js verify/verify-p8b.js verify/verify-p8c
 
 ## License
 
-MIT
+[MIT](./LICENSE) © fengb3

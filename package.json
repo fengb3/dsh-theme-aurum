@@ -1,13 +1,14 @@
 {
   "name": "dsh-theme-aurum",
   "version": "1.1.0",
-  "description": "DSH 鎏金主题插件:oklch 金粉配色 + 点阵画布 + 浮动卡片侧栏 + 会话栏/会话流/输入坞/工具卡全量接管(未知工具官方图标兜底),图标一律 DSH 官方原版,theme 服务注册 aurum-dark/aurum-light,零构建 loader 格式",
+  "description": "DSH 鎏金主题插件:oklch 金粉配色 + 点阵画布 + 浮动卡片侧栏 + 会话栏/会话流/输入坞/工具卡全量接管(未知工具官方图标兜底),图标一律 DSH 官方原版,theme.overrideTokens 常驻 {light,dark} 双色层,零构建 loader 格式",
   "type": "module",
   "main": "index.js",
   "files": [
     "index.js",
     "client.js",
     "cordis.patch.yml",
+    "LICENSE",
     "README.md"
   ],
   "keywords": [
