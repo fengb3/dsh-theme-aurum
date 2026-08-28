@@ -24,12 +24,15 @@ async page => {
   out.menuOpened = opened;
 
   /* 2. row-menu outlet + 插件行(插槽由 aurum 声明,插件注入行由 SlotOutlet 渲染)
-        + 风格归流断言:与 .mi 同菜单项逐项对齐(字号/行高/图标列/文字色) */
+        + 风格归流断言:与 .mi 同菜单项逐项对齐(字号/行高/图标列/文字色)
+        P27b:扩展区还有第二个 outlet aurum.workspaces.menu-extra(list 槽,
+        空 list 渲染 fallback null —— 无行但锚点在) */
   out.rowBlock = await page.evaluate(() => {
     const m = document.querySelector('.menu.open');
     if (!m) return null;
     const outlet = m.querySelector('[data-slot="sidebar.workspaces.row-menu"]');
     const row = outlet && outlet.querySelector('.dsh-open-in-vscode-row');
+    const extraOutlet = m.querySelector('[data-slot="aurum.workspaces.menu-extra"]');
     const seps = [...m.querySelectorAll('.menu-sep')];
     if (!outlet || !row) return { outlet: !!outlet, row: !!row, menuText: m.textContent.trim().slice(0, 60) };
     const mi = m.querySelector('.mi');
@@ -40,8 +43,20 @@ async page => {
     const svg = row.querySelector('svg');
     const misvg = mi ? mi.querySelector('svg') : null;
     const sepBefore = seps.some(s => s.compareDocumentPosition(outlet) & Node.DOCUMENT_POSITION_FOLLOWING);
+    /* P27b 补 · 裸 button 探针:往 menu-extra outlet 临时塞一个无任何自带样式
+       的 role=menuitem 按钮,断言归流规则含完整 reset(背景透明/flex/无边框/
+       撑满宽)—— 防「假设注入行自带官方规格」类回归(用户报圆角矩形包裹) */
+    let probe = null;
+    if (extraOutlet) {
+      probe = document.createElement('button');
+      probe.setAttribute('role', 'menuitem');
+      extraOutlet.appendChild(probe);
+      var pcs = getComputedStyle(probe);
+      var probeInfo = { bg: pcs.backgroundColor, display: pcs.display, borderTop: pcs.borderTopWidth, w: pcs.width };
+      probe.remove();
+    }
     return {
-      outlet: true, row: true, sepBefore,
+      outlet: true, row: true, extraOutlet: !!extraOutlet, sepBefore, probe: probeInfo || null,
       label: row.textContent.trim(),
       role: row.getAttribute('role'),
       visible: r.width > 0 && r.height > 0 && cs.visibility !== 'hidden',
@@ -110,7 +125,8 @@ async page => {
     out.ungroupedNoOutlet = await page.evaluate(() => {
       const m = document.querySelector('.menu.open');
       if (!m) return 'no-menu';
-      return !m.querySelector('[data-slot="sidebar.workspaces.row-menu"]');
+      /* P27b:row-menu 与 menu-extra 两个 outlet 都不应出现在无 cwd 的菜单 */
+      return !m.querySelector('[data-slot="sidebar.workspaces.row-menu"]') && !m.querySelector('[data-slot="aurum.workspaces.menu-extra"]');
     });
     await page.keyboard.press('Escape');
   }
@@ -133,6 +149,11 @@ async page => {
     out.lightTheme.hMatch === false ? 'light theme row height mismatch' : null,
     out.clickCloses === true ? null : 'click did not close menu (' + out.clickCloses + ')',
     out.ungrouped === true ? (out.ungroupedNoOutlet === true ? null : 'ungrouped menu has outlet') : null,
+    rb.extraOutlet ? null : 'P27b menu-extra outlet missing in menu',
+    (rb.probe && rb.probe.display === 'flex') ? null : 'probe display!=flex (' + JSON.stringify(rb.probe) + ')',
+    (rb.probe && (rb.probe.bg === 'rgba(0, 0, 0, 0)' || rb.probe.bg === 'transparent')) ? null : 'probe bg not transparent: ' + (rb.probe && rb.probe.bg),
+    (rb.probe && rb.probe.borderTop === '0px') ? null : 'probe border not 0: ' + (rb.probe && rb.probe.borderTop),
+    (rb.probe && parseFloat(rb.probe.w) > 150) ? null : 'probe width not filled: ' + (rb.probe && rb.probe.w),
   ].filter(Boolean);
   return { failures: failures.length, details: failures, ...out };
 }

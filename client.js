@@ -726,6 +726,31 @@ window.__ModuleLoader__.load({
           与 .mi:hover 逐字节一致(「圆角矩形包裹」即此 hover 态,截图时鼠标
           悬停所致)、零 console 错误;sidebar 域(sbmore/todofold×2)+ p26 +
           core 三门禁(gate/p8b/proto-diff)NODE-EXIT=0。 */
+       /* ── P27b · menu-extra:多插件共存 list 槽(2026-08-28,用户测试动态插件
+          时报:注入行把 dsh-open-in-vscode 行顶掉)──
+          根因(前端 bundle SlotCore 实证):single 槽决胜 = priority 升序排
+          序后取首个 live 注册("lowest renders" 官方原话),同 priority 第二个
+          注册直接 throw —— single 槽不存在"不顶掉"的注册方式;而 row-menu
+          改声明 list 会拒掉 vscode 等旧式无 id 注册(register 校验 throw)。
+          修:aurum 作为菜单 owner 增设自有子槽 aurum.workspaces.menu-extra
+          (kind=list,scope=root,带 id 注册每插件一行互不遮蔽),菜单扩展区
+          并列渲染 row-menu + menu-extra 两个 outlet,owner share 同契约
+          {cwd,label,onClose};分隔线/条目块门控改两槽任一在册
+          (rowMenuCount || extraMenuCount);CSS 归流规则同款复制到
+          [data-slot=aurum.workspaces.menu-extra],两 outlet 视觉无差别。
+          旧文档勘误:"先注册者胜"表述有误 —— 注册 append 后立即按 priority
+          重排,注册顺序不参与决胜;真实规则 = lowest priority renders,同
+          priority 后注册者 throw(官方 shadow 机制)。
+          P27b 二审(用户报:裸 button 注入行被「圆角矩形包裹」且图标文字
+          挤在一起):归流规则原假设「注入行自带官方单元格规格」—— vscode
+          行自带 display:flex/border:none/background:transparent 全套 reset,
+          裸 button 无自带样式,UA 默认按钮皮(灰底+边框+非 flex)露出。
+          修:reset(display/align/width/text-align/background/border/cursor/
+          transition)并入两槽归流基础规则 —— vscode 行自带同值零变化,
+          任意裸注入行被彻底归一。门禁 verify-p27-rowmenu 补裸 button 探针
+          (menu-extra outlet 内临时节点断言 bg 透明/flex/无边框/撑满宽),
+          实测探针 rgba(0,0,0,0)/flex/0px/186px,vscode 行 186×33.5 零变化,
+          sidebar 域五脚本全绿。 */
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
 const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -1687,12 +1712,23 @@ const CSS3 = [
      aurum 菜单项几何与金 hover(选择器 0,3,1 压过插件自带 0,1,0/0,2,0;
      dsh-open-in-vscode 的 16px 图标 span 同步收 13 对齐图标列);
      注:官方 code 图标本体即井号造型(IconCodeOutline16),非乱码 */
-  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]{font-family:var(--font-ui);font-size:12.5px;line-height:1.4;min-height:0;padding:8px 11px;gap:9px;border-radius:8px;color:var(--muted)}",
+  /* P27b 补 · 归流规则并入 button reset(display/background/border/width/
+      cursor/text-align/transition)—— 原假设「注入行自带官方单元格规格」被裸
+      button 注册打破(UA 默认灰底+边框+非 flex 露出,用户报「圆角矩形包裹」);
+      vscode 行自带同值零变化,裸行被彻底归一为 .mi 同款 */
+  ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]{display:flex;align-items:center;width:100%;text-align:left;background:none;border:none;cursor:pointer;transition:background .15s,color .15s;font-family:var(--font-ui);font-size:12.5px;line-height:1.4;min-height:0;padding:8px 11px;gap:9px;border-radius:8px;color:var(--muted)}",
   ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:hover{background:oklch(79% 0.13 84 / .1);color:var(--fg)}",
   ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"] svg{width:13px;height:13px;color:var(--faint);flex:none}",
   ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:hover svg{color:var(--gold-strong)}",
   ".menu [data-slot=\"sidebar.workspaces.row-menu\"] button[role=\"menuitem\"]:focus-visible{outline-color:var(--aurum-focus)}",
   ".menu [data-slot=\"sidebar.workspaces.row-menu\"] .dsh-open-in-vscode-icon{width:13px;height:13px}",
+  /* P27b · aurum.workspaces.menu-extra(list 槽)注入行归流 —— 与 row-menu 同款
+     .mi 几何/金 hover,两 outlet 同处 .au-menu-x 扩展区视觉无差别 */
+  ".menu [data-slot=\"aurum.workspaces.menu-extra\"] button[role=\"menuitem\"]{display:flex;align-items:center;width:100%;text-align:left;background:none;border:none;cursor:pointer;transition:background .15s,color .15s;font-family:var(--font-ui);font-size:12.5px;line-height:1.4;min-height:0;padding:8px 11px;gap:9px;border-radius:8px;color:var(--muted)}",
+  ".menu [data-slot=\"aurum.workspaces.menu-extra\"] button[role=\"menuitem\"]:hover{background:oklch(79% 0.13 84 / .1);color:var(--fg)}",
+  ".menu [data-slot=\"aurum.workspaces.menu-extra\"] button[role=\"menuitem\"] svg{width:13px;height:13px;color:var(--faint);flex:none}",
+  ".menu [data-slot=\"aurum.workspaces.menu-extra\"] button[role=\"menuitem\"]:hover svg{color:var(--gold-strong)}",
+  ".menu [data-slot=\"aurum.workspaces.menu-extra\"] button[role=\"menuitem\"]:focus-visible{outline-color:var(--aurum-focus)}",
   /* ── P10 · §6 todo-bar(整段拷贝;AuTodoBar 消费)──
      唯一机械替换外的适配:.todo-it.now .td 的 keyframes pulse → au-pulse
      (P8b 已有同名同体 50%{opacity:.25},避免全局 keyframe 名与官方冲突)。
@@ -2474,10 +2510,11 @@ function AuBrowserWide(props) {
          (显示名)/onClose(点击后关菜单)。renderSlot 面来自 children 声明
          (见 apply 侧 P27),官方运行时将来自己声明该子槽时 aurum 让位、面缺席
          则静默跳过。容器 .au-menu-x 仅 display:contents,不引额外布局。 */
-      if (g.ws.path && typeof props.renderSlot === "function" && au.rowMenuCount() > 0) {
+      if (g.ws.path && typeof props.renderSlot === "function" && (au.rowMenuCount() > 0 || au.extraMenuCount() > 0)) {
         out.push(auSep("wx"));
         out.push(h("div", { key: "wx-rows", className: "au-menu-x" },
-          props.renderSlot("sidebar.workspaces.row-menu", { cwd: g.ws.path, label: g.label, onClose: closeMenu })));
+          props.renderSlot("sidebar.workspaces.row-menu", { cwd: g.ws.path, label: g.label, onClose: closeMenu }),
+          props.renderSlot("aurum.workspaces.menu-extra", { cwd: g.ws.path, label: g.label, onClose: closeMenu })));
       }
     }
     return out;
@@ -3074,6 +3111,11 @@ return {
          SlotOutlet 自身订阅 slot 版本,菜单开着时插件装卸会实时增删行。 */
       rowMenuCount: function () {
         try { return slots.entriesOfSlot("sidebar.workspaces.row-menu").length; } catch (e) { return 0; }
+      },
+      /* P27b · menu-extra(list)在册行数:与 rowMenuCount 同为分隔线/条目块门控
+         (list 每带 id 注册一行,多插件互不遮蔽) */
+      extraMenuCount: function () {
+        try { return slots.entriesOfSlot("aurum.workspaces.menu-extra").length; } catch (e) { return 0; }
       }
     };
 
@@ -3087,9 +3129,18 @@ return {
          本回调运行时 spec 已在册)自动让位。kind=single:现役插件 register 不带
          id/key,kind=list/keyed 的注册校验会直接拒之门外。 */
       const reg = { name: "sidebar.workspaces", priority: -1, registrant: "aurum" };
+      /* P27b · 声明集:官方契约槽 row-menu(single,现役 vscode 插件注册不带
+         id,list/keyed 校验会拒,lowest-render 遮蔽链是其唯一多注册形态)+
+         aurum 自有 menu-extra(list,带 id 注册每插件一行,互不遮蔽 —— 多插件
+         共存的正道)。两槽同守"无人声明才声明"守则(同 key 二次声明 throw)。 */
+      const kids = {};
       if (slots.spec("sidebar.workspaces.row-menu") === undefined) {
-        reg.children = { "sidebar.workspaces.row-menu": { kind: "single", scope: "root" } };
+        kids["sidebar.workspaces.row-menu"] = { kind: "single", scope: "root" };
       }
+      if (slots.spec("aurum.workspaces.menu-extra") === undefined) {
+        kids["aurum.workspaces.menu-extra"] = { kind: "list", scope: "root" };
+      }
+      if (Object.keys(kids).length > 0) reg.children = kids;
       return slots.register(reg, function (props) {
         const p = Object.assign({}, props);
         p.au = auActions;

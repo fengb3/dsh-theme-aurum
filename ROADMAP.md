@@ -73,6 +73,7 @@
 | **P25** | **§7 修缮** | **图标瓦片 svg display:block:Mac 上工具卡图标向下偏移修复(用户报+定位)** | **au-ico/au-chev/.chev 五条 svg 规则补 display:block** | **✅** |
 | **P26** | **§4 修缮** | **workspace 组头菜单按钮回归(g.menuSlot→props.menuSlot)+ 按钮图标 strut 偏移 13 条全家族修复(用户报)** | **props 修正 + svg display:block×13;verify-p26-wsmenu 门禁;p24-hover/todofold 扫描加固** | **✅** |
 | **P27** | **§4 修缮** | **承接官方 sidebar.workspaces.row-menu 扩展点:遮蔽官方浏览器后自绘菜单声明+渲染该子槽,dsh-open-in-vscode 等插件的注入行恢复可见(用户报)** | **条件 children 声明(kind=single)+ renderSlot 面线程传递 + 菜单尾接注入行;verify-p27-rowmenu 门禁** | **✅** |
+| **P27b** | **§4 修缮** | **menu-extra 多插件共存 list 槽:动态插件注入行顶掉 vscode 行引出的 single 席位互斥,aurum 增设自有 list 槽令新旧插件行并列(用户报+SlotCore 实证勘误)** | **children 声明集 + 双 outlet 并列渲染 + 双槽门控 + CSS 归流同款;rmtest 动态插件 v2 验证** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -763,6 +764,31 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
   截图时鼠标悬停所致;静止态背景全透明,探针 dual-state 实证)、零
   console 错误;sidebar 域(sbmore/todofold×2)+ p26-wsmenu + core 三门禁
   (gate/p8b/proto-diff)NODE-EXIT=0。
-- **已知边界**:single kind 下多家 row-menu 插件会互相遮蔽(先注册者胜)
-  —— 这是现役 runtime 对无 id 注册的唯一可表达形态,官方将来定形该扩展点
-  后以其声明为准再对齐。
+- **已知边界(勘误+解法)**:原表述「先注册者胜」有误 —— 前端 bundle SlotCore
+  实证:register 是 append 后按 priority 升序立即重排,渲染取排序后首个 live
+  注册,注册顺序不参与决胜;真实规则 = **lowest priority renders,同 priority
+  后注册者直接 throw**(官方报错原话 "register at a different priority to
+  shadow it (lowest renders)",即 -1 遮 0 的 shadow 机制)。故 single 槽不存在
+  「不顶掉」的注册方式;row-menu 改声明 list 又会拒掉 vscode 等旧式无 id 注册。
+  解法见 P27b:aurum 自有 list 槽承接多插件共存。官方将来定形该扩展点后以其
+  声明为准再对齐。
+
+### P27b · menu-extra:多插件共存 list 槽(动态插件测试反馈)◐ 2026-08-28
+
+- **背景**:用户以动态插件往 row-menu 注入测试行(priority:-1),合法遮蔽了
+  dsh-open-in-vscode 行(priority 0),引出「single 席位互斥如何共存」。
+- **改动**:①children 声明集增设 aurum 自有子槽 `aurum.workspaces.menu-extra`
+  (kind=list,scope=root)——带 id 注册每插件一行、互不遮蔽,同守「无人声明
+  才声明」守则;②菜单扩展区并列渲染 row-menu + menu-extra 两个 outlet,
+  owner share 同契约 {cwd,label,onClose};③分隔线/条目块门控改两槽任一
+  在册(rowMenuCount || extraMenuCount);④CSS 归流规则同款复制到
+  `[data-slot=aurum.workspaces.menu-extra]`,两 outlet 视觉零差别。
+- **效果**:vscode 行(single 席)+ 新插件行(list)同菜单并列;动态测试插件
+  rmtest v2 改注册 menu-extra 验证。
+- **二审(用户报:裸 button 注入行「圆角矩形包裹」+ 图标文字挤排)**:归流规则
+  原假设注入行自带官方单元格 reset —— vscode 行确实自带(display:flex/
+  border:none/background:transparent),裸 button 则 UA 默认按钮皮露出。
+  修:reset(display/align/width/text-align/bg/border/cursor/transition)并入
+  两槽归流基础规则,任意裸注入行彻底归一。门禁补裸 button 探针(outlet 内
+  临时节点断言 bg 透明/flex/无边框/撑满宽),实测 rgba(0,0,0,0)/flex/0px/
+  186px;vscode 行 186×33.5 零变化;sidebar 域五脚本全绿。
