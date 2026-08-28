@@ -1,5 +1,6 @@
 # deps
 node_modules/
+.npmcache/
 
 # playwright-cli 会话残留
 .playwright-cli/

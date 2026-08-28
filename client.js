@@ -333,6 +333,17 @@ window.__ModuleLoader__.load({
     50% 座位高(height:100% → calc(100% + 50%),::before/::after 同步),渐变仍
     transparent→底色 0→100% 拉满、恰在视口底边收口;视觉 = 座位上方半座高开始
     渐隐 + 整个输入坞内继续,到底边完全隐没。窄屏随座位高度自适应无需覆写。
+     修订 XV(2026-08-28,用户指定):顶部渐隐带加倍 —— scrollBody mask
+     transparent 0 → #000 70px 改 140px(窄屏 100→200),让位 padding-top
+     86→156 / 130→230(渐隐区 + 原留白 16/30),消息初始态仍在纱下完整可见;
+     浮头高 70 不变,渐隐带下探超出浮头 70px。实测(verify-topfade.js 四象限):
+     wide 140/156/顶滚首内容 y172、narrow 200/230/y294,双主题一致;三门禁
+     gate/p8b/proto-diff 复跑全绿(gate 折叠态 regionArea/rail 溢出为过渡
+     时序噪声,改动前基线同样存在,与本改无关)。
+     修订 XVI(2026-08-28 续,用户指定):顶部渐隐带回调一档 —— 110/160
+     (窄屏),让位 126/190;较翻倍档收窄,仍比原始 70/100 高约六成,顶部
+     完全透明区变矮。实测:wide 110/126/首内容 y171、narrow 160/190/y283,
+     双主题一致;topfade 四象限 + 三门禁复跑全绿。
 
     ═══ P15 · 验收发版 v1.1.0(2026-08-24)═══
     全量门禁(11 脚本)终跑全绿;双主题视觉验收(浅/深整页 vision 复核)通过;
@@ -969,7 +980,7 @@ const CSS1 = [
   "body .wSkVaW_headerActions{order:3;margin-left:0}",
   "body .wSkVaW_headerUtilities{order:2}",
   "body .wSkVaW_tabs{order:1;display:flex;gap:2px;margin:0;border:1px solid transparent;border-radius:999px;padding:3px;background:color-mix(in oklab,var(--bg-deep) 84%,transparent)}",
-  /* 滚动区顶部让位浮头(70 纱高 + 16 原留白),消息初始态在纱下方完整可见 */
+  /* 滚动区顶部让位浮头(110 纱高 + 16 原留白),消息初始态在纱下方完整可见 */
   /* P15 前修订 VI:渐隐由 mask 承担 —— 滚动视口顶部 70px 内容真透明(透出画布),
      header 自身 background:none。mask 打在滚动视口上,随视口坐标系固定不随内容滚动;
      浅色主题透出浅色画布,自动兼容;70 = 浮头高,86 = 70 渐隐区 + 16 原留白。
@@ -982,7 +993,12 @@ const CSS1 = [
      [座位顶上方 120px → 视口底],z-index:-1 在座位内容背后(座位 sticky 自成
      层叠上下文,纱压住穿行的消息、不碰小字);仅 [data-phase=active] 会话态
      启用,空态 hero 不受纱染;scrollBody mask 回归仅顶部 */
-  "body .wSkVaW_scrollBody{padding-top:86px;mask-image:linear-gradient(180deg,transparent 0px,#000 70px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 70px)}",
+  "body .wSkVaW_scrollBody{padding-top:126px;mask-image:linear-gradient(180deg,transparent 0px,#000 110px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 110px)}",
+   /* 修订 XV(2026-08-28,用户指定):顶部渐隐带加倍 —— mask 70→140(窄屏 100→200),
+      让位 padding-top 86→156 / 130→230(渐隐区 + 原留白 16/30),消息初始态仍在
+      纱下完整可见;浮头高 70 不变,渐隐带下探超出浮头 70px。
+      修订 XVI(2026-08-28 续,用户指定):渐隐带回调一档 —— 140→110(窄屏
+      200→160),让位 126/190;仍比原始 70/100 高约六成,顶部完全透明区收窄。 */
   /* 底部渐隐纱(修订 VIIIb):挂 composerSeat 而非 scrollBody mask —— 座位
      sticky 贴底,mask 会连座位小字一起渐隐且无法子级豁免;纱在座位内容
      背后(z-index:-1,sticky 自成层叠上下文),只吞穿行消息。
@@ -1586,7 +1602,7 @@ const CSS3 = [
   "body .wSkVaW_headerUtilities{order:2}",
   "body .wSkVaW_headerActions{order:2}",
   "body .wSkVaW_tabs,body .wSkVaW_headerUtilities,body .wSkVaW_headerActions{align-self:center}",
-  "body .wSkVaW_scrollBody{padding-top:130px;mask-image:linear-gradient(180deg,transparent 0px,#000 100px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 100px)}",
+  "body .wSkVaW_scrollBody{padding-top:190px;mask-image:linear-gradient(180deg,transparent 0px,#000 160px);-webkit-mask-image:linear-gradient(180deg,transparent 0px,#000 160px)}",
   /* 底部渐隐纱窄屏覆写已删(修订 XIII 起):主档 height:100% + 0→100% 渐变
      本就随座位高度自适应,窄屏无需再覆写,避免日后主档调参窄屏悄悄分叉 */
   /* 窄屏档:旧 viewArea/Md3f7G_root 让位已随官方 DOM 升级删除(同主档追补) */

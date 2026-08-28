@@ -144,6 +144,13 @@
   DOM 升级后滚动区类名 Md3f7G_scroll → wSkVaW_scrollBody(root 直接子级),
   P22 的 viewArea padding + Md3f7G_root 负 margin 让位链选择器已空挂,
   一并改靶/删除(窄屏 ≤820px 档 mask 延至 100px / padding-top 130)。
+- ✅ 修订 XV(顶部渐隐带加倍,2026-08-28,用户指定):scrollBody mask 70→140px
+  (窄屏 100→200),让位 padding-top 86→156 / 130→230(渐隐区 + 原留白 16/30),
+  消息初始态仍在渐隐带下方完整可见;浮头高 70 不变。新增 verify/verify-topfade.js
+  四象限实测(140/156、200/230 双主题一致),三门禁复跑全绿。
+- ✅ 修订 XVI(渐隐带回调,2026-08-28 续,用户指定):顶部渐隐带 140→110px
+  (窄屏 200→160),让位 126/190 —— 完全透明区变矮,仍比原始 70/100 高约六成;
+  verify-topfade.js 期望值同步,四象限 + 三门禁复跑全绿。
 - ✅ assistant 节:reasoning 折叠段 → P16 全面接管(遮蔽 assistant-step:AuThinkCard
   原型 .reasoning 类;运行态折叠壳内单行实时流,行号 key 换行 remount 重播入场
   au-think-in 淡入+上浮+轻模糊,图标金色呼吸;结束自动收拢,摘要=firstLine;
