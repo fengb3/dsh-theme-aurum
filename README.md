@@ -4,11 +4,9 @@
 
 **DSH Web 兼容范围:`>=0.1.0-rc.6`**(在 `0.1.0-rc.6` 官方 client API 线上开发,`0.1.1-rc.2` 实机全量门禁通过)。
 
-![浅色 · 整页外观](screenshots/aurum-think-done-open.png)
+![浅色 · 整页外观](docs/previews/aurum-light-full.png)
 
-![深色 · 设置弹窗与全局金色化](screenshots/diag-appearance-after.png)
-
-> 更多界面细节见 [`screenshots/`](./screenshots/) 目录。
+![深色 · 设置弹窗与全局金色化](docs/previews/aurum-dark-settings.png)
 
 ## 功能总览(P1–P15 全量)
 
