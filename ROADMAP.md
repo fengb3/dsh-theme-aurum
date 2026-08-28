@@ -71,6 +71,7 @@
 | **P23** | **架构** | **主题接入改 theme.overrideTokens 常驻层:修复「设置·外观」切换丢细节(用户报两切换不兼容)** | **删双主题注册与重断言 hack;左下角按钮改切官方 preference** | **✅** |
 | **P24** | **§7 修缮** | **三卡壳去 1px transparent border:工具卡 hover「细边框」消除(用户报 + 用户定位)** | **.au-tool/.au-ctx-card/.reasoning 去 border;verify-p24-hover 门禁** | **✅** |
 | **P25** | **§7 修缮** | **图标瓦片 svg display:block:Mac 上工具卡图标向下偏移修复(用户报+定位)** | **au-ico/au-chev/.chev 五条 svg 规则补 display:block** | **✅** |
+| **P26** | **§4 修缮** | **workspace 组头菜单按钮回归(g.menuSlot→props.menuSlot)+ 按钮图标 strut 偏移 13 条全家族修复(用户报)** | **props 修正 + svg display:block×13;verify-p26-wsmenu 门禁;p24-hover/todofold 扫描加固** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -691,3 +692,23 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
 - **验证(verify/verify-p25-iconcenter.js)**:normal 与 strut 恶化(lh2.4)
   两环境 ico 6.5/6.5、chev 0/0 全居中(failures=0);全量门禁 p23/p24/gate/
   p8b/proto-diff/darkskin/cards3/think/compact/ctx-repro/ctx-light 全绿。
+
+### P26 · workspace 组头菜单回归 + 按钮图标 strut 偏移全家族(用户报)✅ 2026-08-28
+
+- **背景(用户:「workspace 列表里每个 workspace 没有可点击的菜单,右侧 '+'
+  图标也有向下偏移」)**:
+  ① 菜单:AuGroup 组件渲染 `g.menuSlot` —— g 是分组数据对象,menuSlot 实际
+  传在 props 上 → 恒 undefined,「目录操作」dots 按钮自 P8 侧栏重写起从未
+  渲染过(实测 buttons 数组只有「新建会话」一项)。修为 `props.menuSlot`。
+  ② '+':P25 同款 strut 机制(Ic() 无类 span 内 svg 保持 display:inline,
+  行盒基线把 svg 下推),P25 只修了卡壳三条,按钮家族未覆盖 —— 实测 '+'
+  顶隙 3.5/底隙 5.5(偏 2px)。
+- **修复**:aurum 自建按钮 svg 规则 13 条补 `display:block`(footRow/
+  ws-sbtn/ws-ibtn/ws-addrow/wsg-act/s-menu/ws-railbtn/row-err/row-retry/
+  ibtn/a-actions ibtn/rail-btn/todo-fold;容器均 flex/grid,block 化安全)。
+- **附带**:verify-p24-hover / verify-todofold 会话扫描加固 —— 侧栏按
+  recent 实时重排,固定下标扫描会重复点已试行,改为文本指纹去重 + 先展开
+  全部分组(截断默认 5),todofold 轮数 60。
+- **实测(verify/verify-p26-wsmenu.js)**:dots 在册、点击弹「重命名目录/
+  删除工作区」、Esc 关闭;'+' 与 dots 4.5/4.5 居中(display:block);
+  全套 17 脚本 NODE-EXIT=0 全绿。

@@ -670,6 +670,25 @@ window.__ModuleLoader__.load({
          验证(verify-p25-iconcenter.js):normal 与 strut 恶化(lh2.4)两环境
          ico 6.5/6.5、chev 0/0 全居中;全量门禁 p23/p24/gate/p8b/proto-diff/
          darkskin/cards3/think/compact/ctx-repro/ctx-light 全绿。 */
+      /* ── P26 · workspace 组头菜单按钮回归 + 按钮图标 strut 偏移全家族修复
+         (2026-08-28,用户报:「workspace 里没有可点击的菜单,右侧 '+' 图标
+         也有向下偏移」)──
+         菜单根因:AuGroup 组件里 menuSlot 取的是 g.menuSlot —— g 是分组
+         数据对象(key/label/sessions/ws),menuSlot 传在 props 上 → undefined,
+         「目录操作」dots 按钮自 P8 起从未渲染过。修:props.menuSlot。
+         '+' 偏移根因:P25 同款 strut(Ic() span 内 svg display:inline 被
+         行盒基线下推,实测 '+' 顶隙 3.5/底隙 5.5 偏 2px);P25 只修了卡壳
+         三条,按钮家族没跟上。修:aurum 自建按钮 svg 规则 13 条补
+         display:block(footRow/ws-sbtn/ws-ibtn/ws-addrow/wsg-act/s-menu/
+         ws-railbtn/row-err/row-retry/ibtn/a-actions ibtn/rail-btn/todo-fold),
+         容器均 flex/grid,block 化安全;修后 dots/'+' 顶隙==底隙 4.5/4.5。
+         附带:verify-p24-hover/todofold 会话扫描加固(点击后 recent 实时
+         重排,固定下标会重复点已试行 → 按文本指纹去重 + 展开全部分组,
+         todofold 60 轮)。
+         实测(verify-p26-wsmenu.js):dots 在册、点击弹「重命名目录/删除
+         工作区」菜单、Esc 关闭;'+' 与 dots svg display:block、4.5/4.5
+         居中;全套 17 脚本(p23~p26/gate/p8b/proto-diff/darkskin/cards3/
+         think/compact/ctx×2/sbmore/todofold×2)NODE-EXIT=0 全绿。 */
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
 const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -1215,7 +1234,7 @@ const CSS1 = [
   "body:not(#aurum-boost) [data-state=running]::after,body:not(#aurum-boost) [data-state=running]>div::after{background:linear-gradient(90deg,transparent 0%,var(--aurum-sweep) 50%,transparent 100%)}",
   ".aurum-footRow{display:flex;align-items:center;gap:10px;width:100%;height:38px;padding:0 10px;border:none;border-radius:10px;background:transparent;color:var(--dsw-alias-label-secondary);font:400 13px/20px var(--dsw-font-family);cursor:pointer;transition:background .18s,color .18s;text-align:left}",
   ".aurum-footRow:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}",
-  ".aurum-footRow svg{width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
+  ".aurum-footRow svg{display:block;width:15px;height:15px;flex:none;color:var(--dsw-alias-label-tertiary);transition:color .18s}",
   ".aurum-footRow:hover svg{color:var(--aurum-gold)}",
   "@media (prefers-reduced-motion:reduce){body [data-chat-anchor-key]{animation:none}body [data-composer-card]{transition:none}body [data-slot=root]>div>div:first-child::before{transition:none}body .wSkVaW_scrollBody{scroll-behavior:auto}}",
   /* ── P10 · 输入坞 composer 卡内部(uV2eYG_*,原型 §6 .composer/.c-tools)──
@@ -1418,7 +1437,7 @@ const CSS2 = [
   ".au-ws-sbtn{width:24px;height:24px;border:none;border-radius:7px;display:grid;place-items:center;flex:none;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
   ".au-ws-sbtn:hover{color:var(--aurum-gold);background:var(--dsw-alias-interactive-bg-hover-solid)}",
   ".au-ws-search.au-hasq .au-ws-sbtn{color:var(--aurum-gold-strong)}",
-  ".au-ws-sbtn svg{width:13.5px;height:13.5px}",
+  ".au-ws-sbtn svg{width:13.5px;height:13.5px;display:block}",
   ".au-ws-input{width:0;opacity:0;min-width:0;height:100%;border:none;background:none;outline:none;font-size:12px;color:var(--dsw-alias-label-primary);padding:0;transition:width .32s cubic-bezier(.22,.8,.26,1),opacity .2s}",
   ".au-ws-search.au-open .au-ws-input{width:100%;opacity:1;padding:0 2px}",
   ".au-ws-input::placeholder{color:var(--dsw-alias-label-tertiary)}",
@@ -1426,10 +1445,10 @@ const CSS2 = [
   ".au-ws-ibtn{width:27px;height:27px;border:none;border-radius:8px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
   ".au-ws-ibtn:hover{color:var(--aurum-gold);background:var(--dsw-alias-interactive-bg-hover-solid)}",
   ".au-ws-ibtn.au-on{color:var(--aurum-gold-strong)}",
-  ".au-ws-ibtn svg{width:15px;height:15px}",
+  ".au-ws-ibtn svg{width:15px;height:15px;display:block}",
   ".au-ws-addrow{display:flex;align-items:center;gap:8px;margin:3px 12px 8px 16px;height:30px;flex:none;border-radius:9px;background:color-mix(in oklab,var(--aurum-gold) 8%,var(--dsw-alias-bg-layer-1));padding:0 10px;animation:au-pop .18s cubic-bezier(.22,.8,.26,1) both}",
   "@keyframes au-pop{from{opacity:0;transform:translateY(-4px)}}",
-  ".au-ws-addrow svg{width:13px;height:13px;color:var(--aurum-gold-dim);flex:none}",
+  ".au-ws-addrow svg{width:13px;height:13px;color:var(--aurum-gold-dim);flex:none;display:block}",
   ".au-ws-addrow input{flex:1;min-width:0;background:none;border:none;outline:none;font-family:var(--ds-font-family-code);font-size:11.5px;color:var(--dsw-alias-label-primary);padding:0}",
   ".au-ws-addrow input::placeholder{color:var(--dsw-alias-label-tertiary)}",
   ".au-ws-addhint{font-family:var(--ds-font-family-code);font-size:9.5px;color:var(--dsw-alias-label-tertiary);white-space:nowrap;flex:none}",
@@ -1452,7 +1471,7 @@ const CSS2 = [
   ".au-wsg:hover .au-wsg-acts,.au-wsg-acts:focus-within{opacity:1}",
   ".au-wsg-act{width:22px;height:22px;border:none;border-radius:7px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.15s;padding:0}",
   ".au-wsg-act:hover{color:var(--aurum-gold-strong);background:var(--dsw-alias-interactive-bg-hover-solid)}",
-  ".au-wsg-act svg{width:13px;height:13px}",
+  ".au-wsg-act svg{width:13px;height:13px;display:block}",
   ".au-wsg-rename{flex:1;min-width:0;font-family:var(--ds-font-family-code);font-size:11px;color:var(--dsw-alias-label-primary);background:color-mix(in oklab,var(--aurum-gold) 14%,var(--dsw-alias-bg-layer-1));border:1px solid transparent;border-radius:6px;padding:2px 6px;outline:none}",
   ".au-wsg.au-curgroup .au-wsg-head b{color:var(--dsw-alias-label-secondary)}",
   /* P15 前修订 IV:分组收合非线性动画 —— grid-rows 0fr⇄1fr 插值(容器),
@@ -1488,7 +1507,7 @@ const CSS2 = [
   ".au-s-menu{opacity:0;width:24px;height:24px;border:none;border-radius:7px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);flex:none;background:transparent;cursor:pointer;padding:0;transition:opacity .15s,color .15s,background .15s}",
   ".au-srow:hover .au-s-menu{opacity:1}",
   ".au-s-menu:hover{color:var(--aurum-gold-strong);background:var(--dsw-alias-interactive-bg-hover-solid)}",
-  ".au-s-menu svg{width:14px;height:14px}",
+  ".au-s-menu svg{width:14px;height:14px;display:block}",
   ".au-s-actions{display:grid;grid-template-rows:0fr;transition:grid-template-rows .25s cubic-bezier(.62,.04,.82,.28)}",
   ".au-s-actions.au-open2{grid-template-rows:1fr}",
   ".au-s-clip{overflow:hidden;min-height:0}",
@@ -1511,7 +1530,7 @@ const CSS2 = [
   ".au-ws-railbtn{width:40px;height:40px;border:none;border-radius:12px;display:grid;place-items:center;color:var(--dsw-alias-label-tertiary);background:transparent;cursor:pointer;transition:.18s;padding:0}",
   ".au-ws-railbtn:hover{background:var(--dsw-alias-interactive-bg-hover-solid);color:var(--aurum-gold)}",
   ".au-ws-railbtn:active{transform:scale(.96)}",
-  ".au-ws-railbtn svg{width:17px;height:17px}",
+  ".au-ws-railbtn svg{width:17px;height:17px;display:block}",
   ".aurum-footRow.au-rail{width:40px;height:40px;justify-content:center;padding:0;border-radius:12px;gap:0}",
   ".aurum-footRow.au-rail span{display:none}",
   "@media (prefers-reduced-motion:reduce){.au-s-actions,.au-ws-search,.au-ws-input,.au-ws-label{transition:none!important}.au-ws-addrow{animation:none}}"
@@ -1534,10 +1553,10 @@ const CSS3 = [
   ".compress-body{display:none;margin-top:6px;padding:12px 16px;border-radius:12px;border:1px dashed var(--border-soft);background:var(--surface);font-family:var(--font-serif);font-size:13.5px;line-height:1.9;color:var(--muted);white-space:pre-wrap}",
   ".compress.open .compress-body{display:block}",
   ".row-err{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--danger);border:1px solid transparent;background:oklch(69% .15 15 / .12);border-radius:11px;padding:9px 13px;font-family:var(--font-mono)}",
-  ".row-err svg{width:14px;height:14px;flex:none}",
+  ".row-err svg{width:14px;height:14px;flex:none;display:block}",
   ".row-err .pill{margin-left:auto}",
   ".row-retry{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--muted);padding:2px 4px;font-family:var(--font-mono)}",
-  ".row-retry svg{width:13px;height:13px;color:var(--gold-dim);flex:none}",
+  ".row-retry svg{width:13px;height:13px;color:var(--gold-dim);flex:none;display:block}",
   ".row-retry b{color:var(--success);font-weight:500}",
   ".turn-tail{display:flex;align-items:center;gap:14px;margin:20px 0 6px;font-family:var(--font-ui);font-size:14px;line-height:1}",
   ".turn-tail .ln{flex:1;height:1px;background:color-mix(in oklab, var(--fg) 9%, transparent)}",
@@ -1547,11 +1566,11 @@ const CSS3 = [
   ".pill.warn{color:var(--gold-strong);background:oklch(79% .13 84 / .13)}",
   ".ibtn{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none;color:var(--faint);background:none;border:none;cursor:pointer;padding:0;transition:.18s}",
   ".ibtn:hover{background:var(--surface-2);color:var(--gold)}",
-  ".ibtn svg{width:15px;height:15px}",
+  ".ibtn svg{width:15px;height:15px;display:block}",
   ".ibtn:disabled{opacity:.35;cursor:default}",
   ".a-actions{display:flex;gap:2px;margin-top:12px;opacity:0;transition:.2s}",
   ".a-actions .ibtn{width:27px;height:27px}",
-  ".a-actions .ibtn svg{width:13px;height:13px}",
+  ".a-actions .ibtn svg{width:13px;height:13px;display:block}",
   "[data-chat-anchor-key]:hover .a-actions{opacity:1}",
   /* ── P11 修订:卡片间距收窄(用户要求)── 官方会话流列 gap16 是大头,
      叠加各卡自身 margin 后相邻工具卡实际隔 ~24px;gap 降 8 + 卡 margin 收拢
@@ -1593,7 +1612,7 @@ const CSS3 = [
   ".rail-btn{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--muted);transition:.18s;background:none;border:none;cursor:pointer;padding:0}",
   ".rail-btn:hover{background:var(--surface-2);color:var(--fg)}",
   ".rail-btn:active{transform:scale(.96)}",
-  ".rail-btn svg{width:17px;height:17px}",
+  ".rail-btn svg{width:17px;height:17px;display:block}",
   ".rail-new{background:color-mix(in oklab, var(--gold) 15%, var(--surface));color:var(--gold-strong)}",
   ".rail-new:hover{background:color-mix(in oklab, var(--gold) 22%, var(--surface));color:var(--gold-strong)}",
   ".rail-flex{flex:1;min-height:6px}",
@@ -1646,7 +1665,7 @@ const CSS3 = [
   ".todo-fold{margin-left:auto;flex:none;width:22px;height:22px;border:none;border-radius:7px;display:grid;place-items:center;background:transparent;color:var(--muted);cursor:pointer;transition:color .15s,background .15s;padding:0}",
   ".todo-fold:hover{color:var(--gold-strong);background:color-mix(in oklab, var(--gold) 13%, var(--surface-2))}",
   ".todo-fold:focus-visible{outline:none;box-shadow:0 0 0 2.5px color-mix(in oklab, var(--gold) 28%, transparent)}",
-  ".todo-fold svg{width:13px;height:13px;transition:transform .26s cubic-bezier(.22,.8,.26,1)}",
+  ".todo-fold svg{width:13px;height:13px;display:block;transition:transform .26s cubic-bezier(.22,.8,.26,1)}",
   ".todo-bar.au-tdclosed .todo-fold svg{transform:rotate(-90deg)}",
   ".todo-bar{row-gap:0}",
   ".todo-foldwrap{flex-basis:100%;min-width:0;display:grid;grid-template-rows:1fr;margin-top:11px;transition:grid-template-rows .32s cubic-bezier(.22,.8,.26,1),margin-top .32s cubic-bezier(.22,.8,.26,1)}",
@@ -2166,7 +2185,7 @@ function AuGroup(props) {
         ? h("input", { className: "au-wsg-rename", value: rv, autoFocus: true, spellCheck: false, onChange: function (e) { props.onRenameValue(e.target.value); }, onClick: function (e) { e.stopPropagation(); }, onKeyDown: function (e) { if (e.key === "Enter") { e.preventDefault(); props.onRenameCommit(); } if (e.key === "Escape") { e.preventDefault(); props.onRenameCancel(); } }, onBlur: function () { props.onRenameCommit(); } })
         : h("b", null, g.label),
       renaming ? null : h("span", { className: "au-wsg-acts" },
-        g.menuSlot,
+        props.menuSlot,
         g.ws ? h("button", { type: "button", className: "au-wsg-act", title: "在此目录新建会话", "aria-label": "在此目录新建会话", onClick: function (e) { e.stopPropagation(); au.startSession(g.ws.workspaceId); } }, Ic("plus")) : null)),
     /* P15 前修订 IV:children 保留挂载(不随 closed 卸载),收合交给
        .au-slist grid-rows 插值 + .au-slist-in 渐隐;行级 stagger 见 CSS
