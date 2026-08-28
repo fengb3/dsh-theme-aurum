@@ -159,3 +159,48 @@ screenshots/       验证截图(过程产物,已 ignore;verify 脚本新拍也�
 - ✗ 只测深色不测浅色、只测展开不测折叠
 - ✗ 另起 web 服务器 / 替换 3080 的现有实例
 - ✗ 跳过门禁宣布阶段完成
+
+## 10 · 发版与市场条目更新(SOP)
+
+本主题已投稿 dsh 皮肤市场(fengb3/dsh-theme-aurum,v1.1.0 @ a716a46 起收录流程走通);
+投稿台账与全渠道路线见 `~/repos/dsh-plugins/AGENTS.md`。
+
+### 发版三步
+
+1. 改代码/截图 → 全部 commit(截图规则见下);
+2. `git tag vX.Y.Z` 打在该 commit → push。**tag 必须指向含最新截图的 commit**,
+   打早了删本地+远程重打:`git tag -d vX.Y.Z && git push origin :refs/tags/vX.Y.Z`;
+3. 本地验收(模拟市场用户路径):
+   `dsh plugin --profile web add github:fengb3/dsh-theme-aurum#<新40位SHA>`。
+
+### 截图规则(docs/previews/)
+
+- 命名 `aurum-<明暗>-<区域>.png`,语义化稳定文件名,**不带版本号**(同名替换的根基);
+- 替换=同名覆盖;新增=新文件。GitHub README(相对路径)push 即生效,零市场操作;
+- 本仓库 `.gitignore` 忽略 `screenshots/`(过程产物,按 §6 不算验收凭据)——
+  **入库预览图只放 `docs/previews/`**,往 screenshots/ 放等于没放;
+- 画面硬要求:真实界面、无错误条/加载态/对照拼图。
+
+### 市场条目更新(kingOfSoySauce/dsh-skin-market)
+
+- 条目=`registry/skins/fengb3__dsh-theme-aurum.yml`;截图 URL **内嵌 commit SHA(死引用)**:
+  替换/新增想让市场展示都必须动 YAML——替换=换 URL 里的 SHA,新增=`screenshots`
+  追加条目(schema 上限 8 张,现 2 张);
+- 版本更新 PR:改 `target`/`version`/`commit` 三行(+截图 SHA 若变)→ 仓库根
+  `npm run registry:check` → PR `feat(registry): update 鎏金 Aurum to vX.Y.Z`;
+- 工作镜像:`~/repos/dsh-plugins/kingOfSoySauce--dsh-skin-market/`(gh 已登录 fengb3);
+- 零操作路线:维护者每日抓取任务自动跟 tag(先例 chore(skins) 批量更新 PR);
+- 已装用户经市场 Installed 页 update 按钮一键升级,无需作者推送。
+
+### 发版复核检查单
+
+- [ ] 仓库 public(`curl -s https://api.github.com/repos/fengb3/dsh-theme-aurum` 匿名可读);
+- [ ] 预览图已入 git(`git ls-tree HEAD -- docs/previews/` 可见),raw 匿名 HTTP 200;
+- [ ] 安装目标=固定 40 位 SHA,tag 指向同一 commit;
+- [ ] README 与条目 compatibility 与实测版本一致;
+- [ ] (UI 有变化时)README 内嵌图与 `docs/previews/` 同步更新。
+
+### 其他渠道(发版后零操作)
+
+dshworks/awesome-dsh-themes(HEAD 引用自动跟 README 图)、vvlife 精选列表(纯文字
+条目)、各 `dsh-plugin`/`dsh-theme`/`dsh-skin` topic 聚合市场——push 即同步。
