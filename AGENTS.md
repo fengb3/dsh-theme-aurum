@@ -96,11 +96,24 @@ Copy-Item 自拷贝(会截断文件);**拷贝安装**(旧机器形态)时编辑�
 
 **运行方式(本机无 playwright-cli,用 Node runner)**:
 ```
-node verify-run.mjs verify/verify-gate.js verify/verify-p8b.js verify/verify-proto-diff.js
+node verify-pick.mjs          # 按 git diff 自动挑相关子集(零 LLM;--run 直接执行)
+node verify-run.mjs --set core   # 子集预设:core/theme/icons/cards/sidebar/live/all
+node verify-run.mjs --set all    # 阶段收尾/提交前全量(含 live 真实 LLM 调用)
 ```
-runner(`verify-run.mjs`)用仓库 devDependency `playwright-core` + 本机 Chrome(headless),
-打开 3080、注入 `window.__AU_PROTO_URL__`(原型的 file:// URL)后执行同款
-`async page => {}` 脚本 —— verify-*.js 保持浏览器 eval 格式不变。装依赖:`npm install`。
+- runner(`verify-run.mjs`)用仓库 devDependency `playwright-core` + 本机 Chrome
+  (headless),打开 3080、注入 `window.__AU_PROTO_URL__`(原型的 file:// URL)后执行
+  同款 `async page => {}` 脚本 —— verify-*.js 保持浏览器 eval 格式不变。装依赖:
+  `npm install`(注意 ~/.npm 权限问题时加 `--cache .npmcache`)。
+- **子集映射单一事实源**在 `verify-sets.json`(sets=域→脚本,triggers=域→diff 触发
+  正则);`verify-run.mjs --set` 与 `verify-pick.mjs` 都读它,改映射只动这一处。
+- **verify-pick**:diff 按文件分块,只对产品代码(client/index.js、package.json、
+  cordis.patch.yml)增删行匹配触发词;verify 工具/文档改动不触发;命中 ≥4 域建议
+  全量。日常循环 = 改 client.js → `node verify-pick.mjs --run` →(阶段收尾再 all)。
+- **执行模型**:默认串行(`--parallel` 双页面并行有互踩风险:dsh 会话打开是共享
+  状态,B 组会切走 A 组刚开的目标会话,已实测踩踏,慎用);共享 helper `__au`
+  (条件等待/目标会话指纹扫描+跨脚本缓存/主题切换)由 runner 注入,脚本内直接用,
+  不要再写固定 `waitForTimeout(1500)` 之类的死等。
+- 性能参考(18 脚本含 live):全量串行 ≈100s;`--set core` ≈10s。
 
 ## 7 · 文件地图
 
@@ -112,6 +125,8 @@ cordis.patch.yml   bundle 层声明
 vendor/htm.js      htm@3.1.1 mini UMD 源(P9 起内联进 client.js 头部)
 verify/             verify-*.js 门禁脚本集中目录(见 §6)
 verify-run.mjs     门禁 Node runner(playwright-core + 本机 Chrome,见 §6)
+verify-pick.mjs    按 git diff 挑相关子集的零-LLM 选择器(见 §6)
+verify-sets.json   域→脚本/触发词映射,单一事实源(见 §6)
 sync-deploy.ps1    部署副本同步(MD5 校验)
 ROADMAP.md         阶段路线 + 原型逐节差异盘点 + 各阶段验收标准
 README.md          面向使用者的说明(安装/功能/结构)

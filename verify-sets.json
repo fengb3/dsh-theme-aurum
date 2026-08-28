@@ -1,0 +1,36 @@
+{
+  "_meta": "单一事实源:verify-run.mjs 的 --set 预设与 verify-pick.mjs 的 diff→域匹配共用。triggers 是该域的正则(对 git diff 增删行匹配);改动 scripts 列表时两处工具自动跟随。",
+  "sets": {
+    "core": {
+      "desc": "几何/描边/原型恒等三大基础门禁",
+      "scripts": ["verify/verify-gate.js", "verify/verify-p8b.js", "verify/verify-proto-diff.js"]
+    },
+    "theme": {
+      "desc": "主题 token/深浅切换兼容",
+      "scripts": ["verify/verify-p23-compat.js", "verify/verify-darkskin.js"]
+    },
+    "icons": {
+      "desc": "图标瓦片居中/hover 无边/workspace 菜单",
+      "scripts": ["verify/verify-p24-hover.js", "verify/verify-p25-iconcenter.js", "verify/verify-p26-wsmenu.js"]
+    },
+    "cards": {
+      "desc": "工具卡/压缩卡/上下文卡",
+      "scripts": ["verify/verify-cards3.js", "verify/verify-compact.js", "verify/verify-ctx-repro.js", "verify/verify-ctx-light.js"]
+    },
+    "sidebar": {
+      "desc": "侧栏会话列表/todo 折叠",
+      "scripts": ["verify/verify-sbmore.js", "verify/verify-todofold.js", "verify/verify-sbmore-light.js", "verify/verify-todofold-light.js"]
+    },
+    "live": {
+      "desc": "真实 LLM 调用(发消息等思考流),仅 --set all 时包含",
+      "scripts": ["verify/verify-think.js"]
+    }
+  },
+  "triggers": {
+    "theme": "overrideTokens|AURUM_OVERRIDE|DARK_TOKENS|LIGHT_TOKENS|FONT_TOKENS|setTheme|toggleTheme|AurumFootToggle|data-ds-dark-theme|--dsw-alias|--dsw-specific",
+    "icons": "\\.au-ico|\\.au-chev|\\bIc\\(|IconOutline|AU_ICON_OFFICIAL|au-ws-ic|au-fld|au-chev2",
+    "cards": "\\.au-tool|\\.au-ctx-card|\\.reasoning|AuToolCall|AuToolCard|AuThink|AuCompact|AuCompress|toolview|TOOL_KEYS|au-comp|\\.au-x\\b|\\.au-in\\b",
+    "sidebar": "\\.au-srow|\\.au-wsg|AuBrowser|AuSessionRow|\\.au-slist|todo-bar|AuTodoBar|\\.au-s-menu|\\.au-s-more|\\.au-ws-|\\.au-callrow",
+    "core": "sidebarCol|centerCol|wSkVaW_|Md3f7G_|hHd-Xa_|border-radius|overflow|box-shadow|margin:1px|padding"
+  }
+}

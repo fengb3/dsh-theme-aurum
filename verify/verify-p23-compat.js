@@ -33,7 +33,7 @@ async page => {
     });
     if (cands.length) cands[cands.length - 1].click();
   });
-  await page.waitForTimeout(700);
+  await page.waitForSelector('.au-wsg, [class*=cubeRow], [class*=themeCube]', { timeout: 6000 }).catch(() => page.waitForTimeout(700));
   const picked = await page.evaluate(() => {
     const cands = Array.from(document.querySelectorAll('button,[role="button"]')).filter(el => {
       const t = (el.textContent || "") + " " + (el.getAttribute("aria-label") || "");

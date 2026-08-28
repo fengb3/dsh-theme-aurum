@@ -1,15 +1,12 @@
 // P15 追补 III 门禁:① ◈=工具卡壳(可点展开);② reasoning=同款卡壳;③ 运行态三点 bob
 async page => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
-  await sleep(1800);
+  await page.waitForSelector('.au-srow', { timeout: 8000 }).catch(() => {});
   const out = {};
 
-  // 开 Umm 会话(有 3 条 context + reasoning)
-  await page.evaluate(() => {
-    const rows = [...document.querySelectorAll('.au-srow')].filter(r => r.offsetParent !== null);
-    if (rows[1]) rows[1].click();
-  });
-  await sleep(1200);
+  // 开 Umm 会话(有 3 条 context + reasoning) —— 指纹扫描(排序漂移安全)
+  await __au.openToolSession(page);
+  await __au.wait(page, () => !!document.querySelector('.au-callrow, .au-tool, [data-chat-flow-kind]'), 5000).catch(() => sleep(1200));
 
   // ① 上下文卡
   out.ctxCards = await page.evaluate(() => {

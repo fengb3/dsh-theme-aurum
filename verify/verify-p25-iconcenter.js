@@ -1,14 +1,10 @@
 /* P25 验证:图标瓦片/箭头 svg 在 strut 恶化环境下(line-height:2.4 注入)仍居中。 */
 async page => {
-  const rows = await page.$$('[data-slot=sidebar] .au-srow');
-  for (let i = 0; i < rows.length; i++) {
-    const txt = (await rows[i].textContent()).trim();
-    if (/克隆 dsh 插件仓库/.test(txt)) { await rows[i].click(); await page.waitForTimeout(1500); break; }
-  }
+  await __au.openToolSession(page);
   await page.evaluate(() => {
     document.querySelectorAll('.au-tool:not(.au-open) .au-main').forEach(m => m.click());
   });
-  await page.waitForTimeout(800);
+  await page.waitForTimeout(500);
 
   const measure = async label => await page.evaluate(label2 => {
     const probe = (sel, wrapSel) => {

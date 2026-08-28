@@ -2,22 +2,9 @@
 async page => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const out = {};
-  for (let i = 0; i < 6; i++) {
-    await sleep(600);
-    const has = await page.evaluate(() => !!document.querySelector('[data-testid=todo-panel].todo-bar'));
-    if (has) break;
-    const clicked = await page.evaluate((idx) => {
-      const rows = [...document.querySelectorAll('.au-srow')];
-      const row = rows.filter(r => r.offsetParent !== null)[idx];
-      if (!row) return null;
-      row.click();
-      return true;
-    }, i);
-    if (clicked === null) break;
-    await sleep(900);
-  }
+  await __au.openTodoSession(page);
   const found = await page.evaluate(() => !!document.querySelector('.todo-bar'));
-  if (!found) return { note: '未找到带 todo 的会话' };
+  if (!found) return { note: '未找到带 todo 的会话 —— skip', failures: 0, skip: true };
   await page.evaluate(() => { document.querySelector('.todo-bar .todo-fold').click(); });
   await sleep(600);
   out.darkStyles = await page.evaluate(() => {

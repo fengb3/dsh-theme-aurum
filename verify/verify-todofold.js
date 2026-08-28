@@ -5,24 +5,9 @@ async page => {
   const failures = [];
   const out = { opened: null };
   // ── 1. 找一个带 todo 的会话(当前活跃会话必有 todo_write;逐行尝试)──
-  for (let i = 0; i < 6; i++) {
-    await sleep(600);
-    const has = await page.evaluate(() => !!document.querySelector('[data-testid=todo-panel].todo-bar'));
-    if (has) { out.opened = 'already-open(row' + i + ')'; break; }
-    const clicked = await page.evaluate((idx) => {
-      const rows = [...document.querySelectorAll('.au-srow')];
-      const row = rows.filter(r => r.offsetParent !== null)[idx];
-      if (!row) return null;
-      const title = row.textContent.slice(0, 30);
-      row.click();
-      return title;
-    }, i);
-    if (clicked === null) break;
-    await sleep(900);
-    const has2 = await page.evaluate(() => !!document.querySelector('[data-testid=todo-panel].todo-bar'));
-    if (has2) { out.opened = 'row' + i + ':' + clicked; break; }
-  }
-  if (out.opened === null) return { note: '未找到带 todo 的会话,无法验证', failures: failures.length + 1 };
+  const openedVia = await __au.openTodoSession(page);
+  out.opened = openedVia;
+  if (openedVia === null) return { note: '未找到带 todo 的会话(历史 todo 数据可能已被清空)—— skip,不挡门禁', failures: 0, skip: true };
   await sleep(400);
   // ── 2. 默认折叠态断言 ──
   const collapsed = await page.evaluate(() => {

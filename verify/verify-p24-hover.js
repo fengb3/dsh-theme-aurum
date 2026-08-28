@@ -4,14 +4,7 @@
    卡面色环(用户看到的 hover 细边框);修复 = 去 border(y0 是截图对齐的卡外
    画布行,不参与断言)。 */
 async page => {
-  const openSession = async () => {
-    await page.evaluate(() => {
-      const rows = [...document.querySelectorAll('[data-slot=sidebar] .au-srow')];
-      const target = rows.find(r => /总结当前模式可用工具/.test(r.textContent || '')) || rows[1];
-      if (target) target.click();
-    });
-    await page.waitForTimeout(1500);
-  };
+  const openSession = async () => { await __au.openToolSession(page); };
 
   const probe = async mode => {
     await openSession();
@@ -42,19 +35,11 @@ async page => {
   const results = [];
   let mode = await page.evaluate(() => document.body.hasAttribute('data-ds-dark-theme') ? 'dark' : 'light');
   results.push(await probe(mode));
-  await page.evaluate(() => {
-    const btn = Array.from(document.querySelectorAll('button')).find(el => /切换到(深色|浅色)主题/.test((el.getAttribute('title') || '') + (el.getAttribute('aria-label') || '')));
-    if (btn) btn.click();
-  });
-  await page.waitForTimeout(800);
+  await __au.toggleTheme(page);
   mode = await page.evaluate(() => document.body.hasAttribute('data-ds-dark-theme') ? 'dark' : 'light');
   results.push(await probe(mode));
   /* 还原起始模式 */
-  await page.evaluate(() => {
-    const btn = Array.from(document.querySelectorAll('button')).find(el => /切换到(深色|浅色)主题/.test((el.getAttribute('title') || '') + (el.getAttribute('aria-label') || '')));
-    if (btn) btn.click();
-  });
-  await page.waitForTimeout(500);
+  await __au.toggleTheme(page);
 
   const failures = results.filter(r => (r.firstRowDiff === undefined || r.firstRowDiff > 2)).length;
   return { failures, results };

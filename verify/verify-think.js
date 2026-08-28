@@ -8,20 +8,17 @@
 async page => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   const out = {};
-  await sleep(1500);
+  await page.waitForSelector('.au-srow, button[class*=newSession]', { timeout: 8000 }).catch(() => {});
 
   // 新会话 → 发一条会触发思考的消息
   await page.evaluate(() => { const btn = document.querySelector('button[class*=newSession]'); if (btn) btn.click(); });
-  await sleep(900);
+  await page.waitForSelector('.uV2eYG_input', { timeout: 6000 }).catch(() => sleep(900));
   await page.fill('.uV2eYG_input', '先认真思考再回答,分三步:9x8 等于多少?为什么?');
   await page.keyboard.press('Enter');
 
-  // ① 等运行态 think 卡(最长 60s)
-  let seen = false;
-  for (let i = 0; i < 120 && !seen; i++) {
-    await sleep(500);
-    seen = await page.evaluate(() => !!document.querySelector('[data-chat-flow-kind=assistant-step] .reasoning[data-state=running]'));
-  }
+  // ① 等运行态 think 卡(最长 60s;条件轮询,响应即继续)
+  let seen = true;
+  await __au.wait(page, () => !!document.querySelector('[data-chat-flow-kind=assistant-step] .reasoning[data-state=running]'), 60000).catch(() => { seen = false; });
   out.runningSeen = seen;
   if (!seen) return JSON.stringify(out);
 
