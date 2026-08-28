@@ -2,7 +2,8 @@
  * dsh-theme-aurum — 鎏金主题 browser half (loader-format bundle, zero build)。
  * 由 dsh-agent-workspace.html 原型移植:oklch 金粉配色 + 点阵画布 + 浮动卡片侧栏 +
  * 左侧历史会话栏整体重写(目录头/分组折叠/会话状态槽/行内操作/搜索/平铺) +
- * 用户气泡/上下文节点/9 类工具卡片接管。主题经 theme 服务注册 aurum-dark/aurum-light。
+ * 用户气泡/上下文节点/9 类工具卡片接管。主题经 theme.overrideTokens 常驻层接入
+ * (P23 起与官方「设置·外观」preference 通道兼容;此前为注册 aurum-dark/light 双主题)。
  */
 window.__ModuleLoader__.load({
 	id: "dsh-theme-aurum",
@@ -621,6 +622,54 @@ window.__ModuleLoader__.load({
          实测(verify-viewyield.js):轨迹/数据库首元素 y 0→86(>纱底 70),chat
          顶滚后首内容 y=86 不变,margin/pad 三值断言过;深浅双色全绿;
          gate/p8b/proto-diff 回归无回归。 */
+      /* ── P23 · 主题接入改 overrideTokens:修复「设置·外观」切换丢细节(2026-08-28)──
+         现象:设置→外观行点浅色/深色/跟随系统后,主题细节丢失(半鎏金半官方)。
+         根因(官方 dsh-client-ui-theme 源码):外观行三个 cube 的语义是
+         preference=内置主题 id(light/dark/system),onClick=setTheme(官方 id)
+         且持久化;ThemePresenter.apply 先摘 body 全部内联 token 再写 active.
+         tokens,官方内置主题 tokens 为空对象 → 旧方案 aurum 的 120 个 token
+         一键清零,而注入 CSS/遮蔽组件仍在 → alias 色全回官方的混搭态。
+         左下角按钮旧走 setTheme("aurum-dark"/"aurum-light"),非 preference
+         不持久化 → 刷新被官方 adopt() 盖回,才需要 0ms/1.2s 重断言 timers。
+         方案:删双主题注册与重断言 hack,改 theme.overrideTokens(
+         "dsh-theme-aurum",{token:{light,dark}}) 常驻层(token 级遮蔽,与槽位
+         遮蔽同哲学)——按 active.colorScheme 逐 token 取 aurum 对应色,官方
+         light/dark/system 任何 preference 下双色都正确;左下角按钮改切官方
+         preference(同通道、持久化、「跟随系统」免费获得);停插件 dispose 层
+         即还原官方,回退路径不变。
+         实测(verify-p23-compat.js):基线 120 内联 token aurum 值;设置点
+         Light 后 120 保持、--dsw-alias-bg-base 仍 oklch(94.5% 0.012 82)
+         (修复前同位 #fff、bubble #edf3fe 官方色);左下角切深色 darkAttr 挂上、
+         全组翻 aurum dark(bg-base oklch(16% 0.014 330)、--aurum-gold
+         83%.115 88);gate/p8b/proto-diff(0)/darkskin 深 55%/浅 80% 全绿。 */
+      /* ── P24 · 三卡壳去 1px transparent border:工具卡 hover「细边框」消除
+         (2026-08-28,用户报 + 用户定位:「卡片背景和 hover 变色的部分大小不一致」)──
+         机制:.au-tool/.au-ctx-card/.reasoning 三壳带 border:1px solid
+         transparent,头行 hover 背景(.au-main/.reasoning-head)从 border 内缘
+         起画 → hover 色块比卡小一圈,四边露出 1px 卡面色(55% mix)环,与
+         hover 色(layer-2 50%)一亮一暗 → hover 时显形为细边框(深色下顶部
+         1px 亮线,浅色下亮环)。像素实录(浅色 read 卡 hover):修复前卡内首行
+         [250,247,241]=卡面色、次行过渡、y2 起 [243,238,229]=hover 色;去
+         border 后卡内首行即 hover 色,y1==y2(深 [32,25,31]/浅 [243,238,229])
+         逐字相等,仅剩圆角抗锯齿。回归:gate/p8b/proto-diff(0)/darkskin/
+         p23-compat/cards3/think/compact/ctx-repro/ctx-light 全绿(卡几何
+         -2px,各专项断言无超差)。 */
+      /* ── P25 · 图标瓦片 svg display:block:Mac 图标向下偏移修复(2026-08-28,
+         用户报+定位:「图片没有在圆角矩形的中心,而是向下偏移了;Windows 没有,
+         换 Mac 出现」)──
+         机制:Ic() 官方图标组件包在无类 <span> 里,svg 保持 display:inline,
+         行盒 strut(line-height normal 由字体度量决定)参与布局 —— svg 按基线
+         (=替换元素底边)对齐,顶部被 strut 推空 → 图标在 27px 瓦片内向下偏。
+         Mac(-apple-system/Noto Sans SC 度量)与 Windows(Segoe UI)行高不同
+         → 平台差异;headless 复现需手动 line-height:2.4 模拟(webfont 未加载
+         时 strut 恰好不撑开)。实测复现:lh2.4 下 svgTop 6.5→12、底隙 6.5→1
+         (向下偏 5.5px);+display:block 后 6.5/6.5 复居。
+         修复:au-ico/au-chev/reasoning-head .chev(+ctx 卡冗余两条)五条 svg
+         规则补 display:block —— 容器均 grid/flex,block 化安全;row-retry 等
+         行内混排场景不动(避免 inline 包 block 拆盒)。
+         验证(verify-p25-iconcenter.js):normal 与 strut 恶化(lh2.4)两环境
+         ico 6.5/6.5、chev 0/0 全居中;全量门禁 p23/p24/gate/p8b/proto-diff/
+         darkskin/cards3/think/compact/ctx-repro/ctx-light 全绿。 */
 const SERIF = "'Noto Serif SC','Palatino Linotype',Georgia,serif";
 const DISPLAY = "'Cormorant Garamond','Noto Serif SC','Palatino Linotype',Georgia,serif";
 const UI = "'Noto Sans SC',-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei','Helvetica Neue',Helvetica,Arial,sans-serif";
@@ -845,8 +894,21 @@ const LIGHT_TOKENS = {
   "--dsw-specific-tip": "oklch(95% 0.014 83)"
 };
 
-const AURUM_DARK = { id: "aurum-dark", colorScheme: "dark", tokens: Object.assign({}, FONT_TOKENS, DARK_TOKENS) };
-const AURUM_LIGHT = { id: "aurum-light", colorScheme: "light", tokens: Object.assign({}, FONT_TOKENS, LIGHT_TOKENS) };
+/* P23:主题接入改为 overrideTokens 常驻层(不再注册 aurum-dark/aurum-light 主题)。
+   旧方案与官方「设置·外观」行互斥:官方行三个 cube 的语义是 preference=内置主题
+   id(light/dark/system),点击即把 active 换成官方内置主题;官方 presenter 先摘掉
+   body 上全部内联 token 再写入 active.tokens,而内置主题 tokens 为空 → aurum 的
+   120 个 token 一键清零,注入 CSS 还在 → 「半鎏金半官方」丢细节(实测 120→0)。
+   overrideTokens 是 theme 服务的 token 级遮蔽(与槽位遮蔽同哲学):按 active.
+   colorScheme 逐 token 取 {light,dark},无论 active 是官方 light/dark 还是 system
+   解析结果,aurum 双色都正确跟随;官方 preference 持久化、「跟随系统」media 监听
+   天然生效;停插件 dispose 即还原官方 —— 回退路径不变。 */
+const AURUM_OVERRIDE = (function () {
+  const out = {};
+  for (const k of Object.keys(DARK_TOKENS)) out[k] = { light: LIGHT_TOKENS[k], dark: DARK_TOKENS[k] };
+  for (const k of Object.keys(FONT_TOKENS)) out[k] = { light: FONT_TOKENS[k], dark: FONT_TOKENS[k] };
+  return out;
+})();
 
 const CSS1 = [
   "@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@400;500;600&family=Noto+Sans+SC:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');",
@@ -1078,7 +1140,7 @@ const CSS1 = [
      div[class*=_markdown_] 不误伤 think 卡(铁律 6)。实测:3 块 firstDelays
      [0,.07,.14]s 单调、animAllSame、thinkBodyAnim=none、.r-line=0;回归
      gate/p8b/cards3/proto-diff 全绿。 */
-  "body [data-chat-flow-kind=assistant-step] .reasoning{border:1px solid transparent;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);border-radius:14px;margin:1px 0;overflow:hidden}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);border-radius:14px;margin:1px 0;overflow:hidden}",
    /* P17:浅色下 reasoning 底色对齐 au-tool 家族(80% 不透明度,深浅同构) */
    "body:not([data-ds-dark-theme]) [data-chat-flow-kind=assistant-step] .reasoning{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
   /* P16 修订 II:思考中卡壳同款「执行中」辉光 —— 与 au-tool .au-main::after 同构:
@@ -1100,7 +1162,7 @@ const CSS1 = [
   "body [data-chat-flow-kind=assistant-step] .r-sum{display:block;overflow:hidden;text-overflow:ellipsis;font-family:var(--ds-font-family-code);font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary)}",
   "body [data-chat-flow-kind=assistant-step] .r-live{display:inline-block;font-family:var(--ds-font-family-code);font-size:12px;line-height:1.6;color:var(--dsw-alias-label-secondary);animation:au-think-in .76s cubic-bezier(.22,.75,.3,1) both}",
   "body [data-chat-flow-kind=assistant-step] .reasoning-head .chev{display:inline-flex;flex:none;width:13px;height:13px;color:var(--dsw-alias-label-tertiary);transition:transform .25s}",
-  "body [data-chat-flow-kind=assistant-step] .reasoning-head .chev svg{width:13px;height:13px}",
+  "body [data-chat-flow-kind=assistant-step] .reasoning-head .chev svg{width:13px;height:13px;display:block}",
   "body [data-chat-flow-kind=assistant-step] .reasoning.open .chev{transform:rotate(90deg)}",
    "body [data-chat-flow-kind=assistant-step] .reasoning-body{display:grid;grid-template-rows:0fr;margin:0 13px;transition:grid-template-rows .34s cubic-bezier(.45,0,.55,1)}",
    "body [data-chat-flow-kind=assistant-step] .reasoning.open .reasoning-body{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
@@ -1257,16 +1319,16 @@ const CSS2 = [
   /* P15 追补 III:◈ 上下文注入 = au-tool 同款卡壳(用户指定,替换追补 II 悬停方案)——
      每个注入节点一张紧凑卡:header(官方 Sparkle + mono 名 + 首行摘要 + chevron),
      点击 grid 展开/收合全文;面色/hover/chevron/曲线与工具卡完全一致 */
-  ".au-ctx-card{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
+  ".au-ctx-card{border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
   ".au-ctx-card .au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none;transition:background .15s}",
   ".au-ctx-card .au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
   ".au-ctx-card .au-ico{width:27px;height:27px;border-radius:8px;flex:none;display:grid;place-items:center;background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);color:var(--aurum-gold-strong)}",
-  ".au-ctx-card .au-ico svg{width:14px;height:14px}",
+  ".au-ctx-card .au-ico svg{width:14px;height:14px;display:block}",
   ".au-ctx-card .au-txt{flex:1;min-width:0;text-align:left}",
   ".au-ctx-card .au-name{font-family:var(--ds-font-family-code);font-size:12.5px;color:var(--dsw-alias-label-primary);display:flex;gap:8px;align-items:baseline}",
   ".au-ctx-card .au-name em{font-style:normal;color:var(--dsw-alias-label-tertiary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}",
   ".au-ctx-card .au-chev{width:13px;height:13px;color:var(--dsw-alias-label-tertiary);flex:none;display:inline-flex;transition:transform .34s cubic-bezier(.3,1.35,.45,1)}",
-  ".au-ctx-card .au-chev svg{width:13px;height:13px}",
+  ".au-ctx-card .au-chev svg{width:13px;height:13px;display:block}",
   ".au-ctx-card.au-open .au-chev{transform:rotate(90deg)}",
   ".au-ctx-card .au-x{display:grid;grid-template-rows:0fr;transition:grid-template-rows .34s cubic-bezier(.45,0,.55,1)}",
   ".au-ctx-card.au-open .au-x{grid-template-rows:1fr;transition:grid-template-rows .5s cubic-bezier(.45,0,.55,1)}",
@@ -1279,7 +1341,7 @@ const CSS2 = [
   "@media (prefers-reduced-motion:reduce){.au-ctx-card .au-x,.au-ctx-card .au-chev{transition:none!important}}",
   ".au-callrow{margin:0}",
   ".au-fstat{font-family:var(--ds-font-family-code);font-size:10.5px;color:var(--dsw-alias-label-tertiary);letter-spacing:.04em;margin-right:auto}",
-  ".au-tool{border:1px solid transparent;border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
+  ".au-tool{border-radius:14px;overflow:hidden;position:relative;background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 55%,transparent);margin:1px 0}",
   "body:not([data-ds-dark-theme]) .au-tool{background:color-mix(in oklab,var(--dsw-alias-bg-layer-1) 80%,transparent)}",
    /* P17:压缩卡(au-comp)复用 au-tool 卡壳 —— 不可展开态(noexp)去手型与悬停底色 */
    ".au-tool.au-noexp .au-main{cursor:default}",
@@ -1287,13 +1349,13 @@ const CSS2 = [
   ".au-main{display:flex;align-items:center;gap:11px;padding:10px 13px;cursor:pointer;user-select:none}",
   ".au-main:hover{background:color-mix(in oklab,var(--dsw-alias-bg-layer-2) 50%,transparent)}",
   ".au-ico{width:27px;height:27px;border-radius:8px;flex:none;display:grid;place-items:center;background:color-mix(in oklab,var(--aurum-gold-strong) 13%,transparent);color:var(--aurum-gold-strong)}",
-  ".au-ico svg{width:14px;height:14px}",
+  ".au-ico svg{width:14px;height:14px;display:block}",
   ".au-txt{flex:1;min-width:0;text-align:left}",
   ".au-name{font-family:var(--ds-font-family-code);font-size:12.5px;color:var(--dsw-alias-label-primary);display:flex;gap:8px;align-items:baseline}",
   ".au-name em{font-style:normal;color:var(--dsw-alias-label-tertiary);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px}",
   ".au-sum{display:block;font-size:12px;color:var(--dsw-alias-label-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}",
   ".au-chev{width:13px;height:13px;color:var(--dsw-alias-label-tertiary);flex:none;transition:transform .34s cubic-bezier(.3,1.35,.45,1)}",
-  ".au-chev svg{width:13px;height:13px}",
+  ".au-chev svg{width:13px;height:13px;display:block}",
   ".au-tool.au-open .au-chev{transform:rotate(90deg)}",
   ".au-pill{font-family:var(--ds-font-family-code);font-size:10.5px;padding:2.5px 9px;border-radius:999px;border:1px solid transparent;color:var(--dsw-alias-label-secondary);white-space:nowrap;flex:none}",
   ".au-pill.au-ok{color:var(--dsw-alias-state-success-primary);background:color-mix(in oklab,var(--dsw-alias-state-success-primary) 13%,transparent)}",
@@ -1680,12 +1742,12 @@ function useAurum(api) {
 }
 function AurumFootToggle(props) {
   const snap = useAurum(props.api);
-  const isAurum = snap.id === "aurum-dark" || snap.id === "aurum-light";
   const dark = snap.mode === "dark";
   const wide = props.wide !== false;
-  /* P15 前修订 V:文案去「鎏金」(用户指定)—— 显示态就叫深色/浅色主题 */
+  /* P15 前修订 V:文案去「鎏金」(用户指定)—— 显示态就叫深色/浅色主题;
+     P23:override 层随插件常驻,不存在「非 aurum 态」,启用文案分支删除 */
   const label = dark ? "深色主题" : "浅色主题";
-  const title = isAurum ? (dark ? "切换到浅色主题" : "切换到深色主题") : "启用主题(保持当前深浅)";
+  const title = dark ? "切换到浅色主题" : "切换到深色主题";
   return h("button", { type: "button", className: "aurum-footRow" + (wide ? "" : " au-rail"), title: title, "aria-label": title, onClick: function () { props.api.toggle(); } }, dark ? h(MoonIcon) : h(SunIcon), wide ? h("span", null, label) : null);
 }
 
@@ -2844,8 +2906,7 @@ return {
     const theme = ctx.theme;
     const slots = ctx.slots;
 
-    const disposeDark = theme.register(AURUM_DARK);
-    const disposeLight = theme.register(AURUM_LIGHT);
+    const disposeOverride = theme.overrideTokens("dsh-theme-aurum", AURUM_OVERRIDE);
     let disposeCss = null;
     if (typeof document !== "undefined") {
       const tagId = "dsh-theme-aurum/aurum.css";
@@ -2883,27 +2944,12 @@ return {
       subscribe: function (fn) { listeners.add(fn); return function () { listeners.delete(fn); }; },
       select: function (id) { try { theme.setTheme(id); } catch (err) { console.error("aurum: setTheme failed", id, err); } },
       toggle: function () {
-        const isAurum = activeId === "aurum-dark" || activeId === "aurum-light";
-        if (isAurum) api.select(mode === "dark" ? "aurum-light" : "aurum-dark");
-        else api.select(mode === "dark" ? "aurum-dark" : "aurum-light");
+        /* P23:切官方 preference(light/dark)而非 aurum 主题 id —— 官方 setTheme
+           对内置 preference 会持久化写入设置文档,与「设置·外观」行完全同一条通道;
+           aurum 色由 override 层按 colorScheme 自动跟随 */
+        api.select(mode === "dark" ? "light" : "dark");
       }
     };
-
-    /* 激活重断言 timers(评审扫尾:随 dispose 清理,停插件后不再争夺主题) */
-    const aurumTimers = [];
-    if (activeId !== "aurum-dark" && activeId !== "aurum-light") {
-      /* 实测:apply 期 setTheme 会被启动后期的主题初始化盖回官方 —— 0ms/1.2s 两次
-         延迟重断言(一次性;用户此后手动切官方不再争夺) */
-      const assertAurum = function () {
-        try {
-          const cur = theme.getTheme();
-          const cid = String(cur.active.id);
-          if (cid !== "aurum-dark" && cid !== "aurum-light") theme.setTheme(cur.active.colorScheme === "light" ? "aurum-light" : "aurum-dark");
-        } catch (err) { console.error("aurum: activate failed", err); }
-      };
-      assertAurum();
-      aurumTimers.push(setTimeout(assertAurum, 0), setTimeout(assertAurum, 1200));
-    }
 
     slots.inject("sidebar.footer.action", function () {
       return slots.register({ name: "sidebar.footer.action", id: "theme-aurum", order: 40, label: "鎏金主题" }, function () { return h(AurumFootToggle, { api: api }); });
@@ -2992,11 +3038,9 @@ return {
 
     ctx.effect(function () {
       return function () {
-        try { for (let i = 0; i < aurumTimers.length; i++) window.clearTimeout(aurumTimers[i]); } catch (e) {}
         try { if (typeof stopListen === "function") stopListen(); } catch (e) {}
         try { if (typeof disposeCss === "function") disposeCss(); } catch (e) {}
-        try { if (typeof disposeDark === "function") disposeDark(); } catch (e) {}
-        try { if (typeof disposeLight === "function") disposeLight(); } catch (e) {}
+        try { if (typeof disposeOverride === "function") disposeOverride(); } catch (e) {}
       };
     }, "aurum disposers");
   }

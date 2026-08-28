@@ -68,6 +68,9 @@
 | **P20** | **§4 增强** | **分组会话列表截断:默认前 5 行 + 「显示全部/收起」切换(用户报面板过长)** | **AuBrowserWide 渲染截断** | **✅** |
 | **P21** | **§6 增强** | **todo 清单条可折叠:头部行常显 + 胶囊区 grid 收合,默认折叠(用户指定)** | **AuTodoBar 重构 + CSS** | **✅** |
 | **P22** | **§5 增强** | **非 chat view(轨迹/数据库等)让位 70px 浮头渐变纱(用户报遮挡)** | **viewArea padding + chat 负 margin(修订 VII 起随官方 DOM 升级改靶 wSkVaW_scrollBody 单点让位)** | **✅** |
+| **P23** | **架构** | **主题接入改 theme.overrideTokens 常驻层:修复「设置·外观」切换丢细节(用户报两切换不兼容)** | **删双主题注册与重断言 hack;左下角按钮改切官方 preference** | **✅** |
+| **P24** | **§7 修缮** | **三卡壳去 1px transparent border:工具卡 hover「细边框」消除(用户报 + 用户定位)** | **.au-tool/.au-ctx-card/.reasoning 去 border;verify-p24-hover 门禁** | **✅** |
+| **P25** | **§7 修缮** | **图标瓦片 svg display:block:Mac 上工具卡图标向下偏移修复(用户报+定位)** | **au-ico/au-chev/.chev 五条 svg 规则补 display:block** | **✅** |
 
 ## 现状 vs 原型 · 逐节差异盘点(2026-08-24 复核)
 
@@ -624,3 +627,67 @@ todo-it 10.5px;输入卡 250-780px 逐档缩、零溢出。回归 gate/p8b/proto
 - **实测(verify/verify-viewyield.js)**:轨迹(qBU-ya_root)/数据库(dbb-view)
   首元素 y 0 → 86(> 纱底 70);chat 顶滚后首内容 y=86 不变 + margin/pad
   三值断言;深浅双色全绿;verify-gate/p8b/proto-diff 回归无回归。
+
+### P23 · 主题接入改 overrideTokens:设置·外观切换兼容(用户报两切换不兼容)✅ 2026-08-28
+
+- **背景(用户:「左下角有一个明暗配色切换,设置里也有个明暗切换,两个不兼容,
+  设置里的切换选择后会丢失主题细节」)**:官方设置→外观行(dsh-client-ui-theme
+  的 AppearanceRow,settings.general.item 槽 id=appearance)三个 cube(浅色/
+  深色/跟随系统)的语义是 **preference=内置主题 id**,onClick=setTheme("light"/
+  "dark"/"system") 且持久化写设置文档;ThemePresenter.apply 先摘 body 全部
+  内联 token 再写 active.tokens,而官方内置主题 tokens 为空对象 → 旧方案
+  (注册 aurum-dark/aurum-light 双主题、aurum 视觉全靠 active 主题的 120 个
+  token)被一键清零,注入 CSS 与遮蔽组件却仍在 → 「半鎏金半官方」丢细节。
+  左下角按钮旧走 setTheme("aurum-*"),非 preference 不持久化,刷新被官方
+  adopt() 盖回 —— 两个切换各写各的状态,互不知晓。
+- **诊断实测(修复前)**:基线 120 内联 token;设置点 Light 后 120→0,
+  --dsw-alias-bg-base 回 #fff、bubble 回官方 #edf3fe;aurum style 标签仍在。
+- **方案**:删双主题注册与 0ms/1.2s 启动重断言 timers,改
+  theme.overrideTokens("dsh-theme-aurum",{token:{light,dark}}) 常驻层
+  (theme 服务的 token 级遮蔽,与槽位遮蔽同哲学)——composeActive 按 active.
+  colorScheme 逐 token 取 aurum 对应色,官方 light/dark/system 任何
+  preference 下双色都正确;左下角按钮改切官方 preference(同通道、持久化、
+  「跟随系统」media 监听免费获得);停插件 dispose 层即还原官方,回退路径不变。
+- **实测(verify/verify-p23-compat.js)**:基线(dark)120 token aurum 值;设置
+  点 Light 后 120 保持且整组翻 aurum light(bg-base oklch(94.5% 0.012 82)、
+  bubble oklch(93% 0.035 83)——修复前同位 #fff/#edf3fe);左下角切深色
+  darkAttr 挂上、整组翻 aurum dark(gold 83%.115 88);gate/p8b/proto-diff(0)/
+  darkskin(深 55%/浅 80%)回归全绿。
+
+### P24 · 三卡壳去 1px transparent border:hover 细边框消除(用户报)✅ 2026-08-28
+
+- **背景(用户:「工具卡片 hover 状态会有一个细 border,我们的风格是完全无边的
+  风格」,随后自己定位:「看起来就是卡片背景和 hover 变色的部分大小不一致导致」)**:
+  `.au-tool`/`.au-ctx-card`/`.reasoning` 三个同款卡壳都带
+  `border:1px solid transparent`,头行 hover 背景(`.au-main`/`.reasoning-head`
+  的 `layer-2 50%` tint)从 border 内缘起画 —— hover 色块比卡几何小一圈,四边
+  露出 1px 卡面色(`layer-1 55%` mix)环;两色一亮一暗,hover 时显形为 1px
+  「假边框」(深色 read 卡顶部亮线最易察觉)。
+- **排查路径(实录)**:全样式表扫 `:hover`+border 规则 = 0 条 → 卡子树扫常驻
+  可见 border/outline(深浅×展开折叠)= 0 个 → 元素截图页内 canvas 逐行像素
+  采样,hover 后卡内首行 [250,247,241]=卡面色、y2 起 [243,238,229]=hover 色,
+  与用户判断吻合(色块尺寸不一致,非真 border)。
+- **修复**:三壳删 `border:1px solid transparent`(au-pill 等徽章的双层色环
+  不存在,保留)。hover 色块与卡几何重合,圆角处仅剩正常抗锯齿。
+- **实测(verify/verify-p24-hover.js)**:hover 后卡内首两个可见像素行 y1==y2
+  逐字相等(浅 [243,238,229]/深 [32,25,31]),firstRowDiff=0;卡几何 -2px,
+  gate/p8b/proto-diff(0)/darkskin/p23-compat/cards3/think/compact/
+  ctx-repro/ctx-light 回归全绿。
+
+### P25 · 图标瓦片 svg display:block:Mac 图标向下偏移(用户报+定位)✅ 2026-08-28
+
+- **背景(用户:「工具卡片的图标歪了」,后精确定位:「图片没有在圆角矩形的中心,
+  而是向下偏移了,Windows 上没有,换 Mac 出现」)**:Ic() 官方图标组件包在无类
+  `<span>` 里,svg 保持 `display:inline` —— 行盒 strut(line-height normal 由
+  字体度量决定)参与布局,svg 按基线(替换元素底边)对齐,顶部被 strut 推空 →
+  图标在 27px 瓦片内整体向下偏。Mac(-apple-system/Noto Sans SC)与 Windows
+  (Segoe UI)字体行高度量不同 → 平台差异。
+- **复现(headless 需手动模拟)**:webfont 未加载时 strut 恰好不撑开(headless
+  直测居中,一度误导排查);注入 line-height:2.4 后 svgTop 6.5→12、底隙
+  6.5→1(向下偏 5.5px),与用户截图现象吻合。
+- **修复**:`.au-ico svg`/`.au-chev svg`/`.reasoning-head .chev svg`(+ctx 卡
+  冗余两条)五条规则补 `display:block` —— 容器均 grid/flex 布局,block 化安全;
+  row-retry 等行内混排场景不动(避免 inline 包 block 拆盒风险)。
+- **验证(verify/verify-p25-iconcenter.js)**:normal 与 strut 恶化(lh2.4)
+  两环境 ico 6.5/6.5、chev 0/0 全居中(failures=0);全量门禁 p23/p24/gate/
+  p8b/proto-diff/darkskin/cards3/think/compact/ctx-repro/ctx-light 全绿。
